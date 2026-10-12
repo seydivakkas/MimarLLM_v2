@@ -108,3 +108,18 @@ Her kullanıcı isteği için:
 5. Windows arayüzü masaüstü mü, localhost web arayüzü mü?
 
 > Bu belge, uygulamadan önce oluşturulan ilk işlem kaydıdır. Kararlaştırılmamış özellikleri tamamlanmış göstermez.
+
+## 8. Uygulama kaydı — güvenli dokümantasyon iskeleti
+
+**Uygulanan değişiklikler (2026-10-12):**
+- `docs/islem_001.md`: istek ve karar prosedürü, geliştirme öncesinde oluşturuldu (commit `6621539`).
+- `README.md`: bağımsız V2'nin taslak ürün tanımı; kesin ilkeler ve ürün seçenekleri (commit `9114386`).
+- `.gitignore`: yerel veritabanları, özel çizimler, model ağırlıkları ve kimlik bilgilerine yönelik varsayılan dışlama listesi (commit `5ce0fbf`).
+- `docs/kararlar.md`: kesin ve tartışılan kararların ayrımı (commit `7328a76`).
+- `docs/kapsam.md`: kullanım alanları, kapsam ve hariç tutulan konular (commit `fb16d49`).
+
+**Bilinçli olarak yapılmayan:** `src/` altında boş teknik modüller, çoklu ajan şablonları, bağımlılık kurulumu, model ağırlıkları, gerçek veriler ve işlev varmış izlenimi veren örnek kod oluşturulmadı. Bunlar ancak ürün kapsamı netleştikten sonra kendi işlem kayıtlarıyla ele alınacak.
+
+**Kontrol:** GitHub yazma işlemleri commit SHA üretti; yerel Windows çalıştırma veya test yapılmadı. `.gitignore` halihazırda Git'e izlenen bir sırrı gizlemez, bu nedenle git diff/secret taraması ayrıca gereklidir.
+
+**Son durum:** Başlangıç dokümantasyonu oluşturuldu, kapsam kararı bekleniyor.
