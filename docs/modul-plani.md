@@ -64,7 +64,7 @@ MimarLLM_v2/
 └── tests/             # Sentetik fixture / sözleşme / tekrar üretilebilirlik
 ```
 
-`src`, `app`, `config`, `scripts`, `tests` klasörlerini henüz sırf görünmeleri için eklemeyeceğiz. İlk kod işi `islem_003.md` ile kayıt altına alınmadan başlamayacak.
+`src`, `app`, `config`, `scripts`, `tests` klasörlerini henüz sırf görünmeleri için eklemeyeceğiz. İlk uygulama kodu işi için, mevcut mimari tasarım kaydı `islem_003.md` sonrasındaki **yeni ve sıradaki** `islem_NNN.md` dosyası kod değişikliğinden önce oluşturulacak.
 
 ## 3. Modül sorumluluk ve çıktı sözleşmeleri
 
@@ -210,7 +210,7 @@ Gerçek uygulama sırası örneği: **P1 sözleşme -> P2 DXF -> P3 geometri -> 
 
 ## 7. Tek sonraki mühendislik adımı
 
-**İşlem 003 önerisi:** `DrawingIR v0.1` + coordinate/units contract + ilk 5 geometrik kontrolün kesin gereksinimlerini belirleme. Bu işlem kayda alındıktan sonra kaynak kod ve sentetik fixture geliştirilecek.
+**İşlem 003 tarihsel önerisi (islem_003 artık yeni OCR/mevzuat tasarım kaydı olarak kullanıldı):** `DrawingIR v0.1` + coordinate/units contract + ilk 5 geometrik kontrolün kesin gereksinimlerini belirleme. DrawingIR uygulaması için ayrıca sıradaki yeni işlem kaydı oluşturulacak; tasarım belgesi uygulama kodu olarak yorumlanmaz.
 
 Kullanıcının henüz kararlaştırmadığı UI/model/ilk format gibi konular **açık karar olarak korunur**; bu plandaki öngörüler tamamlanmış uygulama değildir.
 
