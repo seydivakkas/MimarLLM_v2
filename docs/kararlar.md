@@ -1,7 +1,5 @@
 # MimarLLM V2 — Karar Defteri
-
 Bu belge kesin kararları önerilerden ayırır. Her değişiklik işlem kaydıyla izlenir.
-
 | Kod | Karar | Durum | Kaynak |
 | --- | --- | --- | --- |
 | K-001 | V1'den bağımsız `seydivakkas/MimarLLM_v2` deposunda geliştirme | KESİN | islem_001 |
@@ -20,62 +18,58 @@ Bu belge kesin kararları önerilerden ayırır. Her değişiklik işlem kaydıy
 | K-014 | Geometrik ölçüm ve kural denetimi deterministik çekirdekte; VLM yalnız yardımcı | **KESİN** | islem_002 |
 | K-015 | İlk 5–10 hata kontrolünün ayrıntılı tanımı ve toleransları | TARTIŞILIYOR | islem_002 |
 | K-016 | İlk kullanıcı profili: teknik ofis / mimar / öğrenci | TARTIŞILIYOR | islem_002 |
-
 ## Kesinleştirilen kapsam gerekçesi
-
 V1'deki eğitim/portal/jüri/çoklu AI servislerini sürdürmek yerine kullanıcıya ölçülebilir teknik çizim hata bulgularını **kaynak konumu ve kanıtıyla** gösteren tek bilgisayarlık uygulama üretmek. Ürün özellikleri olmayan klasör veya menü şablonları eklenmez. Gelecekte kapsam değişirse yeni işlem kaydı ve kullanıcı kararı gerekir.
-
 ## Başlangıç önerileri, henüz karar değil
-
 - **Öneri:** İlk vektör formatı DXF; sonraki aşamalar dijital PDF ve raster PDF.
 - **Öneri:** Önce `DrawingIR` + geometri + deterministik kontroller; OCR ve VLM daha sonra.
 - **Öneri:** Önce Python çekirdeği ve tek bir yerel arayüz; UI teknolojisi ayrı seçilir.
 - **Öneri:** Mevzuat kuralları yalnız kaynak ve yürürlük bilgisi doğrulandığında eklenir.
-
 **İş kuralı:** Kesin olmayan seçenekler fiili iş veya doğrulanmış sonuç gibi gösterilmez. Bir sonraki geliştirme isteğinin kaydı `docs/islem_003.md` olacaktır.
-
 **Depo durumu:** 2026-10-12 tarihinde depo **public** olarak doğrulandı; özel kullanıcı çizimleri, veritabanları, anahtarlar ve model ağırlıkları depoya yüklenmez.
-
-
 ## İşlem 003 — Mimari ve mevzuat doğrulama kararları (2026-10-12)
-
 | Kod | Karar | Durum | Kaynak |
 | --- | --- | --- | --- |
 | K-017 | Mimari hata kontrolüne **hiyerarşik/hibrid yerel mevzuat RAG** eklenecek | **KESİN** | islem_003 |
 | K-018 | Hata bulgusunda **özgün mevzuat sayfası + metin bbox / tablo hücresi** gösterilecek; satır ID'si türetilmiş olarak etiketlenecek | **KESİN** | islem_003 |
 | K-019 | Mevzuat erişimi; madde, fıkra, bent, tablo, ek ve değişiklik/yürürlük sürümüyle tutulacak | **KESİN** | islem_003 |
 | K-020 | Mevzuat RAG **arama adayı** döndürür; kural motorunun deterministik hükmünün yerini almaz | **KESİN** | islem_003 |
-| K-021 | Ağ üzerinden AI servisi olmadan **yerel OCR** kullanılacak, Baidu Unlimited-OCR ana değerlendirme adayı | **KESİN (değerlendirme)** | islem_003 |
-| K-022 | Unlimited-OCR'ın 8 GB VRAM/Windows'ta gerçek kullanım uyumu ve seçilecek quantization/runtime | **ÖLÇÜM BEKLENİYOR** | islem_003 |
+| K-021 | Yerel OCR kullanımı zorunlu; OCR CPU'da RapidOCR ile yapılır | **KESİN; islem_005 ile güncellendi** | islem_003/005 |
+| K-022 | Önceki ağır OCR araştırmasının iptal edilmesi | **İPTAL** | islem_005 |
 | K-023 | Ağır GPU OCR ve VLM aynı anda çalışmayacak; süreç izolasyonlu phase-lock | **KESİN** | islem_003 |
 | K-024 | İlk 5 mevzuat ailesi: Planlı Alanlar, Yangın, Otopark, Sığınak, BEP | **KESİN (hedef korpus)** | islem_003 |
 | K-025 | Mevzuatın özgün yürürlük/değişiklik kronolojisinin ve kuralların sayısal eşiklerinin doğrulanması | **İNCELEME BEKLENİYOR** | islem_003 |
 | K-026 | SQLite FTS5 + yerel CPU embedding + RRF; vector DB sunucusu zorunlu değil | **KESİN (başlangıç mimarisi)** | islem_003 |
 | K-027 | Kullanıcı arayüz teknolojisi, DWG/IFC ve ilk uygulanacak kesin mevzuat eşikleri | **AÇIK** | islem_003 |
-
 Ayrıntılar: [Sistem mimarisi](sistem-mimarisi.md) · [OCR/bellek](ocr-ve-bellek.md) · [Mevzuat RAG](mevzuat-rag.md).
-
 **K-012 güncellemesi:** Önceden tartışılan mevzuat desteği K-017 ile çekirdek ürüne eklendi. Ancak **hukukî denetimin hangi maddelerle ve hangi projelerde uygulanacağı** hâlâ ayrı mevzuat ve proje bağlamı incelemesine bağlıdır.
-
 ## İşlem 004 — OCR strateji revizyonu (2026-10-12)
-
-**K-021/K-022/K-023 üzerindeki güncelleme:** K-021'deki “Unlimited-OCR ana değerlendirme adayı” artık **tarihsel** bir karardır; ilk çalışır ürünün varsayılan OCR motoru değildir. K-022'deki Unlimited-OCR uyumluluk araştırması **opsiyonel araştırma** durumunda kalır. K-023 GPU model sıralaması VLM ile herhangi bir opsiyonel GPU OCR için geçerlidir; RapidOCR'nin CPU kullanımı aynı GPU kilidini gerektirmez.
-
+**K-021/K-022/K-023 güncellemesi:** PDF/OCR motoru [ADR-002](adr/ADR-002-PDF-Engine-License.md) ile kesinleştirildi; önceki ağır OCR alternatifleri kapsam dışıdır.
 | Kod | Karar | Durum | Kaynak |
 | --- | --- | --- | --- |
-| K-028 | OCR'de önce DXF CAD metni veya PyMuPDF native PDF metni, yalnız eksik/güvenilmez bölgede OCR | **KESİN (tasarım)** | islem_004 |
-| K-029 | Birincil yerel OCR çalışma adayı `rapidocr` + `onnxruntime` **CPU**; `rapidocr_onnxruntime` eski paket | **KESİN (teknoloji yönü)** | islem_004 |
-| K-030 | Unlimited-OCR varsayılan OCR yolu değil, isteğe bağlı deneysel benchmark alternatifi | **KESİN** | islem_004 |
+| K-028 | DXF CAD veya pdfplumber native PDF metni, eksik bölgede RapidOCR CPU | **KESİN** | islem_005 |
+| K-029 | Birincil yerel OCR: `rapidocr` + `onnxruntime` CPU | **KESİN** | islem_005 |
+| K-030 | OCR için ikinci büyük model seçeneği desteklenmeyecek | **KESİN** | islem_005 |
 | K-031 | Native metin de kusurlu olabilir; SHX/kontur metin ve kısmi raster için ROI kalite kapısı | **KESİN** | islem_004 |
 | K-032 | Döndürülmüş yazılarda quad/homografi + sayfaya geri dönüş; RapidOCR cls yalnız 0°/180° | **KESİN (yöntem)** | islem_004 |
 | K-033 | Türkçe/mimari simgelerin RapidOCR ile gerçek doğruluğu ve Windows CPU RAM/latency | **ÖLÇÜM BEKLENİYOR** | islem_004 |
 | K-034 | Mevzuat OCR/tabloları çizim analizinden **ayrı offline ETL** hazırlanacak | **KESİN** | islem_004 |
-| K-035 | Tablo çıkarımında PyMuPDF+pdfplumber başlangıç adayı; Docling CPU yalnız gerekli olduğunda | **ÖNERİ/benchmark bekleniyor** | islem_004 |
+| K-035 | Mevzuat tabloları ve hücre geometrileri pdfplumber ile çıkarılacak; doğruluk manuel kontrol kapısından geçecek | **KESİN** | islem_005 |
 | K-036 | Kaynak paket adı `src/mimarllm/` olarak korunur; ikinci `src/mimar/` paketi açılmaz | **KESİN (repo bütünlüğü)** | islem_004 |
-
 Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-pafta.md).
-
-| K-037 | PyMuPDF'nin AGPLv3/ticari lisans riski nedeniyle PDF backend soyutlanacak; lisans/dağıtım doğrulanmadan PyMuPDF zorunlu ticari bağımlılık değil | **KESİN (güvenlik kapısı)** | islem_004 |
+| K-037 | PDF/OCR teknoloji yığını yalnız ADR-002'deki seçili üç bileşendir; diğer motorlar kullanılmaz | **KESİN** | islem_005 |
 | K-038 | Kapalı kaynak, ücretsiz yeniden dağıtım alternatifi olarak pypdfium2 ve pdfplumber kıyaslanacak | **İNCELEME BEKLENİYOR** | islem_004 |
-
 [PDF lisans ve backend karşılaştırması](pdf-lisans.md).
+
+## İşlem 005 — Kesin teknoloji kararı
+
+| Kod | Karar | Durum | Kaynak |
+| --- | --- | --- | --- |
+| K-039 | PDF native metin/geometri yalnız `pdfplumber` | **KESİN** | islem_005 / ADR-002 |
+| K-040 | PDF görüntü/ROI render yalnız `pypdfium2` | **KESİN** | islem_005 / ADR-002 |
+| K-041 | OCR yalnız `rapidocr` + `onnxruntime` CPU | **KESİN** | islem_005 / ADR-002 |
+| K-042 | Eski PDF/OCR motorları ve seçenekleri güncel repo içerik ve bağımlılıklarından kaldırıldı | **KESİN** | islem_005 |
+| K-043 | Transitif lisans/SBOM/Windows offline kabulü | **HOLD** | islem_005 |
+
+[ADR-002](adr/ADR-002-PDF-Engine-License.md) kesin teknik seçimdir; tarihsel işlem kayıtları güncel bağımlılık kararlarını geçersiz kılamaz.
+
