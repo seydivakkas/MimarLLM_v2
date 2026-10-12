@@ -1,7 +1,7 @@
 # İşlem 006 — V2 tam özellik envanteri ve uygulama yol haritası
 
 - **Tarih:** 2026-10-13
-- **Durum:** PLANLANDI — kayıt, bu isteğin diğer değişikliklerinden önce oluşturuluyor.
+- **Durum:** UYGULANDI — kapsam, envanter ve plan belgeleri; ek uygulama modülleri geliştirilmedi.
 - **İstek:** Kullanıcının yüklediği 20 metin/Markdown ekinde ve sohbet metninde hedeflenen geometri, topoloji, OCR, yapısal mevzuat RAG, 5 hukukî kontrol ailesi, raporlama, CLI, yerel web arayüzü, Windows run/build betikleri, yerel VLM ve benchmark çalışmalarını MimarLLM V2'nin özellik kapsamına dahil et; yapılmış gibi gösterme; sonraki geliştirme adımlarını planla.
 - **Depo:** `seydivakkas/MimarLLM_v2`
 - **Değişmezler:** Windows-first, 14. nesil i7/32 GB RAM/RTX 4070 8 GB, sıfır bulut AI API, tek kullanıcı modüler monolit, deterministik geometri ve kural, PDF/OCR için sadece `pdfplumber` + `pypdfium2` + `rapidocr`/`onnxruntime CPU`, gerçek mimari dosya veya model ağırlığı public repoya konmaz.
@@ -40,6 +40,34 @@
 
 Gerçek mevcut kod: `src/mimarllm/core/models.py`, `src/mimarllm/importers/pdf.py`, `src/mimarllm/ocr/rapid_engine.py`, minimal `__init__.py` dosyaları ve `tests/test_pdf_contract.py`. `pyproject.toml` var; `src/mimarllm/geometry`, `rules`, `rag`, `app`, `pipeline`, `cli`, `run.bat`, `build_exe.bat`, `.spec` **henüz yok**. Gerçek RapidOCR/OCR Windows testi yok.
 
-## 5. Uygulama sonuçları
+## 5. Gerçek uygulama ve commit kayıtları
 
-Belgeler commit edilip kontrol edildikten sonra bu bölüm güncellenecektir. Yeni kod geliştirme isteği kayıt sırasına göre `docs/islem_007.md` ile başlayacaktır; bu `islem_007`, yüklenen eski taslaktaki OCR numarasıyla karıştırılmamalıdır.
+**Önce işlem kaydı:** `docs/islem_006.md` commit `4cfbd3a` ile diğer değişikliklerden önce oluşturuldu.
+
+| Belge | Gerçek sonuç | Commit |
+| --- | --- | --- |
+| `docs/ozellik-envanteri.md` | F01–F24 özellik/statü/kanıt matrisi | `cd8b490` |
+| `docs/uygulama-yol-haritasi.md` | Kayıt 007–021 taslak sırası, bağımlılıklar | `f38e995` |
+| `docs/mevzuat-dogrulama-protokolu.md` | Beş mevzuat ve resmî kaynak/yürürlük kontrolleri | `08cbf74` |
+| `docs/planlanan-dosya-yapisi.md` | src/mimarllm tek paketli dizin ve gerçek vs plan | `6b93e95` |
+| `docs/windows-dagitim-plani.md` | run.bat/onedir/offline wheelhouse/UI kabul kapısı | `a139357` |
+| `docs/adr/ADR-003-Kapsam-Kanit-ve-Kabul-Kapilari.md` | Kapsam/kanıt/lisans/durum mimari kararı | `0dab5ac` |
+| `README.md` | Tam hedef kapsam ve belge bağlantıları | `c1afe0a` |
+| `docs/kararlar.md` | K-044…051 yeni kararlar | `bb5bf1b` |
+| `docs/kapsam.md` | Geniş kapsam ve hukukî PASS kapısı | `69742c0` |
+| `docs/modul-plani.md` | Güncel kaynaklara yönlendirme | `d47ca07` |
+
+### Yapılan kontrol
+
+- Kaynak ekleri yerel sandbox ortamında tek tek incelendi: 20 dosyadan iki tanesi (**sığınak taslağı**) aynı SHA-256 içeriğe sahipti.
+- Güncel GitHub deposu işleme başlanırken 26 dosyadan oluşuyordu; yalnız PDF kaynak gözlemleri, ROI render, RapidOCR CPU sarmalayıcısı ve temel veri modeli kodu mevcut.
+- Belgeler ve yeni ADR GitHub'a yazıldı. Kapsam ile kodun mevcut durumu ayrı tutuldu.
+- Mevzuatlarda 2025 Sığınak ve Yangın değişikliklerine ilişkin resmi kaynaklar bulundu; diğer tüm yasal eşiklerin kesin geçerli olduğu iddia edilmiyor.
+
+### Yapılmayan iş
+
+- DXF parser, Shapely geometri/NetworkX topoloji, yönetmelik kuralları, RAG/FTS5, VLM, dashboard veya `run.bat`, `.spec`, `build_exe.bat` **bu işlemde kodlanmadı**.
+- Yeni otomatik test, gerçek Windows cihaz, OCR/VLM 8 GB VRAM benchmark veya bağımsız hukukî inceleme **yapılmadı**.
+- Kullanıcının eklediği örnek kod/telifli belgeler/gizli kullanıcı verileri public repoya aynen aktarılmadı.
+
+**Sıradaki dosya: `docs/islem_007.md`.** Yeni işlem kaydı önce açılır, sonra DrawingIR/units/source coordinate modelleri ve sentetik testler kaynak koda işlenir. `tr_yangin.py` ancak geometrik yürüme ağı ve mevzuat source binding doğrulandıktan sonra hukukî kontrol olarak etkinleştirilir.
