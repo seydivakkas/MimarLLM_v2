@@ -79,8 +79,11 @@ def test_wrong_sha_or_document_kind_rejected():
 
 
 def test_wrong_source_frame_id_rejected():
+    valid_entity = entity()
     with pytest.raises(ValidationError, match="frames differ"):
-        entity(frame_id="invalid")
+        DrawingEntity.model_validate(
+            valid_entity.model_dump() | {"frame_id": "invalid"}
+        )
 
 
 def test_missing_frame_rejected():
@@ -173,13 +176,13 @@ def test_invalid_primitive_or_nan_rejected():
 
 
 def test_vlm_candidate_cannot_be_verified_by_claim_only():
-    with pytest.raises(ValidationError):
-        entity().model_copy(update={"origin": EvidenceOrigin.VLM_CANDIDATE,
-                                   "is_verified_semantics": True}).model_validate(
-                                       entity().model_dump() | {
-                                           "origin": "VLM_CANDIDATE",
-                                           "is_verified_semantics": True
-                                       })
+    with pytest.raises(ValidationError, match="Probabilistic semantic"):
+        DrawingEntity.model_validate(
+            entity().model_dump() | {
+                "origin": "VLM_CANDIDATE",
+                "is_verified_semantics": True,
+            }
+        )
 
 
 def test_physical_measurement_needs_confirmed_scale():
@@ -193,6 +196,17 @@ def test_physical_measurement_needs_confirmed_scale():
     verified = UnitCalibration.from_dxf_insunits(4, user_confirmed=True)
     obj = drawing(measurements=[measurement], calibration=verified)
     assert obj.measurements[0].physical_value == 1.0
+
+
+def test_physical_measurement_cannot_disagree_with_calibration():
+    verified = UnitCalibration.from_dxf_insunits(4, user_confirmed=True)
+    wrong = MeasurementEvidence(
+        evidence_id="m-bad", entity_ids=("e1",), source_value=1000,
+        quantity="length", source_frame_id="cad:model", method_id="segment_length",
+        tolerance_source_units=0, physical_value=9.0, physical_unit="m",
+    )
+    with pytest.raises(ValidationError, match="disagrees with validated calibration"):
+        drawing(measurements=[wrong], calibration=verified)
 
 
 def test_measurement_cross_frame_or_unknown_entity_rejected():
