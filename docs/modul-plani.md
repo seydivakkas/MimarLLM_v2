@@ -276,3 +276,5 @@ P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
 **Yeni ayrım:** RapidOCR CPU çalışması GPU kilidini gerektirmez; GPU'da Qwen-VL veya deneysel Unlimited-OCR görevi olması hâlinde bunlar için tek ağır GPU modeli politikası geçerlidir. CPU ve RAM sınırları ayrıca izlenir.
 
 **Mevcut durum:** modüller geliştirilmedi, bunlar uygulanacak sorumluluklardır. Önce [islem_004.md](islem_004.md) kaydı oluşturuldu; sonraki yazılım işi ilk kullanılabilir `src/mimarllm/ocr/` kodlarını kendi yeni işlem kaydıyla açacak. [Detay](ocr-mimari-pafta.md).
+
+**PDF backend seçim kapısı — işlem 004:** `importers/pdf.py` içinde `PdfTextBackend` arayüzü zorunlu tasarım. PyMuPDF'nin AGPLv3 veya ticari lisans yükümlülüğü nedeniyle kapalı kaynak Windows müşterisine yeniden dağıtım kararı verilmedi. `pypdfium2` / `pdfplumber` lisans+quad+sayfa dönüşümü benchmark sonuçları değerlendirilmeden gerçek bağımlılık sabitlenmeyecek. [PDF lisans belgesi](pdf-lisans.md).
