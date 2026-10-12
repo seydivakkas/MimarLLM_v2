@@ -194,3 +194,5 @@ Sonuç ancak ikisi de güvenilir olduğunda kesin `PASS/FAIL` olabilir. RAG “b
 Belirli bir yönetmeliğin örnek madde/fıkra numarasını, minimum kapı genişliği veya koridor eşiğini **uydurmamak** için ilk aşamada hiçbir hukukî sayı kuralı üretim setine konulmayacak. Önce özgün resmî kaynakların güncel ve proje tarihindeki hâli toplanacak, hukukî ilişki / güncelleme zinciri çıkarılacak, insan incelemesiyle kuralın ölçüm tanımı ve uygulanabilirlik koşulu onaylanacak.
 
 **Uygulama kaydı:** [islem_003.md](islem_003.md)
+
+**İşlem 004 PDF lisans kapısı:** PyMuPDF'nin AGPLv3/ticari lisans koşulları sebebiyle offline mevzuat ETL katmanı `PdfTextBackend` ile soyutlanır. Kapalı kaynak/ücretsiz müşteri dağıtımı için `pypdfium2` ve `pdfplumber` alternatifleri lisans+bounding-box doğruluğu karşılaştırmasından geçecek. “PyMuPDF önce” teknik prototip önerisidir; ticari dağıtım onayı değildir. [PDF lisans incelemesi](pdf-lisans.md).
