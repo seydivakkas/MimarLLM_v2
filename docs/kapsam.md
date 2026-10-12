@@ -1,41 +1,55 @@
-# MimarLLM V2 — Ürün Kapsamı (Taslak)
+# MimarLLM V2 — Ürün Kapsamı v0.2
 
-## Sorun
+- **Kapsam kararı:** **KESİN**, 2026-10-12, [İşlem 002](islem_002.md).
+- **Durum:** Yazılım uygulaması başlamadı; kapsam ve teknik tasarım oluşturuldu.
 
-MimarLLM V1; çizim analizi, jüri simülasyonu, pedagojik öğrenme portalı, RAG, kullanıcı yönetimi ve bulut LLM servislerini aynı üründe toplamaya çalışıyordu. V2'nin tek bilgisayarda ve bütünüyle yerel çalışması hedefleniyor. Hangi işlevlerin yeni ürünün esas görevi olduğu **yeniden kararlaştırılacak**.
+## Ürün tanımı
 
-## Önerilen birincil iş
+**MimarLLM V2, tamamen yerelde çalışan Mimari Teknik Çizim Analizi ve Hata Tespiti Sistemidir.**
 
-Kullanıcı bir mimari çizim yükler. Sistem okunabilir nesneleri ve ölçüleri çıkarır, bilinmeyen ölçeği onaya sunar, kanıta dayalı fiziksel/topolojik bulgular üretir ve izlenebilir rapor hazırlar.
+Kullanıcı çizim dosyasını açar. Sistem veri ve geometriyi çıkarır, koordinat/ölçek birimlerini doğrular, tanımlı geometrik/topolojik ve teknik kontrolleri çalıştırır; hataları, eksik kanıtları ve şüpheli elemanları **çizimdeki konumlarıyla** gösterir. Sonuç gerekçelidir ve dışa aktarılabilir.
 
-## Olası kullanıcı profilleri
+## İlk ürünün işlevsel odağı
 
-- **Mimarlık öğrencisi:** Çizimdeki ölçü, işaret ve mekânsal eksiklerin tespiti; yorumlayıcı geri bildirim isteğe bağlı.
-- **Mimar / teknik ofis:** Teslim öncesi plan QA ve hata/eksiklik listesi.
-- **Akademisyen / jüri:** Rubriğe dayalı değerlendirme yardımı; otomatik nihai not verme değil.
-- **Mevzuat uzmanı:** Kaynağı/sürümü doğrulanmış teknik kuralları değerlendirme; hukukî kesinlik iddiası yok.
+- Dosya ve çizim içe alma; güvenli tip, kaynak ve koordinat yönetimi.
+- CAD vektör verisi üzerinde deterministik geometri/ilişki kontrolü.
+- Oda, sınır, duvar, açıklık, katman/etiket **adaylarının** çözümlemesi.
+- Ölçü, ölçek ve belirsizliği açıkça ayırma; yetersiz bilgiyle hüküm vermeme.
+- Bulgunun kaynağına geri dönen kanıt zinciri, konumsal işaretleme ve rapor.
+- Yerel OCR/VLM ile etiket ve semantik nesne çıkarımının aşamalı eklenmesi.
+- Doğrulanmış ve kapsamı belirlenmiş teknik kural paketi; mevzuat sertifikası değil.
 
-## Kapsam için önerilen öncelik
+## İlk ürün kapsamı dışında — KESİN
 
-| Katman | V2 ilk sürüm | Not |
-| --- | --- | --- |
-| Dosya içe alma, birim, ölçü, geometri, topoloji | Çekirdek adayı | Deterministik |
-| Yerel OCR ve görsel etiket önerisi | Çekirdek adayı | Kesin geometri iddiası yok |
-| Kanıt zinciri, açık belirsizlik, rapor | Çekirdek adayı | Zorunlu |
-| Mevzuat uygunluk kararları | Şartlı / sonraki | Kaynak ve kapsam doğrulaması şart |
-| Jüri simülasyonu, eğitim geri bildirimi | Opsiyonel | Temel motora bağlı modül olabilir |
-| LMS, öğrenci hesapları, sınıf takibi | İlk sürüm dışında önerildi | Kullanıcı kararına açık |
-| Tamamen üretken mimari tasarım | İlk sürüm dışında önerildi | Ayrı Ar-Ge |
-| Bulut AI API'si ve çoklu agent orkestrasyonu | Hariç | Tasarım ilkesi |
+- Pedagojik eğitim portalı ve LMS.
+- Öğrenci takibi, sınıf yönetimi, öğretmen oturumu ve ders müfredatları.
+- Jüri persona/karakterleri, otomatik not verme ve jüri simülasyonu.
+- Çoklu AI agent orkestrasyonu ve bulut tabanlı LLM/VLM API hizmetleri.
+- Mimari tasarım çizimini baştan üretme, otomatik proje onay/sertifikasyonu.
+- Başlangıç için gereksiz Redis/Neo4j/PostgreSQL dağıtımları veya sürekli açık çoklu servisler.
 
-## Kalite yaklaşımı
+Bunlar ileride yeni bir ürün kararıyla eklenebilir; V2'nin çekirdeği olarak geliştirilmez.
 
-- `PASS` ve `FAIL` yalnız geçerli girdiler ve ilgili kurallar üzerinden üretilir.
-- Ölçek veya kaynak eksikliği `INSUFFICIENT_EVIDENCE` olarak işaretlenir.
-- Öznel mimari değerlendirmeler teknik uyumluluk sonucundan ayrı gösterilir.
-- Her kanıt parçası dosya konumu, geometri/hesap ve kural kimliği ile ilişkilendirilir.
-- Performans vaadi, hedef Windows donanımında ölçülmeden kabul edilmiş sayılmaz.
+## Kullanıcı ve temel senaryo
 
-## Açık ürün kararı
+Hedef, teknik çizim hazırlayan ya da inceleyen kullanıcıdır. **İlk persona** (mimar / teknik ofis / öğrenci) ayrıca belirlenecektir. Önerilen ilk uçtan uca senaryo:
 
-İlk sürümün **birincil kullanıcısı** ve **ilk tamamlanacak somut kullanıcı senaryosu** netleştirilmeli. Bu iki bilgi olmadan kapsamı gereksiz yere genişletmeyeceğiz.
+`DXF seç -> kaynağı/birimi doğrula -> DrawingIR -> geometri/topoloji -> deterministik hata kontrolleri -> çizim üzerinde bulgu -> kanıtlı rapor`
+
+Bu akıştaki **DXF ilk formatı** öneridir; henüz kesinleştirilmemiştir. Vektörel PDF/raster, OCR ve VLM aşamalı sonraki bileşenlerdir.
+
+## Koruyucu ürün ilkeleri
+
+- VLM çıktılarını “kanıtlanmış ölçüm” yerine koyma.
+- Ölçeği bilinmeyen çizimde m/m² cinsinden kesin sonuç veya teknik geçerlik kararı üretme.
+- İşaretlenemeyen bulguyu doğrulanmış konumsal bulgu gibi gösterme.
+- Resmî mevzuat sürümü doğrulanmamışsa hukukî uygunluk `PASS` verme.
+- Başarı durumu yalnız belirli kural için geçerlidir, çizimin tamamını “hatasız” ilan etmez.
+- Çevrim dışı kullanım ve RTX 4070 8 GB/32 GB donanım sınırına göre tasarım yap; ölçülmeden performans vaadi verme.
+- Public depoda özel çizim/veritabanı/model ağırlığı/telif hakkı belirsiz dosya bulundurma.
+
+## Belgeler
+
+- [Teknik gereksinimler ve kabul senaryoları](teknik-gereksinimler.md)
+- [Modül sınırları ve P0–P10 geliştirme planı](modul-plani.md)
+- [Kesin ve açık kararlar](kararlar.md)
