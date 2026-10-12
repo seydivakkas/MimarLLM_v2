@@ -35,3 +35,24 @@ V1'deki eğitim/portal/jüri/çoklu AI servislerini sürdürmek yerine kullanıc
 **İş kuralı:** Kesin olmayan seçenekler fiili iş veya doğrulanmış sonuç gibi gösterilmez. Bir sonraki geliştirme isteğinin kaydı `docs/islem_003.md` olacaktır.
 
 **Depo durumu:** 2026-10-12 tarihinde depo **public** olarak doğrulandı; özel kullanıcı çizimleri, veritabanları, anahtarlar ve model ağırlıkları depoya yüklenmez.
+
+
+## İşlem 003 — Mimari ve mevzuat doğrulama kararları (2026-10-12)
+
+| Kod | Karar | Durum | Kaynak |
+| --- | --- | --- | --- |
+| K-017 | Mimari hata kontrolüne **hiyerarşik/hibrid yerel mevzuat RAG** eklenecek | **KESİN** | islem_003 |
+| K-018 | Hata bulgusunda **özgün mevzuat sayfası + metin bbox / tablo hücresi** gösterilecek; satır ID'si türetilmiş olarak etiketlenecek | **KESİN** | islem_003 |
+| K-019 | Mevzuat erişimi; madde, fıkra, bent, tablo, ek ve değişiklik/yürürlük sürümüyle tutulacak | **KESİN** | islem_003 |
+| K-020 | Mevzuat RAG **arama adayı** döndürür; kural motorunun deterministik hükmünün yerini almaz | **KESİN** | islem_003 |
+| K-021 | Ağ üzerinden AI servisi olmadan **yerel OCR** kullanılacak, Baidu Unlimited-OCR ana değerlendirme adayı | **KESİN (değerlendirme)** | islem_003 |
+| K-022 | Unlimited-OCR'ın 8 GB VRAM/Windows'ta gerçek kullanım uyumu ve seçilecek quantization/runtime | **ÖLÇÜM BEKLENİYOR** | islem_003 |
+| K-023 | Ağır GPU OCR ve VLM aynı anda çalışmayacak; süreç izolasyonlu phase-lock | **KESİN** | islem_003 |
+| K-024 | İlk 5 mevzuat ailesi: Planlı Alanlar, Yangın, Otopark, Sığınak, BEP | **KESİN (hedef korpus)** | islem_003 |
+| K-025 | Mevzuatın özgün yürürlük/değişiklik kronolojisinin ve kuralların sayısal eşiklerinin doğrulanması | **İNCELEME BEKLENİYOR** | islem_003 |
+| K-026 | SQLite FTS5 + yerel CPU embedding + RRF; vector DB sunucusu zorunlu değil | **KESİN (başlangıç mimarisi)** | islem_003 |
+| K-027 | Kullanıcı arayüz teknolojisi, DWG/IFC ve ilk uygulanacak kesin mevzuat eşikleri | **AÇIK** | islem_003 |
+
+Ayrıntılar: [Sistem mimarisi](sistem-mimarisi.md) · [OCR/bellek](ocr-ve-bellek.md) · [Mevzuat RAG](mevzuat-rag.md).
+
+**K-012 güncellemesi:** Önceden tartışılan mevzuat desteği K-017 ile çekirdek ürüne eklendi. Ancak **hukukî denetimin hangi maddelerle ve hangi projelerde uygulanacağı** hâlâ ayrı mevzuat ve proje bağlamı incelemesine bağlıdır.
