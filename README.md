@@ -70,3 +70,14 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - Güvenlik: `UNKNOWN/INFERRED/CONFLICT` durumunda fiziksel ölçüm yasak; kaynak SHA/entity/frame eşleşmesi; onaylı ölçümün fiziksel değeri kalibrasyonla kontrol edilir. Hukukî uyum sertifikasyonu yasak.
 - GitHub Actions sentetik sözleşme testi: [Core contracts](https://github.com/seydivakkas/MimarLLM_v2/actions/workflows/core-contracts.yml).
 - Henüz yok: `ezdxf` DXF parser, duvar/oda topolojisi, gerçek mimari pafta kabulü, Windows/i7/4070 deneyleri. Sıradaki kayıt `islem_008`.
+
+
+## İşlem 008 — Gerçek DXF ayrıştırıcısı (CPU)
+
+`ezdxf` ile gerçek yerel DXF dosyasını açıp `DrawingIR` nesnelerine aktaran ilk motor geliştirildi. Kod: [dxf.py](src/mimarllm/importers/dxf.py) ve [layers.py](src/mimarllm/importers/layers.py).
+
+**Gözlem düzeyi:** LINE, LWPOLYLINE (bulge dahil), ARC, CIRCLE, TEXT, MTEXT, DIMENSION, INSERT ve iç içe INSERT/MINSERT. Orijinal CAD handle, blok örnekleme yolu, layout/frame ve kaynak SHA-256 korunur. Curve/arc geometrileri açıkça yaklaştırılmış poligondur; DIMENSION etiketi otomatik metrik kalibrasyon değildir. `$INSUNITS` yalnız `INFERRED`.
+
+**Kabul:** [islem_008.md](docs/islem_008.md), [DXF teknik şartnamesi](docs/specs/dxf-import-v0.1.md), [GitHub Actions](https://github.com/seydivakkas/MimarLLM_v2/actions/workflows/core-contracts.yml). CI sentetik/geometri sözleşme testini doğrular; Windows gerçek mimari pafta, DWG/XREF çözümleme, DXF geometri semantiği ve mevzuat uygunluğu **HOLD**.
+
+**Sıradaki paket:** islem_009 PDF native/ROI/OCR koordinat entegrasyonu.
