@@ -2,7 +2,7 @@
 
 - **Tarih:** 2026-10-12
 - **Repo:** `seydivakkas/MimarLLM_v2` (public)
-- **Durum:** PLANLANDI — değişikliklere başlamadan önce işlem kaydı oluşturuldu.
+- **Durum:** UYGULANDI (yalnızca mimari ve dokümantasyon; uygulama kodu/benchmark yok).
 - **İstek:** Unlimited-OCR'ın 8 GB VRAM/Windows riskleri nedeniyle birincil OCR motorunu RapidOCR (ONNX Runtime CPU) ile değiştirmek, PDF'lerde PyMuPDF vektör/gerçek metin çıkarımını öne almak, mimari paftaların eğik ve dikey etiketlerini ve özgün mevzuat belge konumlarını koruyan sade OCR dosya mimarisi tanımlamak.
 - **Geliştirme türü:** Teknik karar ve mimari/dokümantasyon güncellemesi. Çalışan model, analiz kodu ve benchmark bu işlemde yapılmış sayılamaz.
 
@@ -69,3 +69,30 @@ Yapı **taslak** olarak kaydedilecektir; boş klasörler, işlevi varmış izlen
 ## 6. Uygulama kaydı
 
 GitHub işlemleri tamamlandıkça gerçek commit bilgileri buraya yazılacak.
+
+## 7. GitHub'da gerçekleşen değişiklikler
+
+**Geliştirme öncesi işlem kaydı:** `docs/islem_004.md` oluşturuldu — `833ab386`.
+
+| Dosya | Yapılan işlem | Commit (ilk / son) |
+| --- | --- | --- |
+| `docs/ocr-mimari-pafta.md` | RapidOCR CPU + PDF native text kalite/ROI, quad/rotasyon, ETL ve test sözleşmesi | `dbc5d946`, lisans revizyonu `4312c81` |
+| `docs/pdf-lisans.md` | PyMuPDF AGPL vs ticari lisans; pypdfium2/pdfplumber/Docling alternatifleri ve `PdfTextBackend` | `042eaaf` |
+| `docs/ocr-ve-bellek.md` | Unlimited-OCR ana rolünü tarihsel/deneysel olarak işaretle; CPU OCR politikasını ekle | `31ad9cc`, `e17d925` |
+| `docs/sistem-mimarisi.md` | Native CAD/PDF -> kalite kapısı -> ROI OCR ve backend lisans ayrımı | `43f07d1`, `12debb2` |
+| `docs/mevzuat-rag.md` | Offline ETL, PDF kaynak bbox, tablo ve ayrı backend | `70a63c4`, `28dc7e3` |
+| `docs/kararlar.md` | K-028…K-038 OCR, rotasyon, kurulum ve PDF lisans kararları | `4e8c71d`, `c2453fe` |
+| `docs/kapsam.md` | OCR çalışma yolu güncellendi; LMS/agent/AI API hariç tutulmaya devam etti | `3b8b4b7` |
+| `docs/modul-plani.md` | P7-A…P7-F OCR iş paketi, PDF backend lisans kapısı | `1254c75`, `ccd3067` |
+| `docs/teknik-gereksinimler.md` | FR-029…037 ve NFR-017…021, kabul senaryoları | `83b3f23`, `a4f904e` |
+| `README.md` | Seçilen OCR yönü ve PDF lisans uyarısı | `3134bbd`, `bcbbac0` |
+
+**Bu istekte yapılmayan:** hiçbir `src/` kodu, gerçek OCR modeli, PyMuPDF/ONNX Runtime kurulumu, Windows benchmark, Türkçe CER/WER veya çizim/PDF hukuki doğruluk testi. Teknik tasarım ve karar güncellemesi ≠ çalışır entegrasyon.
+
+**Netleştirilen teknik ayrım:**
+- **Kesin:** Native text first + RapidOCR ONNX CPU, metin ve kutu kaynak izi; OCR modelinin 0/180 cls sınırı, 45/90/270 için özel deneme.
+- **Şartlı:** PyMuPDF yalnız AGPL koşulları sağlanabiliyorsa veya ticari lisans varsa üretim; aksi hâlde lisansı uygun PDF backend. `PdfTextBackend` ortak arayüz.
+- **Deneysel:** Baidu Unlimited-OCR, 8 GB VRAM test edilmeden varsayılan ya da garantili model değil.
+- **Uygulama dışı:** bulut API, pedagojik portal, çoklu agent.
+
+**Önerilen İşlem 005:** `DrawingIR v0.1`, `PdfTextBackend` ve `TextCandidate` sözleşmeleri; sentetik 0/45/90/180/270° quad/geometri dönüşüm testleri. Ardından minimum native DXF/PDF okuma ve RapidOCR adapter kodu. Her iş için önce sıradaki `docs/islem_NNN.md` açılacak.
