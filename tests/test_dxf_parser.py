@@ -229,3 +229,27 @@ def test_tessellation_budget_is_explicitly_reported(tmp_path):
     )
     assert any(i.code == "TESSELLATION_LIMIT" for i in r.issues)
     assert not r.drawing.entities
+
+
+def test_external_xref_is_reported_and_never_loaded(tmp_path):
+    doc = ezdxf.new("R2013")
+    xref = doc.blocks.new("XREF_EXTERNAL")
+    xref.block.dxf.flags = 4
+    ref = doc.modelspace().add_blockref("XREF_EXTERNAL", (10, 20))
+    result = parse_dxf(_save(tmp_path, doc))
+    assert any(issue.code == "XREF_UNRESOLVED" and issue.source_handle == ref.dxf.handle
+               for issue in result.issues)
+    assert [ent.type_candidate for ent in result.drawing.entities] == ["INSERT"]
+
+
+def test_block_layer_zero_inherits_insert_layer_but_is_not_semantic(tmp_path):
+    doc = ezdxf.new("R2013")
+    doc.layers.new("A-DUVAR")
+    b = doc.blocks.new("B0")
+    original = b.add_line((0, 0), (1, 0), dxfattribs={"layer": "0"})
+    doc.modelspace().add_blockref("B0", (10, 10), dxfattribs={"layer": "A-DUVAR"})
+    result = parse_dxf(_save(tmp_path, doc))
+    line = next(e for e in result.drawing.entities if e.type_candidate == "LINE")
+    assert line.layer == "A-DUVAR"
+    assert line.source.cad_handle == original.dxf.handle
+    assert not line.is_verified_semantics
