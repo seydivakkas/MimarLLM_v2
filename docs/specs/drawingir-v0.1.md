@@ -101,3 +101,11 @@ Bu örnek `INSUNITS=4` bilgisinin doğru olduğu **varsayılarak kullanıcı ona
 - `islem_010`: Shapely geometri/topoloji ve alan hesaplarında interior boundary.
 - F01 bütünleşik Windows/gerçek çizim kabulü tamamlanmadı.
 - Modelin saf Pydantic/CPU sözleşmesinde bulut AI/VRAM ihtiyacı yok.
+
+## 7. Uygulama sırasında güçlendirilen güven kapısı: frame-bound calibration
+
+İlk model incelemesinde fiziksel kalibrasyonun farklı PDF sayfasına veya DXF layout'una yanlışlıkla taşınabileceği görüldü. Bunun için `DrawingIR.calibration_frame_id` alanı eklendi. `UnitCalibration` fiziksel oran içeriyorsa bu alan **zorunludur** ve `DrawingIR.frames[]` içindeki gerçek bir `frame_id` olmalıdır.
+
+`MeasurementEvidence.physical_value` sadece `CONFIRMED` + **ölçümün frame'i = kalibrasyon frame'i** olduğunda kabul edilir. Ayrıca kaynak ölçüden SI dönüşüm matematiği yapılır; kaydedilen fiziksel değer, kalibrasyon çarpanına (`length: scale`, `area: scale²`) uymuyorsa reddedilir.
+
+Bu **v0.1 tek kalibrasyon-frame** modelidir. Aynı belgede birden fazla pafta / view farklı ölçeğe sahipse ayrı `DrawingIR` işlenmeli veya gelecekte frame başına sürümlü `calibrations[]` şeması getirilmelidir. İlk sürüm aynı ölçeği otomatik tüm sayfalara uygulamaz.
