@@ -207,3 +207,8 @@ Bkz. [Mevzuat RAG](mevzuat-rag.md) ve [Yerel OCR/bellek](ocr-ve-bellek.md).
 | NFR-020 | Eski paket `rapidocr_onnxruntime` yerine güncel `rapidocr + onnxruntime` | Pinlenmiş sürüm ve lisans kontrolü |
 
 **Düzeltme:** Önceki dokümanda Unlimited-OCR'yi varsayılan model olarak gösteren ifadeler **tarihsel**. Birincil OCR yönü artık işlem 004 ile RapidOCR CPU + PyMuPDF'dir. Doğruluk, performans, Windows paketlemesi henüz test edilmeyip **HOLD** durumundadır. Kaynak: [OCR tasarımı](ocr-mimari-pafta.md).
+
+| NFR-021 | `PdfTextBackend` arayüzü PyMuPDF lisansından bağımsız kod sözleşmesi sağlar | AGPL/ticari kapısı aşılmadan kapalı kaynak dağıtım `PASS` verilmez |
+| FR-037 | İzinli PDF backend native text/char/quad + sayfa render bilgisi verir | PyMuPDF vs pypdfium2/pdfplumber source polygon testleri karşılaştırılır |
+
+**Lisans kapısı:** [docs/pdf-lisans.md](pdf-lisans.md). İlk taslaktaki PyMuPDF ifadesi koşulsuz yeniden dağıtım onayı değildir.
