@@ -245,6 +245,7 @@ class DrawingIR(BaseModel):
     parser_version: str = Field(min_length=1)
     frames: list[CoordinateFrame] = Field(min_length=1)
     calibration: UnitCalibration = Field(default_factory=UnitCalibration)
+    calibration_frame_id: str | None = None
     transforms: list[Transform2D] = Field(default_factory=list)
     entities: list[DrawingEntity] = Field(default_factory=list)
     measurements: list[MeasurementEvidence] = Field(default_factory=list)
@@ -256,6 +257,10 @@ class DrawingIR(BaseModel):
         if len(ids) != len(set(ids)):
             raise ValueError("Duplicate coordinate frame IDs")
         frames = {frame.frame_id: frame for frame in self.frames}
+        if self.calibration_frame_id is not None and self.calibration_frame_id not in frames:
+            raise ValueError("Calibration references unknown coordinate frame")
+        if self.calibration.metres_per_unit is not None and self.calibration_frame_id is None:
+            raise ValueError("Scale-bearing calibration must be bound to a coordinate frame")
         entity_ids = [entity.entity_id for entity in self.entities]
         if len(entity_ids) != len(set(entity_ids)):
             raise ValueError("Duplicate entity IDs")
@@ -292,6 +297,8 @@ class DrawingIR(BaseModel):
             if measure.physical_value is not None:
                 if self.calibration.state.value != "CONFIRMED":
                     raise ValueError("Physical measurement requires confirmed calibration")
+                if measure.source_frame_id != self.calibration_frame_id:
+                    raise ValueError("Physical measurement uses a different calibration frame")
                 expected = (
                     self.calibration.length_metres(measure.source_value)
                     if measure.quantity == "length"
