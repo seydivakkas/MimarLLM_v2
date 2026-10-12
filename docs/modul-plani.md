@@ -1,14 +1,11 @@
 # MimarLLM V2 — Aşamalı Modül ve İş Paketleri Planı v0.1
-
 - **Bağlı işlem:** [islem_002.md](islem_002.md)
 - **Bağlı gereksinimler:** [teknik-gereksinimler.md](teknik-gereksinimler.md)
 - **Tarih:** 2026-10-12
 - **Durum:** **PLANLANDI** (uygulama kodu yok)
 - **Kesin ürün:** Mimari teknik çizim analizi ve hata tespiti
 - **Kesin dışlama:** Pedagojik portal, LMS, çok ajan, otomatik jüri/puan, bulut AI API
-
 ## 1. Tek bilgisayarlık yazılım mimarisi
-
 ```text
 Yerel kullanıcı arayüzü (tek kullanıcı, teknoloji henüz seçilmedi)
                |
@@ -33,11 +30,8 @@ Yerel kullanıcı arayüzü (tek kullanıcı, teknoloji henüz seçilmedi)
                |
         Yerel depolama
 ```
-
 **Mimari karar:** Kullanıcının bilgisayarında çalışan **modüler monolit**. Diyagramdaki modüller bağımsız ağ servisleri veya AI ajanları değildir. Yerel OCR/VLM kurulmamışken DXF temelli teknik kontroller çalışabilmelidir.
-
 ## 2. Asgari önerilen kod yapısı (henüz oluşturulmadı)
-
 ```text
 MimarLLM_v2/
 ├── README.md
@@ -63,11 +57,8 @@ MimarLLM_v2/
 ├── scripts/           # Yerel kurulum ve çalışma betikleri
 └── tests/             # Sentetik fixture / sözleşme / tekrar üretilebilirlik
 ```
-
 `src`, `app`, `config`, `scripts`, `tests` klasörlerini henüz sırf görünmeleri için eklemeyeceğiz. İlk uygulama kodu işi için, mevcut mimari tasarım kaydı `islem_003.md` sonrasındaki **yeni ve sıradaki** `islem_NNN.md` dosyası kod değişikliğinden önce oluşturulacak.
-
 ## 3. Modül sorumluluk ve çıktı sözleşmeleri
-
 | Modül | Girdi -> Çıktı | Kesin görevi | Yapmaması gereken |
 | --- | --- | --- | --- |
 | `core` | İş isteği -> `DrawingIR` / analiz kaydı | Sürüm, görev, durum, dönüşümler ve çağrı sırası | Sınırsız arka plan ajanı |
@@ -79,29 +70,21 @@ MimarLLM_v2/
 | `reports` | Bulgular -> çizim üstü işaret + dosya | JSON ve okunabilir rapor | Üretilmemiş ölçü ekleme |
 | `storage` | Yerel iş kaydı -> SQLite/yerel dosya | Güvenli tek kullanıcı proje geçmişi | Gizli veriyi Git'e sokma |
 | `app` | Kullanıcı etkileşimi -> analiz iş akışı | Dosya seç, incele, onayla, indir | Kimlik/öğrenci yönetimi kurma |
-
 **Arayüz seçimi beklemede:** önce bağımsız Python çekirdeği; UI ancak çekirdek sözleşmesi oturduğunda. İlk sürümde çift arayüz geliştirilmez.
-
 ## 4. İş paketleri
-
 ### P0 — Kapsam ve tasarım sözleşmesi (BU İŞLEM)
-
 **Kapsam:** ürün kararı, FR/NFR, modül bağımlılıkları, kayıt politikası.
 **Çıktı:** `docs/islem_002.md`, `docs/teknik-gereksinimler.md`, `docs/modul-plani.md`, güncel `README.md`, `docs/kapsam.md` ve `docs/kararlar.md`.
 **Kabul:** dosyalar gerçekten depoda; kararlar ile öneriler karıştırılmıyor; kodun yazıldığı iddia edilmiyor.
 **Durum:** Dokümantasyon oluşturma aşaması; son işlem kaydında doğrulanacak.
-
 ### P1 — Çekirdek veri sözleşmesi ve koordinat modeli
-
 **Gereksinimler:** FR-002/004/009, NFR-005/006/012.
 **Kod alanı (plan):** `core/`, `tests/`.
 **İş:** `DrawingIR`, `Entity`, `CoordinateFrame`, `ScaleEvidence`, `Finding` sözleşmeleri; birim/koordinat dönüşümleri; kaynağı koruma; analiz durumları.
 **Çıktı:** sürümlenmiş şema ve salt sentetik fixture'larla tekrarlanabilir örnek JSON.
 **Kabul:** farklı koordinat birimlerinin sessiz karışması engellenir; kaynağı olmayan `FAIL` kaydedilemez.
 **Bağımlılık:** P0.
-
 ### P2 — DXF dosya alımı ve temel doğrulama
-
 **Gereksinimler:** FR-001/002/003/004/005.
 **Kod alanı:** `importers/dxf.py`, `core/`.
 **İş:** DXF okuyucu, katman/handle/entity, ölçü yazıları, blok/INSERT ve dönüşümler; bozuk dosya davranışı; `$INSUNITS` ve kullanıcının kalibrasyonu.
@@ -109,54 +92,42 @@ MimarLLM_v2/
 **Kabul:** test DXF'lerinde köken ve dönüşüm doğrulanır; belirsiz birim `UNKNOWN` kalır. `bounding_box` büyüklüğünden kesin birim çıkarılmaz.
 **Bağımlılık:** P1.
 **Not:** DXF'nin ilk format olması teknik öneridir; format kapsamı sonraki işlemde kesinleştirilecek.
-
 ### P3 — Geometri bütünlüğü ve mekânsal topoloji
-
 **Gereksinimler:** FR-006/007, NFR-005/006.
 **Kod alanı:** `geometry/`.
 **İş:** segment normlama, birleştirme, kesişim, snap toleransı, kopuk/kesişen sınır, poligon/oda adayları, kapı/duvar eşleştirmesi, komşuluk grafı.
 **Çıktı:** ölçülebilir feature + topoloji grafı + izlenebilir problem adayları.
 **Kabul:** sentetik çokgen, açık sınır ve toleranslı duvar vakalarında beklenen geometrik ilişkiler üretilebiliyor.
 **Bağımlılık:** P2.
-
 ### P4 — İlk deterministik kural paketi
-
 **Gereksinimler:** FR-008/009, NFR-005/006.
 **Kod alanı:** `rules/`.
 **İş:** önce geometri bütünlüğü kuralları: sıfır uzunluk, mükerrer eleman, açıklık/kopuk sınır, çelişkili etiket/ölçü ve çözülemeyen oda sınırı. Kullanılacak tam set ve toleranslar geliştirme kaydında dondurulur.
 **Çıktı:** `CheckResult` / uygulanabilirlik / kaynak kimliği / tolerans / gerekçe.
 **Kabul:** sabit sentetik çizimlerde aynı kurallar aynı bulguları üretir; `INSUFFICIENT_EVIDENCE` ve `NOT_APPLICABLE` ayrıdır.
 **Bağımlılık:** P3.
-
 ### P5 — Kanıt zinciri, rapor ve minimal inceleme
-
 **Gereksinimler:** FR-009/010/011/012/018, NFR-006/011.
 **Kod alanı:** `evidence/`, `reports/`, `app/` (arayüz biçimi o zaman seçilir).
 **İş:** bulgu listesi, plan üzerinde işaretleme, kullanıcı düzeltmesi, JSON/HTML çıktı ve temel yerel arayüz.
 **Çıktı:** ilk uçtan uca **AI modeli olmadan** çalışan DXF örneği.
 **Kabul:** kullanıcı seçtiği DXF'den koordinatlı teknik problem listesine ulaşır ve her bulgunun dayandığı veriyi görür.
 **Bağımlılık:** P4.
-
 ### P6 — PDF ve raster işleme altyapısı
-
 **Gereksinimler:** FR-001/013.
 **Kod alanı:** `importers/pdf.py`, `importers/image.py`, `core/`.
 **İş:** vektörel PDF sayfa/path ve raster sayfa ayrımı; PDF noktası/piksel/dünya birimi dönüşümü; eğiklik/dönüş/çözünürlük bilgisi.
 **Çıktı:** sayfa/konum referanslı girdi.
 **Kabul:** kalibrasyon yoksa raster pikselden fiziksel alan hükmü verilmez.
 **Bağımlılık:** P1, P5 ile entegre.
-
 ### P7 — Tamamen yerel OCR
-
 **Gereksinimler:** FR-013/015, NFR-001/002/003.
 **Kod alanı:** `vision/ocr.py`.
 **İş:** yerel OCR motoru seçimi ve lisans taraması; metin ve ölçü yazısının koordinatlı çıkarımı; yazı birimi doğrulama.
 **Çıktı:** `TextCandidate` bbox + tanıma belirsizliği + sayfa kaynağı.
 **Kabul:** sentetik etiketlerde yeniden üretilebilir koordinat dönüşümü; okunamayan değer kesin ölçü sayılmaz.
 **Bağımlılık:** P6.
-
 ### P8 — Yerel VLM (isteğe bağlı semantik doğrulama yardımcısı)
-
 **Gereksinimler:** FR-014/015, NFR-001/002/003/004.
 **Kod alanı:** `vision/vlm.py`, `config/`.
 **İş:** küçük/nicemlenmiş VLM adaylarının lisans ve Windows/CUDA uyumunu kontrol; model sürüm pinleme; ROI/crop ile kontrollü görsel çıkarım; JSON aday şeması.
@@ -164,37 +135,28 @@ MimarLLM_v2/
 **Kabul:** model olmadan sistem bozulmaz; model çıktısı doğrulama katmanına bağlı; 8 GB VRAM'de gerçek ölçüm yapılır.
 **Bağımlılık:** P5/P6/P7. P4 motorunu değiştirmeden eklenir.
 **Not:** Model adı veya performansı henüz seçilmiş/doğrulanmış değildir.
-
 ### P9 — Kullanışlı Windows arayüzü ve yerel geçmiş
-
 **Gereksinimler:** FR-010/011/017/018, NFR-007/009.
 **Kod alanı:** `app/`, `storage/`.
 **İş:** projeler, yükleme, çizim görüntüleme, bulgular, kullanıcı onayı, sonuç geçmişi, rapor aktarma; tek kullanıcı.
 **Çıktı:** basit ve kanıta erişimi öne çıkaran uygulama.
 **Kabul:** hesap/LMS/jüri ekranları yok; kullanıcı tüm yerel kayıtlarını bulabiliyor.
 **Bağımlılık:** P5, P8 isteğe bağlı.
-
 ### P10 — Paketleme, bağımsız doğrulama, performans ve lisans kabulü
-
 **Gereksinimler:** NFR-001…012.
 **Kod alanı:** `scripts/`, `tests/`, teslim belgeleri.
 **İş:** Windows offline dağıtım; CPU/GPU bellek/latency baseline; tekrarlanabilir sentetik set; gizli bilgi taraması, third-party lisans; gerçek mimari çizimlerde kullanıcı izinli değerlendirme.
 **Çıktı:** paket ve doğrulama raporları.
 **Kabul:** açıkça tanımlanmış gerçek donanım testleri ve hatalar kayıt altına alınır; başarılmayan maddeler `HOLD` olarak kalır.
 **Bağımlılık:** geliştirme modülleri.
-
 ## 5. İş paketi bağımlılık grafiği
-
 ```text
 P0 -> P1 -> P2 -> P3 -> P4 -> P5 -> P9 -> P10
         \__________________-> P6 -> P7 -> P8 --/
                                    P8: isteğe bağlı semantik katman
 ```
-
 Gerçek uygulama sırası örneği: **P1 sözleşme -> P2 DXF -> P3 geometri -> P4 kural -> P5 model gerektirmeyen MVP -> P6 PDF -> P7 OCR -> P8 VLM -> P9 arayüz tamamlanması -> P10 son kabul.** P6/P7/P8, erken deneme gerekirse paralel prototip olabilir; kanıt sözleşmesini atlayamaz.
-
 ## 6. Yol haritasında yönetilecek riskler
-
 | Risk | Azaltma politikası |
 | --- | --- |
 | 8 GB VRAM'in yetmemesi | Tek seferde tek model, düşük çözünürlük/ROI, quantization, ölçüme dayalı bellek bütçesi ve CPU fallback |
@@ -207,20 +169,12 @@ Gerçek uygulama sırası örneği: **P1 sözleşme -> P2 DXF -> P3 geometri -> 
 | Her özelliği tek sürüme yığma | P5 sonunda model bağımsız çalışan minimum dikey dilim |
 | Özel çizimlerin public repoya sızması | Sentetik örnekler, ignore + commit öncesi içerik taraması |
 | Lisans belirsizliği | Bağımlılıkların lisans ve ticari kullanım izlerini P10 öncesinde tut |
-
 ## 7. Tek sonraki mühendislik adımı
-
 **İşlem 003 tarihsel önerisi (islem_003 artık yeni OCR/mevzuat tasarım kaydı olarak kullanıldı):** `DrawingIR v0.1` + coordinate/units contract + ilk 5 geometrik kontrolün kesin gereksinimlerini belirleme. DrawingIR uygulaması için ayrıca sıradaki yeni işlem kaydı oluşturulacak; tasarım belgesi uygulama kodu olarak yorumlanmaz.
-
 Kullanıcının henüz kararlaştırmadığı UI/model/ilk format gibi konular **açık karar olarak korunur**; bu plandaki öngörüler tamamlanmış uygulama değildir.
-
-
 ## 8. İşlem 003 — Mevzuat ve OCR genişleme planı (v0.2 ek)
-
 **Not:** `docs/islem_001.md` ve `docs/islem_002.md` işlem numaraları **değiştirilmeyecek**. İşlem 003 bu mimari kararın kaydıdır. `P0…P10` mühendislik paketleri ile `islem_NNN` GitHub işlem günlüğü **farklı numaralandırmalardır**.
-
 ### Yeni bağımlılıklar
-
 ```text
 P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
        |                                    |
@@ -230,9 +184,7 @@ P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
        +--> P8 yerel VLM (opsiyonel)                |
        +--------------------------------------------+--> P5/P9 kanıtlı arayüz/rapor -> P10
 ```
-
 `P5` ilk model gerektirmeyen teknik denetim dikey dilimidir; `R1–R3` bu çekirdeğe **sonradan eklenecek** mevzuat yeteneğidir. Kullanıcının talep ettiği yan yana çizim/mevzuat kanıt ekranı, R3 tamamlandığında P9 arayüzüne entegre edilir.
-
 | Ek paket | Somut teknik çıktı | Doğrulanacak kabul |
 | --- | --- | --- |
 | R0 Kaynak envanteri | 5 yönetmelik ailesi için özgün yayın/değişiklik/yerel izin envanteri | Güncel ve proje tarihindeki hükümler birbirine karışmıyor |
@@ -241,13 +193,9 @@ P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
 | R3 Rules -> legal source | `RuleBinding`, uygulanabilirlik, exception, doğrulama kapısı | Resmî kaynak/sürüm/onay ve proje bağlamı yoksa `PASS` yok |
 | P7-GPU kapısı | Phase-lock: ayrı OCR/VLM subprocess, GPU admission, fallback | RTX 4070 8 GB'da gerçek kaynak ölçümü tamamlanmadan “destekleniyor” iddiası yok |
 | P9 kaynak ekranı | Çizimde entity highlight + özgün PDF sayfa/bbox highlight | Bir bulgudan iki belgenin gerçek konumuna geri gidiliyor |
-
 ### İlk MVP'nin geciktirilmemesi
-
 Önce DXF'de **G0/G1 geometri hatalarını** güvenilir bulalım. Ardından belge kaynaklarını yapısal biçimde alıp hukukî konum eşlemesini ve sürüm grafını oluşturalım. İlk onaylı teknik mevzuat kuralı ancak bu iki veri kanalı birlikte doğrulandığında uygulanır. Önceden örneklenen kapı/koridor eşikleri **üretim mevzuatı olarak sabitlenmez**.
-
 ### Güncel taslak dizin sorumlulukları
-
 - `src/mimarllm/core/`: DrawingIR ve birimler
 - `src/mimarllm/importers/`: DXF, PDF ve raster
 - `src/mimarllm/geometry/`: geometrik kontrol ve topoloji
@@ -257,24 +205,17 @@ P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
 - `src/mimarllm/evidence/`: çizim+mevzuat birleşik kanıt grafı
 - `src/mimarllm/reports/`: çift kaynaklı rapor/önizleme
 - `src/mimarllm/storage/`: yerel arşiv/indeks (public repoda değil)
-
 **Şimdiki durum:** Bunlar sadece tasarlanmış modül sınırlarıdır; source code, model, arşiv veya benchmark hazır değildir. [Mimari](sistem-mimarisi.md) · [OCR/VRAM](ocr-ve-bellek.md) · [Mevzuat](mevzuat-rag.md).
-
 ## 9. İşlem 004 — OCR iş paketinin güncel kırılımı
-
 Önceki P7 “yerel OCR” taslağını aşağıdaki **aktif fazlara** ayır. P0–P10 ana paketleri ve `islem_NNN` kayıtları yeniden numaralandırılmaz.
-
 | Faz | Modül | Çıktı ve kontrol |
 | --- | --- | --- |
 | P7-A | `importers/dxf.py` | DXF TEXT/MTEXT/DIMENSION/ATTRIB + nested blok dönüşüm ve entity kaynak izi |
-| P7-B | `importers/pdf.py` ve `ocr/text_extractor.py` | PyMuPDF page/span/char/quad ve karışık sayfada kalite/ROI kapısı |
+| P7-B | `importers/pdf.py` ve `ocr/text_extractor.py` | pdfplumber character matrix ve kaynak bbox kalite kapısı; pypdfium2 ROI render |
 | P7-C | `ocr/rapid_engine.py` | CPU ONNX Runtime, model hash ve 4 noktalı poligon + score normalize |
 | P7-D | `ocr/box_utils.py` | 0/90/180/270 ve gerekli yön düzeltme; homografi ile source page point geri dönüş |
 | P7-E | `regulations/extraction.py` | Ayrı offline ETL; native/OCR metin + tablo hücresi + LegalAST kaynak konumu |
 | P7-F | `tests/` | Döndürülmüş Türkçe, Ø ± ° ², SHX, kısmi scan, tablo/citation ve Windows offline benchmark |
-
-**Yeni ayrım:** RapidOCR CPU çalışması GPU kilidini gerektirmez; GPU'da Qwen-VL veya deneysel Unlimited-OCR görevi olması hâlinde bunlar için tek ağır GPU modeli politikası geçerlidir. CPU ve RAM sınırları ayrıca izlenir.
-
+**Yeni ayrım:** RapidOCR ONNX Runtime CPU çalışır, ağır GPU VLM'nin VRAM'ine müdahale etmez; CPU/RAM gecikmeleri ayrıca ölçülür.
 **Mevcut durum:** modüller geliştirilmedi, bunlar uygulanacak sorumluluklardır. Önce [islem_004.md](islem_004.md) kaydı oluşturuldu; sonraki yazılım işi ilk kullanılabilir `src/mimarllm/ocr/` kodlarını kendi yeni işlem kaydıyla açacak. [Detay](ocr-mimari-pafta.md).
-
-**PDF backend seçim kapısı — işlem 004:** `importers/pdf.py` içinde `PdfTextBackend` arayüzü zorunlu tasarım. PyMuPDF'nin AGPLv3 veya ticari lisans yükümlülüğü nedeniyle kapalı kaynak Windows müşterisine yeniden dağıtım kararı verilmedi. `pypdfium2` / `pdfplumber` lisans+quad+sayfa dönüşümü benchmark sonuçları değerlendirilmeden gerçek bağımlılık sabitlenmeyecek. [PDF lisans belgesi](pdf-lisans.md).
+**PDF backend kararı — işlem 005:** Vektör/metin `pdfplumber`, ROI render `pypdfium2`, OCR `rapidocr + onnxruntime CPU` kesin. [ADR-002](adr/ADR-002-PDF-Engine-License.md). Windows/SBOM son kabulü ayrıca yapılacaktır.
