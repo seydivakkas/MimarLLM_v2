@@ -74,3 +74,8 @@ Ayrıntılar: [Sistem mimarisi](sistem-mimarisi.md) · [OCR/bellek](ocr-ve-belle
 | K-036 | Kaynak paket adı `src/mimarllm/` olarak korunur; ikinci `src/mimar/` paketi açılmaz | **KESİN (repo bütünlüğü)** | islem_004 |
 
 Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-pafta.md).
+
+| K-037 | PyMuPDF'nin AGPLv3/ticari lisans riski nedeniyle PDF backend soyutlanacak; lisans/dağıtım doğrulanmadan PyMuPDF zorunlu ticari bağımlılık değil | **KESİN (güvenlik kapısı)** | islem_004 |
+| K-038 | Kapalı kaynak, ücretsiz yeniden dağıtım alternatifi olarak pypdfium2 ve pdfplumber kıyaslanacak | **İNCELEME BEKLENİYOR** | islem_004 |
+
+[PDF lisans ve backend karşılaştırması](pdf-lisans.md).
