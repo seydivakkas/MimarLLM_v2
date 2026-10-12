@@ -72,3 +72,21 @@ temp/
 Thumbs.db
 .vscode/
 .idea/
+
+# Regulations, OCR results and legally restricted source archive
+# Never publish original source PDFs, customer/user files, or searchable text indices.
+/data/regulations_raw/
+/data/regulations_parsed/
+/data/vector_indices/
+/data/regulations_index/
+/data/models/
+/regulations_raw/
+/regulations_parsed/
+/vector_indices/
+*.faiss
+*.index
+*.db3
+*.parquet
+*.arrow
+*.pdf
+# Synthetic, explicitly licensed PDF fixtures should be reviewed and force-added if needed.
