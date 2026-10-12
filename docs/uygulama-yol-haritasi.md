@@ -65,3 +65,10 @@ Mevzuat kural modülü hukukî doğrulama beklese bile geometri ve çizim kalite
 ## İşlem 007 yürütme notu (2026-10-13)
 
 `islem_007` dosyası oluşturuldu ve `core/ir.py`, `core/units.py`, kaynak/kalibrasyon sentetik testleri kodlandı. Gerçek test/CI sonucu ilgili [işlem kaydında](islem_007.md) izlenir. Sonraki mühendislik işi [islem_008] kapsamında `ezdxf` ile DXF entity/layout/nested INSERT + `DrawingIR` köprüsüdür. İleri aşamalardaki hukukî `HOLD` kararları değişmedi.
+
+
+## İşlem 008 uygulama notu (2026-10-13)
+
+`islem_008` ön kaydından sonra `src/mimarllm/importers/dxf.py` ve `layers.py` eklendi. DXF/CAD handle, nested INSERT/MINSERT, vektörel WCS 2B geometry, katman ve ayrı annotation adayları için sentetik testler oluşturuldu. F02 `KISMI/MEVCUT_KOD`: gerçek Windows saha testi yapılmadı.
+
+Sıradaki `islem_009`: `pdfplumber` glyph/vektör, `pypdfium2` ROI ve `RapidOCR` poligonlarını aynı `DrawingIR` kaynak frame ile bağlamak; PDF source page/rotation/crop ve y-ekseni dönüşümlerinin sentetik kabulü.
