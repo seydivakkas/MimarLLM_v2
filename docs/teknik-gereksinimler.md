@@ -159,3 +159,32 @@ G0/G1 de hatalı çizimi kesin biçimde teşhis edeceğini iddia etmez; eşiğe 
 - DWG/IFC ve mevzuat uyumluluk kapsamı ayrı iş/karar konusu.
 
 **Son durum:** Gereksinimler tanımlandı; uygulama, model kurulumu ve canlı performans kabulü başlatılmadı.
+
+
+## 9. İşlem 003 — OCR ve hiyerarşik hukukî kanıt gereksinimleri (ek)
+
+Önceki FR-001…018/NFR-001…012 gereksinimleri geçerlidir. Aşağıdakiler, tasarım kapsamına eklendi; **kodlanmış değil**:
+
+| ID | Yeni gereksinim | Kabul niyeti |
+| --- | --- | --- |
+| FR-019 | DXF ve PDF için 2 ayrı source location / coordinate frame taşı | Bulgu hem çizimde hem kanıtta özgün koordinata geri gidebilsin |
+| FR-020 | OCR çıktısında blok/satır/çokgen/okuma sırası ve tablo hücre koordinatları sakla | Aynı PDF hash'i ve sayfa alanı yeniden açılabilir |
+| FR-021 | PDF'de önce native text, gerekiyorsa yerel OCR; aynı GPU'da çakışma yok | Çıktı modeli/motoru ve kaynak koordinatı kayıtlı |
+| FR-022 | Özgün mevzuat belgesi için SHA-256, yayımlanma/yürürlük, menşe ve yetki meta-verisi tut | Farklı sürümler karışmaz |
+| FR-023 | Bölüm, madde, fıkra, bent, geçici madde, ek, tablo/alt hücre AST kur | Her node `source_span` ve üst düğüme sahiptir |
+| FR-024 | Değişiklik, yürürlükten kaldırma, istisna, atıf grafını tut | Çözümlenmemiş ilişki kaynak güvenini azaltır; PASS yok |
+| FR-025 | SQLite FTS5 + CPU dense embedding + RRF hibrit arama | Adaylar kanıt ID ile dönmeli; retrieval score = legal confidence değil |
+| FR-026 | Kural ile mevzuat kaynağı için onaylı binding: tarih/konum/kullanım kapsamı ve hesap | Hukukî PASS yalnız doğrulanmış sürüm ve kapsamla |
+| FR-027 | Kullanıcı bulgusunda özgün kaynak PDF sayfa+bbox highlight ve değişiklik/istisna zinciri göster | Sayfa-satır iddiası sadece gerçek kaynak üzerine inşa edilir |
+| FR-028 | Kaynak OCR'u belirsizse, sayfa span'i eşleşmiyorsa veya telif/izin uygun değilse güvenli fallback | Sahte atıf ve yanlış hukukî `PASS` yasak |
+
+| ID | Ek fonksiyonel olmayan kısıt | Kabul niyeti |
+| --- | --- | --- |
+| NFR-013 | Heavy GPU model concurrency = 1; OCR ve VLM ayrı süreç yönetimi | Target GPU gerçek peak VRAM ve süreç kapanışı test edilir |
+| NFR-014 | 100% yerel AI ve indeksleme; uygulama çalışma sırasında internete bağımlı değil | Offline testte dış bağlantı gözlenmez |
+| NFR-015 | Yerel kullanıcı çizimi ve özgün mevzuat PDF/indeksleri public repo dışında | `.gitignore` + commit içerik denetimi |
+| NFR-016 | PDF piksel/point dönüşümü ve OCR türetilmiş satır ID'si sürümlü | Rotasyon/crop/çok sütun ve tablo bbox regresyon testi |
+
+**Kritik iki kapı:** (1) Geometri kanıtı sağlam olsa bile ilgili hukukî kaynağın sürüm ve uygulanabilirliği doğrulanmadıysa mevzuat `PASS` olmaz; (2) OCR “satır” gösterimi varsa bunun türetilmiş bir görüntüleme indeksi olduğu açıkça belirtilir. Asıl bağ madde/fıkra/bent + kaynak PDF sayfa/alanıdır.
+
+Bkz. [Mevzuat RAG](mevzuat-rag.md) ve [Yerel OCR/bellek](ocr-ve-bellek.md).
