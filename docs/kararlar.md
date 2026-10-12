@@ -56,3 +56,21 @@ V1'deki eğitim/portal/jüri/çoklu AI servislerini sürdürmek yerine kullanıc
 Ayrıntılar: [Sistem mimarisi](sistem-mimarisi.md) · [OCR/bellek](ocr-ve-bellek.md) · [Mevzuat RAG](mevzuat-rag.md).
 
 **K-012 güncellemesi:** Önceden tartışılan mevzuat desteği K-017 ile çekirdek ürüne eklendi. Ancak **hukukî denetimin hangi maddelerle ve hangi projelerde uygulanacağı** hâlâ ayrı mevzuat ve proje bağlamı incelemesine bağlıdır.
+
+## İşlem 004 — OCR strateji revizyonu (2026-10-12)
+
+**K-021/K-022/K-023 üzerindeki güncelleme:** K-021'deki “Unlimited-OCR ana değerlendirme adayı” artık **tarihsel** bir karardır; ilk çalışır ürünün varsayılan OCR motoru değildir. K-022'deki Unlimited-OCR uyumluluk araştırması **opsiyonel araştırma** durumunda kalır. K-023 GPU model sıralaması VLM ile herhangi bir opsiyonel GPU OCR için geçerlidir; RapidOCR'nin CPU kullanımı aynı GPU kilidini gerektirmez.
+
+| Kod | Karar | Durum | Kaynak |
+| --- | --- | --- | --- |
+| K-028 | OCR'de önce DXF CAD metni veya PyMuPDF native PDF metni, yalnız eksik/güvenilmez bölgede OCR | **KESİN (tasarım)** | islem_004 |
+| K-029 | Birincil yerel OCR çalışma adayı `rapidocr` + `onnxruntime` **CPU**; `rapidocr_onnxruntime` eski paket | **KESİN (teknoloji yönü)** | islem_004 |
+| K-030 | Unlimited-OCR varsayılan OCR yolu değil, isteğe bağlı deneysel benchmark alternatifi | **KESİN** | islem_004 |
+| K-031 | Native metin de kusurlu olabilir; SHX/kontur metin ve kısmi raster için ROI kalite kapısı | **KESİN** | islem_004 |
+| K-032 | Döndürülmüş yazılarda quad/homografi + sayfaya geri dönüş; RapidOCR cls yalnız 0°/180° | **KESİN (yöntem)** | islem_004 |
+| K-033 | Türkçe/mimari simgelerin RapidOCR ile gerçek doğruluğu ve Windows CPU RAM/latency | **ÖLÇÜM BEKLENİYOR** | islem_004 |
+| K-034 | Mevzuat OCR/tabloları çizim analizinden **ayrı offline ETL** hazırlanacak | **KESİN** | islem_004 |
+| K-035 | Tablo çıkarımında PyMuPDF+pdfplumber başlangıç adayı; Docling CPU yalnız gerekli olduğunda | **ÖNERİ/benchmark bekleniyor** | islem_004 |
+| K-036 | Kaynak paket adı `src/mimarllm/` olarak korunur; ikinci `src/mimar/` paketi açılmaz | **KESİN (repo bütünlüğü)** | islem_004 |
+
+Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-pafta.md).
