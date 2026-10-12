@@ -1,0 +1,31 @@
+name: Core contracts (synthetic)
+
+on:
+  push:
+    paths:
+      - "src/mimarllm/core/**"
+      - "src/mimarllm/importers/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/core-contracts.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install test-only packages
+        run: |
+          python -m pip install --disable-pip-version-check -e . --no-deps
+          python -m pip install --disable-pip-version-check "pydantic>=2,<3" "pytest>=8,<10" "pdfplumber>=0.11,<0.13" "pypdfium2>=4,<6" "reportlab>=4,<5"
+      - name: Validate core and PDF source contracts
+        run: python -m pytest -q tests/test_units.py tests/test_drawing_ir.py tests/test_pdf_contract.py
