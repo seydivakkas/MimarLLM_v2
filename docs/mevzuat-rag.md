@@ -1,3 +1,5 @@
+> **GÜNCEL KAYNAK ETL KARARI — İşlem 004:** Mevzuat için özgün PDF'yi yerelde sakla; önce PyMuPDF native spans+quad ile kaynak koordinatını çıkar; eksik/taranmış ROI'de RapidOCR ONNX CPU; tablo için `pdfplumber` veya CPU-uyumlu `Docling` ancak benchmark ve hücre bbox doğrulamasından sonra. İndeksleme, çizim denetimi sırasında değil **ayrı offline hazırlık/ETL fazında** yapılır. Kişisel/özel mevzuat kopyaları public GitHub'a eklenmez. Ayrıntı: [ocr-mimari-pafta.md](ocr-mimari-pafta.md) ve [islem_004.md](islem_004.md).
+
 # MimarLLM V2 — Hiyerarşik Mevzuat RAG ve Özgün Kaynak Kanıtı v0.1
 
 - **İşlem:** [islem_003.md](islem_003.md)
