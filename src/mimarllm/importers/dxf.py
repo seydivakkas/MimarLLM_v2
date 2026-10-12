@@ -199,6 +199,12 @@ def parse_dxf(
                 if block is None:
                     report("MISSING_BLOCK", handle, chain, f"Missing block definition: {name}")
                     return
+                # XREF definitions are external dependencies, never silently
+                # treated as empty local geometry and never fetched from disk.
+                if int(block.block.dxf.get("flags", 0)) & 4:
+                    report("XREF_UNRESOLVED", handle, chain,
+                           f"External block not resolved in offline v0.1: {name}")
+                    return
                 # Validate advertised expansion count *before* materialising a
                 # potentially huge MINSERT grid in host RAM.
                 instance_count = int(entity.mcount)  # type: ignore[attr-defined]
