@@ -61,3 +61,5 @@ MimarLLM V2, çizimdeki ölçülebilir hata/eksikliklere ek olarak **özgün mev
 - [Mimari pafta OCR ve kaynak koordinatı tasarımı](docs/ocr-mimari-pafta.md)
 
 Kod, model kurulumu veya Windows benchmark'ı **henüz gerçekleştirilmedi**.
+
+**PDF lisans uyarısı:** PyMuPDF, AGPLv3/ticari lisanslıdır. Kapalı kaynak müşteriye teslim için uygulamaya koşulsuz bağlanmayacak; `PdfTextBackend` ile izinli `pypdfium2`/`pdfplumber` alternatifleri test edilecek. [Lisans kararı](docs/pdf-lisans.md).
