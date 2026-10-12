@@ -53,3 +53,16 @@ Bu akıştaki **DXF ilk formatı** öneridir; henüz kesinleştirilmemiştir. Ve
 - [Teknik gereksinimler ve kabul senaryoları](teknik-gereksinimler.md)
 - [Modül sınırları ve P0–P10 geliştirme planı](modul-plani.md)
 - [Kesin ve açık kararlar](kararlar.md)
+
+
+## İşlem 003 kapsam genişlemesi — kabul edildi
+
+Yeni ürün tanımı: **Yerel Mimari Teknik Çizim Analizi, Hata Tespiti ve Özgün Mevzuat Kaynaklı Gerekçe Sistemi.** Geometri/tasarım hata tespiti çekirdek olarak korunur. Mimari mevzuat kütüphanesi; istisna, tarih, değişiklik ve madde/fıkra hiyerarşisini kaybeden serbest metin araması yerine yapısal RAG olarak entegre edilir. Kullanıcı, bulgudaki çizim nesnesi ile ilgili mevzuat hükmünün özgün belge **sayfa/bbox** konumunu aynı ekranda görebilir.
+
+**Beş hedef mevzuat ailesi:** Planlı Alanlar İmar Yönetmeliği; Binaların Yangından Korunması Hakkında Yönetmelik; Otopark Yönetmeliği; Sığınak Yönetmeliği; Binalarda Enerji Performansı Yönetmeliği. Bu liste bir **kaynak indeksleme hedefidir**; her maddenin otomatik hukukî uygunluk kuralı olduğu anlamına gelmez.
+
+**OCR:** Dijital PDF'de native metin çıkarımı birinci yol; basit OCR CPU fallback; karmaşık taranmış tablo ve paftalar için Baidu Unlimited-OCR değerlendirilir. Model Windows/8 GB VRAM doğrulamasından geçmeden `PASS` değildir. GPU'da ağır OCR ve VLM birlikte çalıştırılmaz.
+
+**Hukukî kesinlik sınırı:** Sistem resmî proje kontrol makamı değildir. Belirli bir maddenin uygulanabilirliğini belirlemek için proje tarihi, konumu, kullanım sınıfı, yerel plan notu ve hükmün yürürlük bilgisi gerekebilir. Bilgi eksikse otomatik PASS yok. Satır ID, OCR kaynaklı olabileceğinden özgün resmî satır numarası gibi sunulmaz.
+
+Ayrıntılı tasarım: [sistem-mimarisi.md](sistem-mimarisi.md), [ocr-ve-bellek.md](ocr-ve-bellek.md), [mevzuat-rag.md](mevzuat-rag.md).
