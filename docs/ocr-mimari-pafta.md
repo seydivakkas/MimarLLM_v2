@@ -1,3 +1,5 @@
+> **LİSANS KAPISI:** PyMuPDF, AGPLv3 veya ticari lisanslıdır. Kapalı kaynak müşteri dağıtımı için üretim bağımlılığı olarak henüz onaylanmadı; `PdfTextBackend` ile pypdfium2/pdfplumber alternatifleri açık tutulur. Metin önceliği ilkesi kesin, **PDF motoru koşullu**. [Lisans karar belgesi](pdf-lisans.md).
+
 # Mimari Pafta OCR — PyMuPDF + RapidOCR CPU Tasarımı v0.1
 
 - **İşlem:** [islem_004.md](islem_004.md)
