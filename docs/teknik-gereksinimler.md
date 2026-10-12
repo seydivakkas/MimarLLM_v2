@@ -188,3 +188,22 @@ G0/G1 de hatalı çizimi kesin biçimde teşhis edeceğini iddia etmez; eşiğe 
 **Kritik iki kapı:** (1) Geometri kanıtı sağlam olsa bile ilgili hukukî kaynağın sürüm ve uygulanabilirliği doğrulanmadıysa mevzuat `PASS` olmaz; (2) OCR “satır” gösterimi varsa bunun türetilmiş bir görüntüleme indeksi olduğu açıkça belirtilir. Asıl bağ madde/fıkra/bent + kaynak PDF sayfa/alanıdır.
 
 Bkz. [Mevzuat RAG](mevzuat-rag.md) ve [Yerel OCR/bellek](ocr-ve-bellek.md).
+
+## 10. İşlem 004 — PDF vektör önceliği ve CPU OCR ekleri
+
+| ID | Gereksinim | Kabul/kanıt |
+| --- | --- | --- |
+| FR-029 | DXF CAD TEXT/MTEXT/ATTRIB/DIMENSION kaynak kimliği ve dönüşümüyle doğrudan çıkar | Native kaynağın handle/transform izlenebilirliği |
+| FR-030 | PDF native text kalitesini sayfa **ve ROI** bazında değerlendir; metin varsa tüm sayfada OCR'ı kör kapatma | Kısmi raster/SHX örneklerinde eksik ROI seçimi |
+| FR-031 | PyMuPDF span/char yönünü kullan, döndürülmüş dört köşe quad çıkar | 45/90/270° PDF native metin sentetik örnek |
+| FR-032 | RapidOCR ONNX Runtime **CPU** ile çalış; model/version ve confidence/raw text dört köşe polygon döndür | CPU provider doğrulaması, OCR JSON |
+| FR-033 | 90/270 ve eğik metin crop/orientation düzeltmesi, inverse transform zinciri | Poligon roundtrip ve döndürülmüş OCR vaka testi |
+| FR-034 | Türkçe ve özel mimari semboller `Ø ± ° ²`, rakam, kot ve ölçü değerlerini ayrı doğrula | Character-level CER + critical-token exact-match |
+| FR-035 | Mevzuat hazırlığı ayrı offline ETL; OCR/table cell kaynak geometri ile hiyerarşik LegalAST | Orijinal PDF bbox/hücre görseli yeniden açılır |
+| FR-036 | OCR motoru unavailable olduğunda native DXF/PDF yetenekleri çalışmaya devam eder | Açık `OCR_UNAVAILABLE` ve kapsamlı fallback |
+| NFR-017 | Normal OCR GPU CUDA VRAM ayırmaz; ONNX CPU provider, bounded RAM/CPU thread | Windows'da provider, RAM/CPU, latency gözlemi |
+| NFR-018 | Modeller önceden yerelde; çalışma esnasında hiçbir indirme/ağ bağımlılığı yok | İzole ağda OCR + rapor akışı |
+| NFR-019 | Rotated text ve pafta dönüşümünden sonra kaynak koordinatını koru | Transform/quad property testleri |
+| NFR-020 | Eski paket `rapidocr_onnxruntime` yerine güncel `rapidocr + onnxruntime` | Pinlenmiş sürüm ve lisans kontrolü |
+
+**Düzeltme:** Önceki dokümanda Unlimited-OCR'yi varsayılan model olarak gösteren ifadeler **tarihsel**. Birincil OCR yönü artık işlem 004 ile RapidOCR CPU + PyMuPDF'dir. Doğruluk, performans, Windows paketlemesi henüz test edilmeyip **HOLD** durumundadır. Kaynak: [OCR tasarımı](ocr-mimari-pafta.md).
