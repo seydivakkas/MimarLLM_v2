@@ -1,3 +1,5 @@
+> **PDF LİSANS KAPISI:** Native PDF text extraction motoru `PdfTextBackend` olarak değiştirilebilir tutulur. PyMuPDF AGPL/ticari lisans gerektirebilir; kapalı kaynak Windows dağıtımı için pypdfium2 ve pdfplumber değerlendirmesi bekleniyor. [pdf-lisans.md](pdf-lisans.md).
+
 > **GÜNCEL OCR KARARI — İşlem 004:** Kaynağı koruyan akış artık `DXF TEXT/MTEXT/DIMENSION / PyMuPDF native PDF text -> kalite kapısı -> eksik ROI'de RapidOCR CPU -> quad/transform -> DrawingIR`. OCR ve yerel VLM bağımsızdır. Unlimited-OCR için aşağıdaki tarihsel GPU OCR fazı **varsayılan çalışma yolu değildir**. Mevzuat PDF'leri ayrı offline ETL işleminde ayrıştırılır. Detay: [OCR mimarisi](ocr-mimari-pafta.md) ve [islem_004](islem_004.md).
 
 # MimarLLM V2 — Sistem Mimarisi v0.3
