@@ -194,7 +194,7 @@ def test_physical_measurement_needs_confirmed_scale():
     with pytest.raises(ValidationError, match="confirmed calibration"):
         drawing(measurements=[measurement])
     verified = UnitCalibration.from_dxf_insunits(4, user_confirmed=True)
-    obj = drawing(measurements=[measurement], calibration=verified)
+    obj = drawing(measurements=[measurement], calibration=verified, calibration_frame_id='cad:model')
     assert obj.measurements[0].physical_value == 1.0
 
 
@@ -206,7 +206,28 @@ def test_physical_measurement_cannot_disagree_with_calibration():
         tolerance_source_units=0, physical_value=9.0, physical_unit="m",
     )
     with pytest.raises(ValidationError, match="disagrees with validated calibration"):
-        drawing(measurements=[wrong], calibration=verified)
+        drawing(measurements=[wrong], calibration=verified, calibration_frame_id='cad:model')
+
+
+def test_calibration_requires_explicit_frame_and_cannot_cross_frames():
+    verified = UnitCalibration.from_dxf_insunits(4, user_confirmed=True)
+    with pytest.raises(ValidationError, match="bound to a coordinate frame"):
+        drawing(calibration=verified)
+    with pytest.raises(ValidationError, match="unknown coordinate frame"):
+        drawing(calibration=verified, calibration_frame_id="not-a-frame")
+    m = MeasurementEvidence(
+        evidence_id="m2", entity_ids=("e1",), source_value=1000,
+        quantity="length", source_frame_id="cad:model",
+        method_id="length", tolerance_source_units=0,
+        physical_value=1, physical_unit="m",
+    )
+    other = CoordinateFrame(
+        frame_id="cad:other", kind=CoordinateKind.CAD_UNIT,
+        y_direction=YDirection.UP, view_id="other",
+    )
+    with pytest.raises(ValidationError, match="different calibration frame"):
+        drawing(calibration=verified, calibration_frame_id="cad:other",
+                frames=[frame(), other], measurements=[m])
 
 
 def test_measurement_cross_frame_or_unknown_entity_rejected():
