@@ -36,3 +36,17 @@ Her yeni AI destekli geliştirme isteği uygulanmadan **önce** `docs/islem_NNN.
 Önerilen sıra: `DrawingIR -> DXF -> geometri ve topoloji -> deterministik teknik kontroller -> çizim üzerinde bulgu -> yerel rapor`. Yerel OCR, VLM ve ek dosya formatları daha sonra bu çekirdeği genişletecek. **DXF'nin ilk desteklenecek format olması öneridir, henüz kesin ürün kararı değildir.**
 
 **Henüz yok:** Kaynak kodlu analiz motoru, kurulu model, çalışan kullanıcı arayüzü, gerçek donanım benchmark'ı veya Windows kabul testi.
+
+## İşlem 003 — Mevzuat kanıtı ve yerel OCR tasarımı
+
+MimarLLM V2, çizimdeki ölçülebilir hata/eksikliklere ek olarak **özgün mevzuat kaynağını sayfa ve sayfa içi metin alanıyla gösterebilen** bir kanıt sistemi hedefliyor. Mevzuat araması kaynak belgelerin madde/fıkra/bent/tablo hiyerarşisinde yerel ve hibrit olarak yapılacak; kuralların uygunluk kararı ise deterministik motor ve doğrulanmış yürürlük/bağlam verisine bağlı olacak.
+
+- **Mevzuat hedef aileleri:** Planlı Alanlar İmar, Yangın, Otopark, Sığınak ve Binalarda Enerji Performansı. Belgelerin güncelliği/yürürlük/dağıtım hakları ayrıca incelenecek.
+- **OCR:** Önce dijital PDF native text; düşük bellekli yerel OCR; karmaşık taranmış belge için [Baidu Unlimited-OCR](https://github.com/baidu/Unlimited-OCR) ana **benchmark adayı**. Windows 8 GB VRAM uyumu henüz ispatlanmadı.
+- **Bellek:** Ağır OCR ve VLM GPU'da aynı anda çalışmaz; ayrı süreçli phase-lock ve CPU fallback.
+- **Kanıt ekranı:** Solda çizim nesnesi/ölçü, sağda özgün mevzuat sayfasındaki vurgulu metin ve sürüm/istisna bağlantıları. OCR'dan türetilen satır numarası resmî satır numarası olarak gösterilmez.
+- **Lisans/gizlilik:** Gerçek mevzuat PDF'leri, model ağırlıkları ve kullanıcı çizimleri yerelde; public repo yalnız kod, şemalar ve sentetik testler.
+
+**Yeni belgeler:** [İşlem 003](docs/islem_003.md) · [Sistem mimarisi](docs/sistem-mimarisi.md) · [OCR ve VRAM](docs/ocr-ve-bellek.md) · [Mevzuat RAG](docs/mevzuat-rag.md).
+
+**Durum:** Tasarım ve dokümantasyon işlendi; kod, indeks, Windows model testi veya hukukî `PASS` uygulanmadı.
