@@ -73,3 +73,19 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 
 [ADR-002](adr/ADR-002-PDF-Engine-License.md) kesin teknik seçimdir; tarihsel işlem kayıtları güncel bağımlılık kararlarını geçersiz kılamaz.
 
+
+
+## İşlem 006 — Hedef kapsam ve dürüst kabul politikası (2026-10-13)
+
+| Kod | Karar | Durum | Kaynak |
+| --- | --- | --- | --- |
+| K-044 | Yüklenen tüm taslaklar V2 için **hedef özellik** olarak F01–F24 envanterine dahil | KESİN | islem_006 |
+| K-045 | `src/mimarllm/` tek paket; `src/mimar/` ikinci paket olmayacak | KESİN | islem_006 |
+| K-046 | İşlem numaraları 001–005 tarihsel; şimdi 006; sonraki gerçek iş 007 | KESİN | islem_006 |
+| K-047 | Yangın/Otopark/Sığınak/BEP/İmar hukukî sabitleri kaynak ve yürürlük doğrulanmadan gerçek PASS/FAIL üretmez | KESİN | ADR-003 |
+| K-048 | Topolojik centroid uzaklığı yangın kaçış yürüme mesafesi değildir | KESİN | islem_006 |
+| K-049 | run.bat ve PyInstaller `onedir` hedef kapsam; gerçek CLI/UI/Windows kabulü olmadan tamamlanmış sayılmaz | KESİN | islem_006 |
+| K-050 | Mevcut PDF/OCR yığını değişmedi: pdfplumber + pypdfium2 + RapidOCR CPU | KESİN | ADR-002 |
+| K-051 | İnsan hukukî incelemesi, özgün PDF source span ve amendment graph olmadan mevzuat etiketi `APPROVED_FOR_CHECK` olmaz | KESİN | ADR-003 |
+
+[Özellik envanteri](ozellik-envanteri.md) · [Uygulama yol haritası](uygulama-yol-haritasi.md) · [Mevzuat doğrulama](mevzuat-dogrulama-protokolu.md).
