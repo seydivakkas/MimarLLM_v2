@@ -1,3 +1,5 @@
+> **GÜNCEL KARAR — İşlem 004 (2026-10-12):** Birincil OCR: **PyMuPDF/native CAD text önceliği + RapidOCR (ONNX Runtime, CPU)**. Bu belgenin aşağıdaki Unlimited-OCR'a öncelik veren eski açıklamaları yalnız **islem_003 tarihsel tasarım notu** olarak tutuluyor ve aktif ana motor seçimini temsil etmiyor. Unlimited-OCR yalnız deneysel, optional benchmark adayıdır. Ayrıntılar: [Mimari pafta OCR sözleşmesi](ocr-mimari-pafta.md) ve [islem_004.md](islem_004.md). RapidOCR'nin varsayılan `cls` modeli 0°/180°'dir; 90°/270° ve 45° garanti değildir. CPU modunda CUDA VRAM ayırmaz, CPU/RAM harcar. `rapidocr_onnxruntime` yerine güncel `rapidocr + onnxruntime` paketleri esas alınır.
+
 # MimarLLM V2 — Yerel OCR ve 8 GB VRAM Çalışma Tasarımı v0.1
 
 - **Bağlı işlem:** [islem_003.md](islem_003.md)
