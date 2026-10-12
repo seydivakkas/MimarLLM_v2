@@ -259,3 +259,20 @@ P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
 - `src/mimarllm/storage/`: yerel arşiv/indeks (public repoda değil)
 
 **Şimdiki durum:** Bunlar sadece tasarlanmış modül sınırlarıdır; source code, model, arşiv veya benchmark hazır değildir. [Mimari](sistem-mimarisi.md) · [OCR/VRAM](ocr-ve-bellek.md) · [Mevzuat](mevzuat-rag.md).
+
+## 9. İşlem 004 — OCR iş paketinin güncel kırılımı
+
+Önceki P7 “yerel OCR” taslağını aşağıdaki **aktif fazlara** ayır. P0–P10 ana paketleri ve `islem_NNN` kayıtları yeniden numaralandırılmaz.
+
+| Faz | Modül | Çıktı ve kontrol |
+| --- | --- | --- |
+| P7-A | `importers/dxf.py` | DXF TEXT/MTEXT/DIMENSION/ATTRIB + nested blok dönüşüm ve entity kaynak izi |
+| P7-B | `importers/pdf.py` ve `ocr/text_extractor.py` | PyMuPDF page/span/char/quad ve karışık sayfada kalite/ROI kapısı |
+| P7-C | `ocr/rapid_engine.py` | CPU ONNX Runtime, model hash ve 4 noktalı poligon + score normalize |
+| P7-D | `ocr/box_utils.py` | 0/90/180/270 ve gerekli yön düzeltme; homografi ile source page point geri dönüş |
+| P7-E | `regulations/extraction.py` | Ayrı offline ETL; native/OCR metin + tablo hücresi + LegalAST kaynak konumu |
+| P7-F | `tests/` | Döndürülmüş Türkçe, Ø ± ° ², SHX, kısmi scan, tablo/citation ve Windows offline benchmark |
+
+**Yeni ayrım:** RapidOCR CPU çalışması GPU kilidini gerektirmez; GPU'da Qwen-VL veya deneysel Unlimited-OCR görevi olması hâlinde bunlar için tek ağır GPU modeli politikası geçerlidir. CPU ve RAM sınırları ayrıca izlenir.
+
+**Mevcut durum:** modüller geliştirilmedi, bunlar uygulanacak sorumluluklardır. Önce [islem_004.md](islem_004.md) kaydı oluşturuldu; sonraki yazılım işi ilk kullanılabilir `src/mimarllm/ocr/` kodlarını kendi yeni işlem kaydıyla açacak. [Detay](ocr-mimari-pafta.md).
