@@ -6,7 +6,7 @@ Coordinate frames and physical calibration are explicit and fail closed.
 from __future__ import annotations
 
 from enum import Enum
-from math import isfinite
+from math import isfinite, isclose
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -289,8 +289,16 @@ class DrawingIR(BaseModel):
             if any(next(e for e in self.entities if e.entity_id == entity_id).frame_id
                    != measure.source_frame_id for entity_id in measure.entity_ids):
                 raise ValueError("Measurement mixes coordinate frames")
-            if measure.physical_value is not None and self.calibration.state.value != "CONFIRMED":
-                raise ValueError("Physical measurement requires confirmed calibration")
+            if measure.physical_value is not None:
+                if self.calibration.state.value != "CONFIRMED":
+                    raise ValueError("Physical measurement requires confirmed calibration")
+                expected = (
+                    self.calibration.length_metres(measure.source_value)
+                    if measure.quantity == "length"
+                    else self.calibration.area_square_metres(measure.source_value)
+                )
+                if not isclose(measure.physical_value, expected, rel_tol=1e-9, abs_tol=1e-12):
+                    raise ValueError("Physical measurement disagrees with validated calibration")
         known_evidence = set(evidence_ids)
         findings = [finding.finding_id for finding in self.findings]
         if len(findings) != len(set(findings)):
