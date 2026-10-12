@@ -70,3 +70,7 @@ Kod, AI modeli, arayüz ve gerçek donanım testi kapsam dışında; çalıştı
 **İşlem 002 kabulü:** Belgelerin GitHub'da varlığı ve birbirine bağlantıları son kontrolle doğrulanacak; kod testi bu işlem kapsamına dahil değil.
 
 **Sıradaki istek protokolü:** Yeni geliştirmeye başlanmadan `docs/islem_003.md` oluşturulacak.
+
+## Sonraki mimari karar bağlantısı (2026-10-12)
+
+Bu işlemde kesinleştirilen **mimari çizim hata analizi** ürün kapsamı değişmedi. PDF metin, raster görüntüleme ve OCR teknolojileri daha sonra [İşlem 005](islem_005.md) kapsamında **pdfplumber + pypdfium2 + RapidOCR/ONNX Runtime CPU** olarak kesinleştirildi. [ADR-002](adr/ADR-002-PDF-Engine-License.md) geçerli teknoloji kaydıdır. Bu bölüm geçmişteki kayıtların numarasını veya orijinal kapsam kararını değiştirmez.
