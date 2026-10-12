@@ -9,7 +9,7 @@
 | Kimlik | Gerekli işlev | Hedef kod / bileşen | Mevcut durum | Kabul için somut kanıt | Kullanıcı taslağı |
 | --- | --- | --- | --- | --- | --- |
 | F01 | Birim, ölçek, CAD/DXF veri modeli `DrawingIR` | `core/ir.py`, `core/units.py` | PLANLANDI; PDF gözlem modelleri mevcut | Birim bilinmiyorsa kalibrasyonsuz gerçek ölçüm yok | Genel kapsam |
-| F02 | DXF ayrıştırma, block/nested INSERT ve layer sinyali | `importers/dxf.py`, `importers/layers.py` | PLANLANDI | Katman/handle/transform ve bozulan bloklarda güvenli hata | (2) / eski 003 |
+| F02 | DXF ayrıştırma, block/nested INSERT ve layer sinyali | `importers/dxf.py`, `importers/layers.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrolü** | Katman/handle/transform ve bozulan bloklarda güvenli hata | (2) / eski 003 |
 | F03 | PDF native vector + ROI + source provenance | `importers/pdf.py` | **MEVCUT_KOD, kabul bekler** | PDF char/line/curve/rect; dönüş/limit/görsel bbox ölçümü | İlk PDF kararları |
 | F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py`, `ocr/layout.py` | **KISMI** (adapter) | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
 | F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | PLANLANDI | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
@@ -56,3 +56,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 ## İşlem 007 güncellemesi — F01
 
 **F01 `KISMI/MEVCUT_KOD`:** `DrawingIR v0.1` ve birim/scale/SourceReference kanıt modelleri GitHub'a eklendi. CAD $INSUNITS kodları, explicit source evidence, calibration frame, ölçü dönüşümü ve bu sözleşmenin sentetik testi kapsamda. **F01 bütünü PASS değil:** DXF dosya parser'ı yok; gerçek `dimension entity` veya grafik ölçek tespiti/bağımsız onay UI'si ve gerçek Windows kabulü henüz yapılmadı. [islem_007.md](islem_007.md) · [Teknik sözleşme](specs/drawingir-v0.1.md).
+
+
+## İşlem 008 güncellemesi — F02
+
+**F02 `KISMI / MEVCUT_KOD`:** `ezdxf.readfile`, `LINE`, `LWPOLYLINE` (bulge), `ARC`, `CIRCLE`, `TEXT`, `MTEXT`, `DIMENSION`, `INSERT`, nested INSERT ve MINSERT örnekleme, satır/katman ipucu ve native CAD handle + block path `DrawingIR` ilişkilendirmesi kodlandı. Kaynak birimleri `INFERRED` kalır.
+
+**F02 henüz tümden PASS değildir:** Dinamik bloklar, XREF çözümleme, ACAD proxy, gerçek nested OCS/3B, doğrulanmış DIMENSION fiziksel kalibrasyonu, seçili müşteri DXF'lerinde gerçek Windows kabulü yapılmadı. [İşlem kaydı](islem_008.md) · [DXF teknik şartnamesi](specs/dxf-import-v0.1.md).
