@@ -89,3 +89,18 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-051 | İnsan hukukî incelemesi, özgün PDF source span ve amendment graph olmadan mevzuat etiketi `APPROVED_FOR_CHECK` olmaz | KESİN | ADR-003 |
 
 [Özellik envanteri](ozellik-envanteri.md) · [Uygulama yol haritası](uygulama-yol-haritasi.md) · [Mevzuat doğrulama](mevzuat-dogrulama-protokolu.md).
+
+
+## İşlem 008 — DXF gözlem motoru kararları (2026-10-13)
+
+| Kod | Karar | Durum |
+| --- | --- | --- |
+| K-052 | DXF `ezdxf` ile yerel okunur, dosya aslı değiştirilmez | KESİN / KODLANDI |
+| K-053 | `LINE/LWPOLYLINE/ARC/CIRCLE/TEXT/MTEXT/DIMENSION/INSERT` gözlemleri ve nested handle yolu | KODLANDI / sentetik CI kabulü |
+| K-054 | Kaynak layer yalnız sınıf adayı; gerçek mimari duvar/kapı semantiği değildir | KESİN |
+| K-055 | `$INSUNITS` ve DIMENSION onaysız iken `CONFIRMED` metre kullanılmaz | KESİN |
+| K-056 | XREF dış bağlantı otomatik çözülmez, diagnostik oluşturulur | KESİN |
+| K-057 | DXF curve tessellation CAD kaynak birimi toleransına ve çıktı affine stretch'e bağlıdır | KODLANDI / sentetik test |
+| K-058 | Gerçek Windows, büyük pafta, dinamik blok, tüm OCS, DWG ve DXF mevzuat kabulü | HOLD |
+
+[islem_008.md](islem_008.md) · [DXF source sözleşmesi](specs/dxf-import-v0.1.md).
