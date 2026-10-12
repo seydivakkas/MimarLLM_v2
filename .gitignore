@@ -1,0 +1,74 @@
+# Runtime secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+private/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Frontend/build
+node_modules/
+.next/
+out/
+dist-web/
+coverage/
+
+# Local project inputs, outputs and private storage
+local_data/
+user_data/
+workspaces/
+uploads/
+downloads/
+outputs/
+runs/
+reports/generated/
+storage/local/
+data/private/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Locally downloaded model weights and caches
+models/
+model_cache/
+checkpoints/
+weights/
+*.gguf
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.pdparams
+
+# Logs/temp/OS
+*.log
+logs/
+tmp/
+temp/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
