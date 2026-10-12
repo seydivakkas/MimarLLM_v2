@@ -46,3 +46,12 @@ Ayrıntılı tasarım: [sistem-mimarisi.md](sistem-mimarisi.md), [ocr-ve-bellek.
 Varsayılan PDF motorları kesin: `pdfplumber` + `pypdfium2`, OCR `RapidOCR CPU`. CAD DXF doğrudan ezdxf üzerinden okunacaktır.
 **Motor kapsamı:** Önceki alternatifler terk edildi; tek PDF/OCR yolumuz ADR-002 kapsamındadır.
 Kullanıcıya özgün belgenin `document_sha256 + page_index + four-point polygon + article/paragraph/item/table cell` kaynak bilgisi korunarak gösterilecek. RapidOCR sınıflandırıcısının 0/180° desteği 45/90/270° yazılarda eksiksiz okuma garantisi olarak sunulmayacak. Detay: [ocr-mimari-pafta.md](ocr-mimari-pafta.md).
+
+
+## İşlem 006 — Tam ürün hedefi kaydı
+
+MimarLLM V2 ürününe hedef olarak **DrawingIR, DXF ve vektörel/raster PDF, mahal/duvar/kapı/pencere/ölçek, net-brüt alan, geçiş/yangın yürüme topolojisi, Planlı Alanlar+Yangın+Otopark+Sığınak+BEP kaynaklı kontrol aileleri, hiyerarşik offline mevzuat RAG, doğal dil kaynak gösterimi, yerel OCR/VLM, çift kaynaklı kanıt raporu, interaktif çizim arayüzü ve offline Windows standalone paketleme** dahildir.
+
+Bu cümle bunların bugün kodlandığı anlamına gelmez. Teknik kabul durumu [24 özellik takip tablosunda](ozellik-envanteri.md) görülür. Pedagojik LMS, agent orkestrasyonu, bulut AI/API ve tasarım üretme aracı yine kapsam dışıdır. Mevzuat eşikleri ve riskli sayısal varsayımlar [doğrulama kapısına](mevzuat-dogrulama-protokolu.md) tabidir.
+
+[ADR-003](adr/ADR-003-Kapsam-Kanit-ve-Kabul-Kapilari.md) karar sınırlarını açıklıyor.
