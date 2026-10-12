@@ -199,10 +199,13 @@ def parse_dxf(
                 if block is None:
                     report("MISSING_BLOCK", handle, chain, f"Missing block definition: {name}")
                     return
-                instance_list = list(entity.multi_insert()) if entity.mcount > 1 else [entity]  # type: ignore[attr-defined]
-                if len(instance_list) > max_entities - emitted + 1:
+                # Validate advertised expansion count *before* materialising a
+                # potentially huge MINSERT grid in host RAM.
+                instance_count = int(entity.mcount)  # type: ignore[attr-defined]
+                if instance_count > max_entities - emitted:
                     raise DxfInputError("MINSERT exceeds entity budget")
-                for instance_index, instance in enumerate(instance_list):
+                instances = entity.multi_insert() if instance_count > 1 else (entity,)  # type: ignore[attr-defined]
+                for instance_index, instance in enumerate(instances):
                     instance_matrix = instance.matrix44() @ parent
                     step = f"{str(handle)}:{name}:instance{instance_index}"
                     next_chain = (*chain, step)
@@ -228,8 +231,19 @@ def parse_dxf(
                 else:
                     from ezdxf.path import make_path
                     cad_path = make_path(entity)
+                    # Target tolerance is in the OUTPUT CAD frame, including
+                    # nested/nonuniform INSERT magnification. The Frobenius norm
+                    # upper-bounds the largest 2D linear stretch.
+                    x_dir = parent.transform_direction((1, 0, 0))
+                    y_dir = parent.transform_direction((0, 1, 0))
+                    stretch = (x_dir.x**2 + x_dir.y**2 + y_dir.x**2 + y_dir.y**2)**0.5
+                    if not isfinite(stretch) or stretch <= 0:
+                        raise ValueError("Noninvertible or nonfinite 2D block transform")
+                    local_tolerance = curve_flatten_distance / stretch
+                    if local_tolerance <= 0:
+                        raise ValueError("Curve tolerance underflow")
                     verts = list(islice(
-                        cad_path.flattening(curve_flatten_distance, segments=8),
+                        cad_path.flattening(local_tolerance, segments=8),
                         max_points_per_entity + 1,
                     ))
                     if len(verts) > max_points_per_entity:
@@ -248,7 +262,7 @@ def parse_dxf(
                     )
                     if kind in {"ARC", "CIRCLE"} or bool(getattr(entity, "has_arc", False)):
                         report("APPROXIMATED_CURVE", handle, chain,
-                               f"Flattened in source units; max deviation target {curve_flatten_distance:g}")
+                               f"Flattened in destination CAD frame; deviation target {curve_flatten_distance:g}")
                 emit(geom)
                 return
 
