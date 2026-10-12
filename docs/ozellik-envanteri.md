@@ -51,3 +51,8 @@
 ## Durumun güncellenmesi
 
 Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik test + hedef donanım kabulü + varsa hukukî inceleme sonrasında ayrı `PASS` verilir. Bir özellik yalnız başlığının veya Markdown örneğinin bulunmasıyla tamamlanmış sayılmaz.
+
+
+## İşlem 007 güncellemesi — F01
+
+**F01 `KISMI/MEVCUT_KOD`:** `DrawingIR v0.1` ve birim/scale/SourceReference kanıt modelleri GitHub'a eklendi. CAD $INSUNITS kodları, explicit source evidence, calibration frame, ölçü dönüşümü ve bu sözleşmenin sentetik testi kapsamda. **F01 bütünü PASS değil:** DXF dosya parser'ı yok; gerçek `dimension entity` veya grafik ölçek tespiti/bağımsız onay UI'si ve gerçek Windows kabulü henüz yapılmadı. [islem_007.md](islem_007.md) · [Teknik sözleşme](specs/drawingir-v0.1.md).
