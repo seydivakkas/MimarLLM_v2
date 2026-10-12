@@ -3,7 +3,7 @@
 - **Tarih:** 2026-10-12
 - **Depo:** `seydivakkas/MimarLLM_v2`
 - **İstek:** Mimari teknik çizim analizi ve hata tespiti çekirdek ürün olarak belirlensin; pedagojik eğitim portalı ilk ürün kapsamından çıkarılsın. Bu karar işlem kaydına işlensin ve teknik gereksinimler ile aşamalı modül planı oluşturulsun.
-- **Durum:** PLANLANDI (işlem kaydı, diğer dosyalardan önce oluşturuluyor)
+- **Durum:** UYGULANDI (dokümantasyon; yazılım geliştirme yapılmadı)
 - **İş türü:** Ürün kapsamı + teknik tasarım / dokümantasyon. Henüz kod geliştirme değil.
 
 ## 1. Kesinleşen ürün kararı
@@ -54,4 +54,19 @@ Kod, AI modeli, arayüz ve gerçek donanım testi kapsam dışında; çalıştı
 
 ## 6. Uygulama sonuçları
 
-İlk işlem kaydından sonra doldurulacak.
+**Uygulanan GitHub işlemleri (2026-10-12, `main`):**
+
+1. Bu işlem kaydı, diğer değişikliklerden **önce** oluşturuldu: commit `53f6265`.
+2. `docs/teknik-gereksinimler.md` oluşturuldu: 18 fonksiyonel (FR), 12 fonksiyonel olmayan (NFR) gereksinim; `DrawingIR` / `Finding` taslakları; karar durumu semantiği; kabul senaryoları. Commit `66ee2ee`.
+3. `docs/modul-plani.md` oluşturuldu: sorumluluklar, modül bağımlılıkları, P0–P10 iş paketleri, riskler ve ilk çalışan MVP. Commit `5a760d8`.
+4. `docs/kararlar.md` güncellendi: mimari çizim hata analizi K-007 **KESİN**, pedagojik/LMS dışlaması K-008 **KESİN**, otomatik jüri dışlaması K-013 **KESİN**, deterministik kontrol K-014 **KESİN**. Diğer açık kararlar açık kaldı. Commit `8e0ff48`.
+5. `docs/kapsam.md` güncellendi: ilk ürün kapsamı, kapsam dışı özellikler, ilk kullanıcı akışı, ölçüm ve mevzuat sınırları. Commit `7feb792`.
+6. `README.md` güncellendi: ürün tanımı ve belge bağlantıları, çalışma durumu. Commit `a56db85`.
+
+**Yapılmayan işlemler:** `src/` altında uygulama kodu, VLM/OCR kurulumu, UI tasarımı, Windows paketlemesi ve benchmark. Çalışan ürün veya test `PASS` iddiası yok.
+
+**Açık teknik kararlar:** İlk formatın DXF olup olmayacağı; arayüz türü; modellerin kesin sürüm ve lisansları; ilk kontrol kümesi ve tolerans profili; mevzuat kurallarının kapsamı. Bunlar dondurulmadı ve ürün kararıymış gibi uygulanmayacak.
+
+**İşlem 002 kabulü:** Belgelerin GitHub'da varlığı ve birbirine bağlantıları son kontrolle doğrulanacak; kod testi bu işlem kapsamına dahil değil.
+
+**Sıradaki istek protokolü:** Yeni geliştirmeye başlanmadan `docs/islem_003.md` oluşturulacak.
