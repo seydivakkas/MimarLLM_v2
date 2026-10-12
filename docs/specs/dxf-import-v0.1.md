@@ -84,3 +84,11 @@ source.document_sha256: original local file SHA-256
 ## 7. Sonraki adım
 
 `islem_009`: PDF koordinat/rotasyon ve RapidOCR ROI'leri DrawingIR'ye tutarlı bağlamak. Ardından `islem_010`: Shapely duvar/oda/topoloji gerçek geometri çıkarmak; DXF kaynak içeriği **duvar** sayılmadan önce kurallı/kanıtlı doğrulama.
+
+
+## 8. Son uygulama sertleştirmeleri (2026-10-13)
+
+- MINSERT `mcount`, açılacak örnekler belleğe `list()` yapılmadan önce kontrol edilir; oluşturulan instance'lar generator ile gezilir.
+- Block/nonuniform scale altında tessellation local toleransı, birikimli affine matrisin Frobenius üst sınırına bölünür; böylece blok ölçek büyütmesi nedeniyle çıktı CAD koordinatlarında yaklaştırma toleransı sessizce gevşemez. Bu algoritma daha yüksek hassasiyet gerektiren mühendislik analizinde yine bağımsız referans karşılaştırması ister.
+- XREF flag alanı dış kaynak olarak işaretlendiğinde dosya açılıp getirilmez; `XREF_UNRESOLVED` diagnostic döner ve hatalı tamlık kabulü engellenir.
+- `tests/test_dxf_parser.py` üzerinde bu üç sınır için sentetik regresyon örnekleri eklendi.
