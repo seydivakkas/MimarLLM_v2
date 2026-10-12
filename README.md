@@ -50,3 +50,14 @@ MimarLLM V2, çizimdeki ölçülebilir hata/eksikliklere ek olarak **özgün mev
 **Yeni belgeler:** [İşlem 003](docs/islem_003.md) · [Sistem mimarisi](docs/sistem-mimarisi.md) · [OCR ve VRAM](docs/ocr-ve-bellek.md) · [Mevzuat RAG](docs/mevzuat-rag.md).
 
 **Durum:** Tasarım ve dokümantasyon işlendi; kod, indeks, Windows model testi veya hukukî `PASS` uygulanmadı.
+
+## Güncel OCR kararı — İşlem 004
+
+**Varsayılan:** DXF için doğrudan CAD metni, PDF için PyMuPDF native text, okunamayan/taranmış ROI'lerde **RapidOCR + ONNX Runtime CPU**. 8 GB VRAM VLM için bırakılır. 0/180 sınıflandırıcı, eğik/90/270 çizim metninin hatasız tanınması demek değildir; gerekli ROI rotasyonu ve source quad dönüşümü tasarlanmıştır.
+
+**Unlimited-OCR:** varsayılan OCR motoru olmaktan çıkarıldı; yalnız opsiyonel araştırma. **Mevzuat:** ayrı yerel offline ETL fazında kaynak PDF -> text/OCR -> tablo -> LegalAST -> FTS5 + CPU embedding; özgün sayfa/bbox kanıtı korunur.
+
+- [İşlem 004 — OCR değişikliği ve işlem günlüğü](docs/islem_004.md)
+- [Mimari pafta OCR ve kaynak koordinatı tasarımı](docs/ocr-mimari-pafta.md)
+
+Kod, model kurulumu veya Windows benchmark'ı **henüz gerçekleştirilmedi**.
