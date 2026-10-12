@@ -61,3 +61,12 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - [ADR-003 — Kanıt temelli mimari karar](docs/adr/ADR-003-Kapsam-Kanit-ve-Kabul-Kapilari.md)
 
 **Bir sonraki geliştirme kaydı:** `docs/islem_007.md` (DrawingIR + birimler + doğrulanmış kaynak dönüşümleri). Önce bu kaydı oluştur, sonra kaynak kodu ekle.
+
+## İşlem 007 — DrawingIR çekirdek sözleşmeleri
+
+- [İşlem 007 ve gerçek kabul durumu](docs/islem_007.md)
+- [DrawingIR v0.1 teknik şartnamesi](docs/specs/drawingir-v0.1.md)
+- Kodlanan: `core/units.py` (CAD INSUNITS/reference confirmation, SI ölçek), `core/ir.py` (Pydantic DrawingIR, SourceReference, CoordinateFrame, Transform2D, GeometryPrimitive, DrawingEntity, MeasurementEvidence, Finding).
+- Güvenlik: `UNKNOWN/INFERRED/CONFLICT` durumunda fiziksel ölçüm yasak; kaynak SHA/entity/frame eşleşmesi; onaylı ölçümün fiziksel değeri kalibrasyonla kontrol edilir. Hukukî uyum sertifikasyonu yasak.
+- GitHub Actions sentetik sözleşme testi: [Core contracts](https://github.com/seydivakkas/MimarLLM_v2/actions/workflows/core-contracts.yml).
+- Henüz yok: `ezdxf` DXF parser, duvar/oda topolojisi, gerçek mimari pafta kabulü, Windows/i7/4070 deneyleri. Sıradaki kayıt `islem_008`.
