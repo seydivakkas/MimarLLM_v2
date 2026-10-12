@@ -213,3 +213,49 @@ Gerçek uygulama sırası örneği: **P1 sözleşme -> P2 DXF -> P3 geometri -> 
 **İşlem 003 önerisi:** `DrawingIR v0.1` + coordinate/units contract + ilk 5 geometrik kontrolün kesin gereksinimlerini belirleme. Bu işlem kayda alındıktan sonra kaynak kod ve sentetik fixture geliştirilecek.
 
 Kullanıcının henüz kararlaştırmadığı UI/model/ilk format gibi konular **açık karar olarak korunur**; bu plandaki öngörüler tamamlanmış uygulama değildir.
+
+
+## 8. İşlem 003 — Mevzuat ve OCR genişleme planı (v0.2 ek)
+
+**Not:** `docs/islem_001.md` ve `docs/islem_002.md` işlem numaraları **değiştirilmeyecek**. İşlem 003 bu mimari kararın kaydıdır. `P0…P10` mühendislik paketleri ile `islem_NNN` GitHub işlem günlüğü **farklı numaralandırmalardır**.
+
+### Yeni bağımlılıklar
+
+```text
+P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
+       |                                    |
+       +--> P6 PDF -> P7 OCR --> R1 AST ---+--> R3 hukukî kaynak bağlama
+                         |       |                  |
+                         +--> R2 FTS5/Vector/RRF ---+
+       +--> P8 yerel VLM (opsiyonel)                |
+       +--------------------------------------------+--> P5/P9 kanıtlı arayüz/rapor -> P10
+```
+
+`P5` ilk model gerektirmeyen teknik denetim dikey dilimidir; `R1–R3` bu çekirdeğe **sonradan eklenecek** mevzuat yeteneğidir. Kullanıcının talep ettiği yan yana çizim/mevzuat kanıt ekranı, R3 tamamlandığında P9 arayüzüne entegre edilir.
+
+| Ek paket | Somut teknik çıktı | Doğrulanacak kabul |
+| --- | --- | --- |
+| R0 Kaynak envanteri | 5 yönetmelik ailesi için özgün yayın/değişiklik/yerel izin envanteri | Güncel ve proje tarihindeki hükümler birbirine karışmıyor |
+| R1 LegalAST + provenance | Madde/fıkra/bent/tablo/ek, page bbox, source_sha256, temporal version graph | OCR satırının özgün sayfa konumu ve kimliği kaybolmuyor |
+| R2 Hibrid retrieval | FTS5 + CPU embedding + RRF; rerank optional | Arama adayları node/version ID ile dönüyor; retrieval legal PASS vermiyor |
+| R3 Rules -> legal source | `RuleBinding`, uygulanabilirlik, exception, doğrulama kapısı | Resmî kaynak/sürüm/onay ve proje bağlamı yoksa `PASS` yok |
+| P7-GPU kapısı | Phase-lock: ayrı OCR/VLM subprocess, GPU admission, fallback | RTX 4070 8 GB'da gerçek kaynak ölçümü tamamlanmadan “destekleniyor” iddiası yok |
+| P9 kaynak ekranı | Çizimde entity highlight + özgün PDF sayfa/bbox highlight | Bir bulgudan iki belgenin gerçek konumuna geri gidiliyor |
+
+### İlk MVP'nin geciktirilmemesi
+
+Önce DXF'de **G0/G1 geometri hatalarını** güvenilir bulalım. Ardından belge kaynaklarını yapısal biçimde alıp hukukî konum eşlemesini ve sürüm grafını oluşturalım. İlk onaylı teknik mevzuat kuralı ancak bu iki veri kanalı birlikte doğrulandığında uygulanır. Önceden örneklenen kapı/koridor eşikleri **üretim mevzuatı olarak sabitlenmez**.
+
+### Güncel taslak dizin sorumlulukları
+
+- `src/mimarllm/core/`: DrawingIR ve birimler
+- `src/mimarllm/importers/`: DXF, PDF ve raster
+- `src/mimarllm/geometry/`: geometrik kontrol ve topoloji
+- `src/mimarllm/vision/`: OCR/VLM/scheduler; tek ağır GPU modeli
+- `src/mimarllm/regulations/`: belge envanteri, AST, sürüm, FTS5/dense retrieval, PDF kaynak koordinatları
+- `src/mimarllm/rules/`: deterministik kurallar ve doğrulanmış `RuleBinding`
+- `src/mimarllm/evidence/`: çizim+mevzuat birleşik kanıt grafı
+- `src/mimarllm/reports/`: çift kaynaklı rapor/önizleme
+- `src/mimarllm/storage/`: yerel arşiv/indeks (public repoda değil)
+
+**Şimdiki durum:** Bunlar sadece tasarlanmış modül sınırlarıdır; source code, model, arşiv veya benchmark hazır değildir. [Mimari](sistem-mimarisi.md) · [OCR/VRAM](ocr-ve-bellek.md) · [Mevzuat](mevzuat-rag.md).
