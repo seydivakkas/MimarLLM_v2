@@ -44,3 +44,20 @@
 - [Kararlar](docs/kararlar.md)
 
 Her yeni AI destekli istek **önce** `docs/islem_NNN.md` dosyasına işlenir. Yapılmayan işin durumunu PASS gösterme.
+
+
+## Güncel tam kapsam ve gerçek ilerleme (İşlem 006, 2026-10-13)
+
+Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik envanterine** işlendi: DXF/ölçek, duvar-oda geometri ve net/brüt alan, spatial topology/kaçış, beş mevzuat ailesi, hiyerarşik RAG+FTS5+yerel embedding, kural–özgün kaynak bağlama, yerel RapidOCR ve VLM, rapor/SVG, offline localhost paneli, run.bat / PyInstaller onedir ve Windows benchmark.
+
+**Hedef kapsam ≠ tamamlanmış uygulama.** Mevcut kod PDF/ROI ve OCR adaptörünün başlangıç düzeyindedir. Resmî mevzuata ilişkin eşikler `HUKUKI_HOLD`; kaynak, madde/fıkra, yürürlük ve proje bağlamı doğrulanmadan kesin kural yok. Yerel Windows, OCR model, VLM ve paketleme sonuçları henüz PASS değildir.
+
+- [İşlem 006 — Kapsam birleştirme günlüğü](docs/islem_006.md)
+- [24 maddelik özellik ve durum envanteri](docs/ozellik-envanteri.md)
+- [İşlem 007–021 için bağımlılığa dayalı yol haritası](docs/uygulama-yol-haritasi.md)
+- [Türkiye mevzuatı doğrulama ve özgün PDF kanıt protokolü](docs/mevzuat-dogrulama-protokolu.md)
+- [Sade dizin tasarımı](docs/planlanan-dosya-yapisi.md)
+- [Windows tek tık kurulum ve standalone paketleme kabul planı](docs/windows-dagitim-plani.md)
+- [ADR-003 — Kanıt temelli mimari karar](docs/adr/ADR-003-Kapsam-Kanit-ve-Kabul-Kapilari.md)
+
+**Bir sonraki geliştirme kaydı:** `docs/islem_007.md` (DrawingIR + birimler + doğrulanmış kaynak dönüşümleri). Önce bu kaydı oluştur, sonra kaynak kodu ekle.
