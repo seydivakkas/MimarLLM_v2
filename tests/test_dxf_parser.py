@@ -142,7 +142,7 @@ def test_extension_guard_and_size_guard(tmp_path):
         parse_dxf(file, max_file_bytes=10)
     other = tmp_path / "plan.txt"
     other.write_text("hello")
-    with pytest.raises(DxfInputError, match="\.dxf"):
+    with pytest.raises(DxfInputError, match=r"\.dxf"):
         parse_dxf(other)
 
 
@@ -189,3 +189,43 @@ def test_paperspace_opt_in_and_separate_frame(tmp_path):
 def test_layer_hints_are_only_candidates(name, expected):
     assert layer_hint(name) == expected
 
+
+def test_nonuniform_block_scale_curve_is_approximate_and_source_kept(tmp_path):
+    doc = ezdxf.new("R2013")
+    b = doc.blocks.new("CURVE")
+    circle = b.add_circle((0, 0), radius=10)
+    doc.modelspace().add_blockref(
+        "CURVE", (100, 20), dxfattribs={"xscale": 20, "yscale": 2}
+    )
+    r = parse_dxf(_save(tmp_path, doc), curve_flatten_distance=0.05)
+    shapes = [e for e in r.drawing.entities if e.type_candidate == "CIRCLE"]
+    assert len(shapes) == 1
+    assert len(shapes[0].geometry.points) > 16
+    xs = [p[0] for p in shapes[0].geometry.points]
+    ys = [p[1] for p in shapes[0].geometry.points]
+    assert max(xs) - min(xs) == pytest.approx(400, abs=1)
+    assert max(ys) - min(ys) == pytest.approx(40, abs=1)
+    assert shapes[0].source.cad_handle == circle.dxf.handle
+    assert any(i.code == "APPROXIMATED_CURVE" for i in r.issues)
+
+
+def test_massive_minsert_is_rejected_before_materializing_instances(tmp_path):
+    doc = ezdxf.new("R2013")
+    b = doc.blocks.new("CELL")
+    b.add_line((0, 0), (1, 0))
+    block_ref = doc.modelspace().add_blockref("CELL", (0, 0))
+    block_ref.grid(size=(100, 100), spacing=(2, 2))
+    with pytest.raises(DxfInputError, match="MINSERT exceeds"):
+        parse_dxf(_save(tmp_path, doc), max_entities=100)
+
+
+def test_tessellation_budget_is_explicitly_reported(tmp_path):
+    doc = ezdxf.new("R2013")
+    doc.modelspace().add_circle((0, 0), 100)
+    r = parse_dxf(
+        _save(tmp_path, doc),
+        curve_flatten_distance=0.00001,
+        max_points_per_entity=8,
+    )
+    assert any(i.code == "TESSELLATION_LIMIT" for i in r.issues)
+    assert not r.drawing.entities
