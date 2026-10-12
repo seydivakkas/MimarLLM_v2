@@ -60,3 +60,8 @@ Mevzuat kural modülü hukukî doğrulama beklese bile geometri ve çizim kalite
 ## 5. Sıradaki somut başlangıç
 
 **İşlem 007:** `DrawingIR`, kalibrasyon ve kural/kanıt sözleşmelerinin kodu ve sentetik fixture testleri. Ürün baştan sona “varmış gibi” gösterilmeden bu temel kullanılarak DXF katmanına geçilecek.
+
+
+## İşlem 007 yürütme notu (2026-10-13)
+
+`islem_007` dosyası oluşturuldu ve `core/ir.py`, `core/units.py`, kaynak/kalibrasyon sentetik testleri kodlandı. Gerçek test/CI sonucu ilgili [işlem kaydında](islem_007.md) izlenir. Sonraki mühendislik işi [islem_008] kapsamında `ezdxf` ile DXF entity/layout/nested INSERT + `DrawingIR` köprüsüdür. İleri aşamalardaki hukukî `HOLD` kararları değişmedi.
