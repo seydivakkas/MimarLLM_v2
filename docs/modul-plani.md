@@ -219,3 +219,10 @@ P1 DrawingIR -> P2 DXF -> P3 Geometri -> P4 Karar Kuralları
 **Yeni ayrım:** RapidOCR ONNX Runtime CPU çalışır, ağır GPU VLM'nin VRAM'ine müdahale etmez; CPU/RAM gecikmeleri ayrıca ölçülür.
 **Mevcut durum:** modüller geliştirilmedi, bunlar uygulanacak sorumluluklardır. Önce [islem_004.md](islem_004.md) kaydı oluşturuldu; sonraki yazılım işi ilk kullanılabilir `src/mimarllm/ocr/` kodlarını kendi yeni işlem kaydıyla açacak. [Detay](ocr-mimari-pafta.md).
 **PDF backend kararı — işlem 005:** Vektör/metin `pdfplumber`, ROI render `pypdfium2`, OCR `rapidocr + onnxruntime CPU` kesin. [ADR-002](adr/ADR-002-PDF-Engine-License.md). Windows/SBOM son kabulü ayrıca yapılacaktır.
+
+
+## 10. İşlem 006 — Güncel uygulama takibi
+
+Bu belge V2'nin erken dönem mimari tasarım sırasını anlatır. **Tam hedef kapsamı ve yeni işlem kayıtları için güncel referans:** [24 maddelik özellik envanteri](ozellik-envanteri.md) + [islem_007–021 yol haritası](uygulama-yol-haritasi.md) + [mevzuat doğrulama](mevzuat-dogrulama-protokolu.md).
+
+Eski dosyalardaki `P0–P10` *iş paketleri* ile `docs/islem_001–006` *gerçek işlem kayıtları* farklıdır; yeniden numaralandırma yapılmaz. Kullanıcı eklerindeki dosya adları ve mevzuat eşikleri otomatik çalışır kabul edilmez. Var olmayan CLI/web giriş noktalarına dayalı Windows paketleme `PASS` verilmez.
