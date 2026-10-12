@@ -286,13 +286,14 @@ class DrawingIR(BaseModel):
         if len(evidence_ids) != len(set(evidence_ids)):
             raise ValueError("Duplicate measurement evidence IDs")
         known_entities = set(entity_ids)
+        entity_lookup = {entity.entity_id: entity for entity in self.entities}
         for measure in self.measurements:
             if measure.source_frame_id not in frames:
                 raise ValueError("Measurement frame missing")
             if not set(measure.entity_ids) <= known_entities:
                 raise ValueError("Measurement references unknown entity")
-            if any(next(e for e in self.entities if e.entity_id == entity_id).frame_id
-                   != measure.source_frame_id for entity_id in measure.entity_ids):
+            if any(entity_lookup[entity_id].frame_id != measure.source_frame_id
+                   for entity_id in measure.entity_ids):
                 raise ValueError("Measurement mixes coordinate frames")
             if measure.physical_value is not None:
                 if self.calibration.state.value != "CONFIRMED":
