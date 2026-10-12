@@ -1,38 +1,38 @@
 # MimarLLM V2
 
-**Durum:** Kapsam belirleme ve başlangıç mimarisi. Ürün özellikleri henüz uygulanmadı.
+**Durum:** Ürün kapsamı kesinleşti; teknik tasarım hazır; henüz çalışan uygulama yok.
 
-MimarLLM V2; mevcut MimarLLM'den ilham alarak, tek bir Windows bilgisayarında **tamamen yerel** çalışacak, mimari çizimlerin ölçülebilir teknik analizine ve kanıt temelli değerlendirilmesine odaklanması planlanan yeni bir projedir.
+**MimarLLM V2, mimari teknik çizim analizi ve hata tespiti için tamamen yerel bir yazılım olarak geliştirilecektir.** Çizimden alınan geometri ve ölçülebilir teknik veriler, deterministik kontrollerle incelenecek; sorunlar dosya konumu, gerekçe ve kanıtlarıyla raporlanacaktır.
 
-> Ürün kapsamı henüz dondurulmadı. Bu belgeyi tamamlanmış bir uygulama tanıtımı olarak yorumlamayın.
+Mevcut [MimarLLM V1](https://github.com/seydivakkas/MimarLLM) fikirlerinden yararlanan ama ondan **bağımsız, yeni** bir projedir. V1 kodu/veritabanı/commit geçmişi yeni depoya doğrudan kopyalanmaz.
 
-## Değişmez teknik ilkeler
+## Değişmez ilkeler
 
-- Bulut tabanlı AI/LLM/VLM API çağrısı ve ücretli servis zorunluluğu **yok**.
-- Hedef sistem: NVIDIA RTX 4070 **8 GB VRAM**, Intel Core i7 14. nesil, **32 GB RAM**, Windows.
-- Ölçüm ve kural kararı deterministik; yerel OCR/VLM yalnızca görsel/semantik aday kaynağıdır.
-- Açıklanabilir sonuç ve belirsizlik raporlaması zorunludur.
-- Tek bilgisayarda kullanılacak **modüler monolit**, gereksiz agent/servis dağıtımı yok.
-- Üçüncü taraf kodların lisans koşulları korunur.
-- Gizli kullanıcı ve proje verileri GitHub'da tutulmaz.
+- **Tamamen yerel inference.** OpenAI, Gemini, Anthropic vb. bulut yapay zekâ API'si veya ücretli servis zorunluluğu yok.
+- **Hedef makine:** Windows, NVIDIA RTX 4070 **8 GB VRAM**, Intel Core i7 14. nesil ve 32 GB RAM.
+- **Deterministik kararlar:** Ölçü, koordinat, geometri ve kurallar kodla doğrulanır; yerel OCR/VLM aday üretir, kendi başına teknik `PASS` vermez.
+- **Kanıt ve belirsizlik:** Kaynak konumuna bağlanabilen bulgu, doğrulanmış ölçek/birim ve sürümlü karar izi.
+- **Sadelik:** Tek kullanıcılı modüler monolit. Multi-agent altyapısı ve gereksiz ayrı servisler yok.
+- **Gizlilik:** Public depoya özel çizimler, veritabanları, model ağırlıkları veya gerçek kimlik bilgileri eklenmez.
+- **Güvenilirlik:** Çalıştırılmamış özellikler/testler veya ölçülmemiş performans tamamlanmış gösterilmez.
 
-## Geliştirme kayıtları
+## İlk ürünün dışında
 
-Her geliştirme isteği kaynak kod değiştirilmeden önce `docs/islem_NNN.md` altında artan numarayla belgelenir. İlgili işlem kaydı kapsamı, değişiklikleri, açık riskleri ve gerçekten yapılan doğrulamaları izler.
+**Pedagojik eğitim portalı**, LMS, öğrenci/öğretmen/sınıf yönetimi, jüri karakterleri, otomatik not verme, üretken mimari tasarım, çoklu AI agent orkestrasyonu ve bulut tabanlı çıkarım.
 
-- [İşlem 001 — V2 kapsamının yeniden tanımlanması](docs/islem_001.md)
+## Belgeler ve geliştirme izleri
+
+Her yeni AI destekli geliştirme isteği uygulanmadan **önce** `docs/islem_NNN.md` dosyasına kaydedilir. İş sonunda gerçekten yapılan değişiklikler, commit'ler ve doğrulama sonucu aynı kayda eklenir.
+
+- [İşlem 001 — Başlangıç ve kayıt protokolü](docs/islem_001.md)
+- [İşlem 002 — Ürün kapsamı ve teknik plan](docs/islem_002.md)
+- [Ürün kapsamı](docs/kapsam.md)
+- [Teknik gereksinimler](docs/teknik-gereksinimler.md)
+- [P0–P10 modül planı](docs/modul-plani.md)
 - [Karar defteri](docs/kararlar.md)
-- [Kapsam alternatifleri](docs/kapsam.md)
 
-## İlk ürün seçenekleri
+## Öngörülen ilk çalışan sürüm
 
-1. **Mimari çizim analizi ve teknik kontrol** — çekirdek için önerilen yön.
-2. Mimarlık öğrencisine geri bildirim / jüri provası — isteğe bağlı ek modül.
-3. Kaynağı doğrulanmış mevzuat ve standart kontrolü — aşamalı.
-4. Genel pedagojik eğitim portalı — ilk sürüme otomatik olarak aktarılmaz.
+Önerilen sıra: `DrawingIR -> DXF -> geometri ve topoloji -> deterministik teknik kontroller -> çizim üzerinde bulgu -> yerel rapor`. Yerel OCR, VLM ve ek dosya formatları daha sonra bu çekirdeği genişletecek. **DXF'nin ilk desteklenecek format olması öneridir, henüz kesin ürün kararı değildir.**
 
-## Mimari taslak
-
-`src/mimarllm` altında dosya içe alma, geometri, yerel görsel çözümleme, kurallar, kanıt ve rapor modülleri öngörülmektedir. Gerçek klasörler ihtiyaç ortaya çıktıkça oluşturulur; henüz yapılmamış işlevler varmış gibi gösterilmez.
-
-**Not:** Bu depo mevcut V1 projesinin fork'u veya birebir kopyası değildir.
+**Henüz yok:** Kaynak kodlu analiz motoru, kurulu model, çalışan kullanıcı arayüzü, gerçek donanım benchmark'ı veya Windows kabul testi.
