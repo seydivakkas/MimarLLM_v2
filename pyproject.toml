@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mimarllm-v2"
+version = "0.1.0"
+description = "Offline architectural drawing inspection and source-provenance toolkit"
+requires-python = ">=3.11"
+dependencies = [
+  "pdfplumber>=0.11,<0.13",
+  "pypdfium2>=4,<6",
+  "pydantic>=2,<3",
+  "Pillow>=10,<13",
+]
+
+[project.optional-dependencies]
+ocr = [
+  "rapidocr>=3.10,<5",
+  "onnxruntime>=1.20,<2",
+]
+dev = [
+  "pytest>=8,<10",
+  "reportlab>=4,<5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
