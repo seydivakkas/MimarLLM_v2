@@ -66,3 +66,11 @@ Yeni ürün tanımı: **Yerel Mimari Teknik Çizim Analizi, Hata Tespiti ve Özg
 **Hukukî kesinlik sınırı:** Sistem resmî proje kontrol makamı değildir. Belirli bir maddenin uygulanabilirliğini belirlemek için proje tarihi, konumu, kullanım sınıfı, yerel plan notu ve hükmün yürürlük bilgisi gerekebilir. Bilgi eksikse otomatik PASS yok. Satır ID, OCR kaynaklı olabileceğinden özgün resmî satır numarası gibi sunulmaz.
 
 Ayrıntılı tasarım: [sistem-mimarisi.md](sistem-mimarisi.md), [ocr-ve-bellek.md](ocr-ve-bellek.md), [mevzuat-rag.md](mevzuat-rag.md).
+
+## İşlem 004 — Ürünün OCR çalışma yolu güncellendi
+
+Varsayılan OCR tasarımı artık **PyMuPDF ile yerel PDF metni önceliği + RapidOCR ONNX Runtime CPU**. CAD DXF metni doğrudan ezdxf üzerinden kaynağı ve rotasyonuyla çıkarılır. Bir PDF'de metin katmanı olması tüm pafta ölçülerinin metin olarak korunacağı anlamına gelmez; SHX kontur, eksik karakter, yön ve kısmi raster bölgelerinde yalnız ROI OCR planlanır.
+
+**Unlimited-OCR** önceki `islem_003` seçiminden farklı olarak artık isteğe bağlı deneysel bileşendir ve normal kuruluma eklenecek zorunlu model değildir. Mevzuat PDF, tablo ve madde/fıkra ayrıştırması, **yerel ve kullanıcı kontrolündeki ayrı offline ETL** hattına taşınmıştır. Bu revizyon pedagogik portal/çoklu agent/bulut API gibi kapsam dışı özellikleri geri getirmez.
+
+Kullanıcıya özgün belgenin `document_sha256 + page_index + four-point polygon + article/paragraph/item/table cell` kaynak bilgisi korunarak gösterilecek. RapidOCR sınıflandırıcısının 0/180° desteği 45/90/270° yazılarda eksiksiz okuma garantisi olarak sunulmayacak. Detay: [ocr-mimari-pafta.md](ocr-mimari-pafta.md).
