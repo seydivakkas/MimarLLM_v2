@@ -55,4 +55,31 @@ Bu istek, **mimari tasarım ve dosya planı güncellemesi** olarak ele alınır.
 
 ## 7. Uygulama kaydı
 
-Taslak belge yazıldıktan sonra bu bölüm gerçek GitHub değişiklikleri ve doğrulanan dosyalar ile güncellenecek.
+**Son durum: UYGULANDI — dokümantasyon ve tasarım; kod geliştirme yapılmadı.**
+
+### Bu istek kapsamındaki GitHub değişiklikleri
+
+| Dosya | Sonuç | Commit |
+| --- | --- | --- |
+| `docs/islem_003.md` | Uygulamadan önce işlem kaydı | `5fe3c71` |
+| `docs/sistem-mimarisi.md` | İki kaynaklı kanıt grafı, mimari kullanıcı senaryoları, sade modül ağacı | `e260d39` |
+| `docs/ocr-ve-bellek.md` | Unlimited-OCR değerlendirme ve phase-locked GPU/CPU fallback sözleşmesi | `934993a` |
+| `docs/mevzuat-rag.md` | LegalAST, sürüm/yürürlük/istisna, retrieval ve özgün PDF page/span | `e08f863` |
+| `docs/kararlar.md` | K-017–027 kararları: kesin vs ölçüm bekleyen ayrımı | `d73b95e` |
+| `docs/kapsam.md` | Beş mevzuat ailesi, ikili kanıt ve kapsamın güncellenmesi | `c2c31cb` |
+| `docs/teknik-gereksinimler.md` | FR-019–028 ve NFR-013–016 ek gereksinimleri | `21c03f9` |
+| `docs/modul-plani.md` | R0–R3 ve OCR GPU kabul kapısı, önceki P0–P10 planıyla entegrasyon | `76faeab`; düzeltme `0a9841c` |
+| `README.md` | Kamuya açık proje kapsamı ve belge bağlantıları | `9f65573` |
+| `.gitignore` | Mevzuat PDF / ham belge / model / indeks dosyaları Git dışı | `d320c07` |
+
+### Yapılmadı
+
+- `src/` veya `app/` altında analiz, OCR, VLM veya RAG kodu **yazılmadı**.
+- Baidu Unlimited-OCR modeli **indirilmedi, kurulmadı veya RTX 4070 8 GB üzerinde ölçülmedi**.
+- Resmî mevzuatların ilgili yıldaki konsolide sürümleri, değişiklikleri ve madde/fıkraları **henüz hukukî olarak doğrulanmadı**.
+- Herhangi bir belediye plan notu, özel müşteri verisi, gerçek pafta veya telifli yönetmelik PDF'si **public repoya yüklenmedi**.
+- Windows kabul, regression, kaynak/satır OCR bbox doğruluğu ve VRAM testleri **çalıştırılmadı**.
+
+### Sonraki adım
+
+**Sıradaki işlem dosyası `docs/islem_004.md` olacaktır.** İlk kod mühendisliği için öneri: `DrawingIR v0.1` + DXF/PDF source location ve coordinate transform sözleşmesi + ilk sentetik geometri fixture'ları. Bu çekirdek hem çizim hem hukukî belge kanıt zincirine temel olacaktır. `islem_002` ve `islem_003` yeniden numaralandırılmayacak.
