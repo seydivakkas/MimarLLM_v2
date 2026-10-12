@@ -1,3 +1,5 @@
+> **GÜNCEL OCR KARARI — İşlem 004:** Kaynağı koruyan akış artık `DXF TEXT/MTEXT/DIMENSION / PyMuPDF native PDF text -> kalite kapısı -> eksik ROI'de RapidOCR CPU -> quad/transform -> DrawingIR`. OCR ve yerel VLM bağımsızdır. Unlimited-OCR için aşağıdaki tarihsel GPU OCR fazı **varsayılan çalışma yolu değildir**. Mevzuat PDF'leri ayrı offline ETL işleminde ayrıştırılır. Detay: [OCR mimarisi](ocr-mimari-pafta.md) ve [islem_004](islem_004.md).
+
 # MimarLLM V2 — Sistem Mimarisi v0.3
 
 - **İşlem kaydı:** [islem_003.md](islem_003.md)
