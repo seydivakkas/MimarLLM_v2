@@ -195,9 +195,23 @@ def test_missing_marker_and_wrong_frame_rejected():
     drawing.entities[-1] = marker.model_copy(
         update={"source": source, "frame_id": "cad:Paper"}
     )
-    out = build_topology(drawing, geometry, rooms, [
-        doors()[3]
-    ])
+    with pytest.raises(TopologyInputError, match="Cannot reproduce source faces"):
+        build_topology(drawing, geometry, rooms, [doors()[3]])
+
+    # An independently added marker on another layout is a *local passage*
+    # defect, not a mutation of the original source analysis.
+    drawing2, geometry2, rooms2 = scene()
+    drawing2.frames.append(new_frame)
+    alien = drawing2.entities[-1].model_copy(update={
+        "entity_id": "other-layout-marker",
+        "source": source,
+        "frame_id": "cad:Paper",
+    })
+    drawing2.entities.append(alien)
+    wrong = doors()[3].model_copy(update={
+        "supporting_entity_ids": ("other-layout-marker",)
+    })
+    out = build_topology(drawing2, geometry2, rooms2, [wrong])
     assert not out.edges
     assert [i.code for i in out.issues] == ["UNSUPPORTED_OPENING_SOURCE"]
 
