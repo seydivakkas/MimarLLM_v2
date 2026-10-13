@@ -103,6 +103,7 @@ def _linework(
     *,
     frame_id: str,
     max_segments: int,
+    report_ignored: bool = False,
 ) -> tuple[list[tuple[str, LineString]], list[GeometryIssue]]:
     lines: list[tuple[str, LineString]] = []
     issues: list[GeometryIssue] = []
@@ -112,11 +113,15 @@ def _linework(
                 or entity.type_candidate not in _ADMITTED
                 or p.kind not in {PrimitiveKind.SEGMENT, PrimitiveKind.POLYLINE,
                                   PrimitiveKind.POLYGON}):
-            issues.append(GeometryIssue(
-                code="UNSUPPORTED_BOUNDARY_SOURCE", frame_id=frame_id,
-                entity_ids=(entity.entity_id,),
-                detail="Entity is not accepted as native linear geometry in v0.1",
-            ))
+            # A broad PDF pass can contain tens of thousands of glyphs.
+            # Ignore unrelated text/points silently during discovery; when
+            # the caller *selects* an invalid boundary, expose the mistake.
+            if report_ignored:
+                issues.append(GeometryIssue(
+                    code="UNSUPPORTED_BOUNDARY_SOURCE", frame_id=frame_id,
+                    entity_ids=(entity.entity_id,),
+                    detail="Selected entity is not native linear boundary geometry",
+                ))
             continue
         pts = list(p.points)
         if p.closed:
@@ -237,7 +242,10 @@ def analyze_geometry(
         min_face_area <= 0 or snap_tolerance < 0):
         raise GeometryInputError("Invalid geometry safety limits")
     chosen = _entities(drawing, frame_id, entity_ids)
-    parts, issues = _linework(chosen, frame_id=frame_id, max_segments=max_segments)
+    parts, issues = _linework(
+        chosen, frame_id=frame_id, max_segments=max_segments,
+        report_ignored=entity_ids is not None,
+    )
     issues.extend(_quality(parts, frame_id, max_pairs=max_pairs))
     faces, polygon_issues = _polygon_faces(
         parts, frame_id, min_face_area=min_face_area,
