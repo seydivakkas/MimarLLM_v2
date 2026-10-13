@@ -169,3 +169,20 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-091 | Resmî yönetmelik kuralları, bağımsız hukukî inceleme ve gerçek Windows saha kabulü bu aşamada yapılmadı | HOLD |
 
 [İşlem 012](islem_012.md) · [Rule Engine v0.1 sözleşmesi](specs/rule-engine-v0.1.md).
+
+
+## İşlem 013 — PDF LegalAST ETL kararları (2026-10-13)
+
+| Karar | Uygulama | Durum |
+| --- | --- | --- |
+| K-092 | Resmî mevzuat PDF kaynak kimliği immutable SHA-256; özgün PDF sayfa/koordinat/çıkarım yöntemi LegalSourceSpan içinde | KODLANDI |
+| K-093 | `pdfplumber` native kelime/hücre; `pypdfium2` render; `RapidOCR` CPU yalnız kullanıcının seçtiği OCR sayfalarında | KODLANDI |
+| K-094 | BÖLÜM, MADDE, GEÇİCİ MADDE, (fıkra), bent ve devam metniyle LegalAST oluşturulur; belirsizlikler issue | KODLANDI / KISMI |
+| K-095 | Tablo hücreleri PDF bbox ve row/column kimliğiyle tutulur; tablo–madde ilişkisi yalnız adaydır | KODLANDI |
+| K-096 | Değişiklik, ilga, yürürlük ve istisna sözcükleri `LegalChangeCandidate` işaretidir, gerçek norm ilişkisi veya geçerli tarih değildir | KODLANDI |
+| K-097 | Metadata `USER_ASSERTED_UNVERIFIED`; LegalDocument her zaman `UNREVIEWED`; hukuken `APPROVED_FOR_CHECK` çıkarılamaz | KODLANDI |
+| K-098 | Bütün tarihsel yönetmelik sürümleri, iki sütun/karmaşık ekler, OCR doğruluk kabulü ve gerçek resmî PDF ayrıştırılması | HOLD |
+| K-099 | F08–F12 hukukî uygunluk; RuleEngine REGULATORY kilidi islem_013'te açılmaz | KESİN |
+| K-100 | Orijinal mevzuat PDF içerikleri ve modelleri GitHub'a yüklenmez, yalnız sentetik fixture | KESİN |
+
+[İşlem 013](islem_013.md) · [LegalAST kaynağı](specs/legalast-v0.1.md).
