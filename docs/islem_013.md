@@ -1,7 +1,7 @@
 # İşlem 013 — Çevrimdışı mevzuat PDF → LegalAST ve özgün kaynak kanıtı
 
 - **Tarih:** 2026-10-13
-- **Durum:** ÖN KAYIT — **işlem 013'ün ilk GitHub yazımı**; koddan önce açıldı.
+- **Durum:** UYGULANDI — PDF kaynaklı LegalAST + sentetik Ubuntu/Windows CI PASS; resmî mevzuat/hukukî sürüm, gerçek OCR modeli ve bağımsız hukukî kabul HOLD.
 - **Temel kaynaklar:** [Mevzuat doğrulama protokolü](mevzuat-dogrulama-protokolu.md) ve [Mevzuat RAG mimarisi](mevzuat-rag.md).
 - **Hedef:** F13, kaynak PDF → kaynak koordinatlı yapılandırılmış hukukî kanıt adayları. F08–F12, F14–F15 henüz hukukî olarak etkinleştirilmez.
 - **Kesin teknoloji:** `pdfplumber` native text+table; `pypdfium2` render; `RapidOCR + onnxruntime CPU` yalnız açıkça sağlanan yerel OCR motoru. PyMuPDF/Unlimited-OCR kullanılmaz.
@@ -30,4 +30,35 @@
 
 ## 3. Gerçek commit ve test sonuçları
 
-Uygulama sonunda dosya bazında commit SHA, Linux/Windows gerçek CI durumu, başarısız fixture'lar ve açık hukukî/mühendislik riskleri eklenecek.
+**Zorunlu ön kayıt ilk yazım:** `docs/islem_013.md`, commit `f9bd34886e89afb5c4f531981f6ab90b293a3732` **uygulama dosyalarından önce** oluşturuldu. 001–012 kaydı üzerine yazılmadı.
+
+| Dosya | Yapılan uygulama | Commit |
+| --- | --- | --- |
+| `src/mimarllm/legal/models.py` | LegalDocument/Metadata, LegalLine/Node/SourceSpan, TableCell/Table, ChangeCandidate, ReviewIssue; UNREVIEWED ve certification=False şema kilidi | `2d5256a7` |
+| `src/mimarllm/legal/extractor.py` | `pdfplumber` native satır/gerçek hücre bbox, PDF SHA, girdi bütçesi, açıkça seçilen sayfada `pypdfium2 + RapidOCR CPU` koordinatı | `6706875e` |
+| `src/mimarllm/legal/parser.py` | Türkçe BÖLÜM/MADDE/GEÇİCİ MADDE/FIKRA/BENT, devam span'ı ve tablo parent adayı, ASCII transliterasyonu, aynı satırdaki fıkra | `3928fcd1`, `5dd931b5`, `32138c19` |
+| `src/mimarllm/legal/changes.py` | Değişiklik/ilga/yürürlük/istisna **metinsel adayları**, node ve kaynak PDF satırına bağ | `99bf89d3` |
+| `src/mimarllm/legal/etl.py` | Offline `parse_legal_pdf`, hash validasyonu, JSON export (sessiz overwrite yok), AST limit hatası | `37ace2ee`, `4e9892cf` |
+| `src/mimarllm/legal/__init__.py` | Yeni aynı paket içinde legal modül | `df5c37fe` |
+| `tests/test_legal_etl.py` | ReportLab ile gerçek sentetik 2 sayfalı Türkçe PDF/tablo, native/OCR quad, source SHA, hiyerarşi, değişiklik, hukukî onay reddi, JSON, limitler ve inline fıkra | `60ed4eac`, `d4a78460`, `dfbabc92` |
+| `.github/workflows/core-contracts.yml` | Legal ETL sentetik testlerini mevcut Ubuntu/Windows CI matrisine bağ | `ed548837` |
+| `docs/specs/legalast-v0.1.md` | Kullanım, kaynak koordinatı, AST ve hukukî HOLD şartnamesi | `ef6a9113` |
+| `README.md`, `docs/ozellik-envanteri.md`, `docs/uygulama-yol-haritasi.md`, `docs/kararlar.md` | F13 KISMI, K-092…K-100 kararları ve 014–015 bağlantısı | `e154b355`, `b8eed947`, `ccc372eb`, `c50cd021` |
+
+### CI ve başarısız testlerin açıklaması
+
+- İlk tümleşik [run 38375659668](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38375659668): Ubuntu **171 PASS, 2 FAIL**. İki sorun: sentetik belgede fıkra sayısı testte 3 sanılmıştı, gerçekte 4'tü; `max_nodes` aşımında genel `ValueError` yükseliyor, tutarlı `LegalInputError` kullanılmıyordu. Fixture beklentisi ve hata türü düzeltildi.
+- Düzeltmeden sonraki [run 38375826267](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38375826267): Ubuntu/Windows **173 PASS**, 0 FAIL.
+- Yaygın `MADDE 1 – (1) ...` örüntüsüne aynı satırda fıkra ve dürüst **tam-satır PDF bbox** paylaşma desteği, ilga ifadesinin aday olması testleri eklendi.
+- **Son kaynak test commit `dfbabc92bac10e4e9a309c67774873a01953f381` için [GitHub Actions 38376004832](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38376004832): Ubuntu Python 3.11 175/175 PASS (2,85 s); GitHub-hosted Windows Python 3.11 175/175 PASS (7,56 s)**. Her iki işin job logları ayrı incelendi.
+- Sentetik PDF dokümanları ReportLab ile test çalışma anında oluşturulup gerçek `pdfplumber` tarafından okunuyor, tablo hücre bbox'ları ve metinler geri test ediliyor. OCR metin/quad **enjekte edilen sahte yerel reader** ile doğrulanıyor; gerçek RapidOCR model inference test edilmedi. Gerçek resmî gazete PDF corpus/yıl dönemi, bağımsız hukukî inceleme veya kullanıcı i7/RTX4070 Windows donanımı test edilmedi.
+
+## 4. Açık riskler, hukukî HOLD ve sonraki işlem
+
+**Kodlanan teknik katman:** Yerel PDF→LegalAST, çok sayfa, native metin, çizgili vektör tablo hücreleri, kaynak SHA+page+bbox/polygon, açıkça seçilen raster sayfada OCR quad, madde/fıkra/bent ve değişiklik/yürürlük/istisna *ifade adayları*. JSON dışa aktarımı user/localdır, PDF deposu GitHub'a eklenmedi.
+
+**Kritik eksikler:** Yıllara göre tüm resmî PDF'lerin indirilmesi ve kaynak resmiyetinin doğrulanması, her resmî Gazete'nin karmaşık sütun/dipnot/tablo OCR/layout testi, özgün PDF üstünde bağımsız hücre-vurgu incelemesi, yürürlük/değişiklik/istisna ilişkilerinin tarihsel konsolidasyonu, yerel idari uygulanabilirlik ve hukukî uzman/denetçi onayı. Kod yalnız ifadeleri işaretler; iddia ettiği resmî tarih ve norm hükmünü otomatik karara dönüştürmez.
+
+**Özellik sonucu:** F13 **KISMI / MEVCUT_KOD + Linux/Windows sentetik CI PASS**. F08–F12 **HUKUKI_HOLD**. İşlem 012'deki `RuleEngine` `REGULATORY` kilidi **değiştirilmedi ve açılmadı**; LegalAST `review_status=UNREVIEWED`. İki sütunlu sayfalar, çizgisiz/raster tablolar, eski ve yeni Resmî Gazete yazı tipleri ve OCR karakter doğruluğu ayrıca kabul ister.
+
+**Sıradaki İşlem 014:** Kaynak `LegalAST` üzerinde offline SQLite FTS5 + yerel dense embedding/RRF/retriever, özgün PDF span/quad erişimi. Arama skoru hukukî uygunluk/otorite skoru değildir. Bu işlem için önce `docs/islem_014.md` açılacaktır.
