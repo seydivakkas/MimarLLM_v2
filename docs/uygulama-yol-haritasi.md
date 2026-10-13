@@ -100,3 +100,10 @@ F06 yalnız sentetik tek kat/topolojik kanıta dayalı çalışır; yangın kaç
 `RuleEngine` teknik/sentetik değerlendirmeleri, 6 sonuç durumu, kısıtlı Pydantic rule tanımı ve DrawingIR/Shapely/NetworkX'ten tekrar üretilen kanıtlarla kodlandı. Semantik bağ ve `source_sha256/frame_id/evidence_ids` çıktısı kullanılıyor. Ölçüm belirsizliği eşikte `REVIEW_REQUIRED`; sahte kaynak `ERROR/REVIEW_REQUIRED`; eksik ölçüm/kısmi graph `INSUFFICIENT_EVIDENCE`.
 
 **Yönetmelik için hiçbir hazır PASS yolu yok.** Kaynak meta verisi verilmese veya verilmiş gibi yapılsa dahi bütün `REGULATORY` kuralları yasal kaynak onayı olmadan kilitlidir. F07 sadece `KISMI / MEVCUT_KOD`; F08–F12 HUKUKI_HOLD devam. Sonraki `islem_013`: çevrimdışı mevzuat PDF→LegalAST ve özgün konum/versiyon; gerçek yasal norm doğrulaması bundan sonra da ayrı kabul gerektirir. [İşlem 012](islem_012.md).
+
+
+## İşlem 013 uygulama notu (2026-10-13)
+
+`src/mimarllm/legal/{models,extractor,parser,changes,etl}.py` ile çevrimdışı **orijinal PDF→unreviewed LegalAST** çekirdeği geliştirildi. Native PDF metni/tablo hücresi ve açıkça seçilen sayfalarda RapidOCR CPU quad sonuçları özgün dosya `SHA-256 + PDF page index + source polygon` ile bağlanır. Madde/fıkra/bent, geçici madde ve satır içi fıkra parser'ı ile değişiklik/yürürlük/ilga/istisna ifade adayı vardır.
+
+**Önemli sınır:** Değişiklik zinciri tarihsel konsolidasyonu veya hukukî sürüm doğrulaması bu işlemde yapılmaz; metadata kullanıcı beyanı olarak saklanır. F13 yalnız `KISMI/MEVCUT_KOD`. F08–F12 HUKUKI_HOLD ve islem_012 RuleEngine REGULATORY kilidi devam eder. Sıradaki `islem_014` LegalAST SQLite FTS5+yerel semantik retrieval, kaynak bbox'ına geri dönüş.
