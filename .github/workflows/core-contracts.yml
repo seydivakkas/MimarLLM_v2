@@ -1,4 +1,4 @@
-name: Core contracts (synthetic)
+name: Core contracts (synthetic, Linux + Windows)
 
 on:
   push:
@@ -16,7 +16,11 @@ permissions:
 
 jobs:
   contracts:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
