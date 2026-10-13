@@ -20,7 +20,7 @@ from mimarllm.legal.review import (
     task_digest,
 )
 from mimarllm.legal.verification import SourceAuditStatus, verify_local_pdf
-from mimarllm.legal.versions import AmendmentClaim
+from mimarllm.legal.versions import AmendmentClaim, VersionReview
 
 
 class VisualReviewError(ReviewInputError):
@@ -34,6 +34,7 @@ def create_visual_review_html(
     output_html: str | Path,
     *,
     amendment_claims: list[AmendmentClaim] | None = None,
+    version_review: VersionReview | None = None,
     dpi: int = 100,
     max_pixels_per_page: int = 6_000_000,
     max_html_bytes: int = 24_000_000,
@@ -63,6 +64,30 @@ def create_visual_review_html(
         raise VisualReviewError(f"Review selection differs from LegalAST: {exc}") from exc
     if reconstructed != checked:
         raise VisualReviewError("Review task text or source polygon differs from LegalAST")
+
+    # The legally unverified version-chain diagnostics accompany both PDFs.
+    # An arbitrary unrelated version result cannot be attached to a packet.
+    warnings_html = ""
+    if version_review is not None:
+        version_review = VersionReview.model_validate(version_review.model_dump())
+        if version_review.target_document_sha256 not in checked.source_documents:
+            raise VisualReviewError("Historical version result is not in selected PDFs")
+        if not any(t.document_sha256 == version_review.target_document_sha256
+                   and (t.reference_id == version_review.target_node_id or
+                        t.kind.value == "AMENDMENT_SIDE")
+                   for t in checked.tasks):
+            raise VisualReviewError("Historical version target does not match review queue")
+        entries = "".join(
+            "<li><strong>" + escape(issue.code) + "</strong>: "
+            + escape(issue.detail) + "</li>"
+            for issue in version_review.issues
+        )
+        warnings_html = (
+            '<section class="version-warnings"><h2>Tarihsel sürüm inceleme uyarıları</h2>'
+            '<p>Hukukî yürürlük ve asıl geçerli metin bağımsız doğrulanmadı.'
+            ' Tarihlerin tamamı beyan aşamasındadır.</p><ul>'
+            + entries + "</ul></section>"
+        )
 
     doc_map = {d.document_sha256: d for d in docs}
     if set(original_pdf_paths) != set(checked.source_documents):
@@ -197,7 +222,7 @@ small{display:block;margin-top:8px}
 <small>Dışa aktarım taslaktır. Dosyayı tekrar kaynak manifestine karşı kontrol
  eden yerel Python review_ledger akışına iletin; imzalanmış belge değildir.</small>
 </header><main>"""
-    html += "\n".join(items)
+    html += warnings_html + "\n".join(items)
     html += """</main><script type="application/json" id="manifest">""" + raw_data + """</script>
 <script>
 "use strict";
