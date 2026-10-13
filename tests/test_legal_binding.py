@@ -276,8 +276,10 @@ def test_amendment_source_and_target_ids_preserved_not_consolidated(sources, pro
         source_node_id=target.node_id,
         local_pdf_path=pdf, project=project,
         amendment_claims=[claim],
+        amendment_pdf_paths={change.document_sha256: amendment_pdf},
     )
     assert binding.status == BindingStatus.HOLD_OFFICIALITY_AND_INDEPENDENT_REVIEW
+    assert binding.amendment_source_audits[0].status == SourceAuditStatus.LOCAL_SOURCE_MATCHED
     assert not binding.legal_compliance_certified
 
 
@@ -394,3 +396,31 @@ def test_json_roundtrip_deterministic_binding_and_budget(sources, project):
             rule, [base], source_node_id=target.node_id,
             local_pdf_path=pdf, max_documents=0,
         )
+
+
+def test_amendment_claim_without_original_pdf_is_held(sources, project):
+    pdf, amendment_pdf, original, amend, node, amended_node = sources
+    claim = claimed_change(original, amend, node, amended_node)
+    bound = bind_regulatory_evidence(
+        rule_for(original, node), [original, amend],
+        source_node_id=node.node_id, local_pdf_path=pdf,
+        project=project, amendment_claims=[claim],
+    )
+    assert bound.status == BindingStatus.HOLD_AMENDMENT_CHAIN
+    assert "AMENDING_ORIGINAL_PDF_NOT_VERIFIED" in bound.reason_codes
+    assert bound.amendment_source_audits[0].status == SourceAuditStatus.ORIGINAL_PDF_MISSING
+
+
+def test_amendment_modified_after_ast_creation_is_not_trusted(sources, project):
+    pdf, amendment_pdf, original, amend, node, amended_node = sources
+    claim = claimed_change(original, amend, node, amended_node)
+    with amendment_pdf.open("ab") as f:
+        f.write(b"\n%after-legalast\n")
+    bound = bind_regulatory_evidence(
+        rule_for(original, node), [original, amend],
+        source_node_id=node.node_id, local_pdf_path=pdf,
+        project=project, amendment_claims=[claim],
+        amendment_pdf_paths={amend.document_sha256: amendment_pdf},
+    )
+    assert bound.status == BindingStatus.HOLD_AMENDMENT_CHAIN
+    assert bound.amendment_source_audits[0].status == SourceAuditStatus.ORIGINAL_PDF_MISMATCH
