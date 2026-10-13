@@ -358,3 +358,37 @@ def test_explicit_text_point_cannot_complete_a_room():
     )
     assert review.status is GeometryReviewStatus.REVIEW_REQUIRED
     assert review.physical_area_m2 is None
+
+
+def test_intersection_points_link_original_two_cad_source_ids():
+    drawing = make_drawing([
+        ((0, 0), (10, 10)), ((0, 10), (10, 0)),
+        ((0, 5), (5, 5)), ((10, 10), (12, 10)),
+    ])
+    result = analyze_geometry(drawing, FRAME)
+    crossing = [x for x in result.intersections if x.kind == "CROSSING"]
+    assert any({x.first_entity_id, x.second_entity_id} == {"s0", "s1"}
+               and x.coordinate == pytest.approx((5, 5)) for x in crossing)
+    junctions = [x for x in result.intersections if x.kind == "T_JUNCTION"]
+    assert any({x.first_entity_id, x.second_entity_id} == {"s0", "s2"}
+               for x in junctions)
+    assert all(x.frame_id == FRAME for x in result.intersections)
+
+
+def test_intersection_budget_is_enforced():
+    drawing = make_drawing([
+        ((-2, 0), (2, 0)), ((0, -2), (0, 2)),
+        ((-2, -2), (2, 2)), ((-2, 2), (2, -2)),
+    ])
+    with pytest.raises(GeometryInputError, match="Intersection safety budget"):
+        analyze_geometry(drawing, FRAME, max_intersections=1)
+
+
+def test_results_keep_original_document_hash(two_rooms):
+    faces = analyze_geometry(two_rooms, FRAME)
+    area = assess_area(two_rooms, FRAME, ["s0", "s4", "s5", "s6"],
+                       boundary_role="INTERIOR_ROOM", reviewer_id="synthetic")
+    gaps = find_parallel_edge_gaps(two_rooms, FRAME, max_gap=10)
+    assert faces.source_sha256 == HASH
+    assert area.source_sha256 == HASH
+    assert gaps.source_sha256 == HASH
