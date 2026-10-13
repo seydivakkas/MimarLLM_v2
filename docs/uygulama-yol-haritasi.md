@@ -93,3 +93,10 @@ F05 `KISMI`: sentetik geometri testleri Linux/Windows CI'da çalışır, gerçek
 NetworkX `MultiGraph` ile inceleme izine bağlı `ROOM/CORRIDOR/BALCONY/STAIR/LANDING` ve `DOOR/ARCHWAY/OPEN_PASSAGE/EXTERIOR_DOOR` beyanları, Shapely polygon ortak kenar gerçekliği, kaynak marker yakınlık kontrolü, missing review/inconsistent geometry durumda **kenar reddi**, connected components, articulation, bridge ve passage listeli erişim yolu kodlandı. Kaynak SHA ve orijinal native entity ID'leri korunur.
 
 F06 yalnız sentetik tek kat/topolojik kanıta dayalı çalışır; yangın kaçış yolu **metre** veya sınıflandırılmamış otomatik geçiş değildir. Sıradaki `islem_012` deterministik kural motoru sözleşmesi, `APPROVED_FOR_CHECK` hukukî kaynak koşulu. [islem_011](islem_011.md).
+
+
+## İşlem 012 uygulama notu (2026-10-13)
+
+`RuleEngine` teknik/sentetik değerlendirmeleri, 6 sonuç durumu, kısıtlı Pydantic rule tanımı ve DrawingIR/Shapely/NetworkX'ten tekrar üretilen kanıtlarla kodlandı. Semantik bağ ve `source_sha256/frame_id/evidence_ids` çıktısı kullanılıyor. Ölçüm belirsizliği eşikte `REVIEW_REQUIRED`; sahte kaynak `ERROR/REVIEW_REQUIRED`; eksik ölçüm/kısmi graph `INSUFFICIENT_EVIDENCE`.
+
+**Yönetmelik için hiçbir hazır PASS yolu yok.** Kaynak meta verisi verilmese veya verilmiş gibi yapılsa dahi bütün `REGULATORY` kuralları yasal kaynak onayı olmadan kilitlidir. F07 sadece `KISMI / MEVCUT_KOD`; F08–F12 HUKUKI_HOLD devam. Sonraki `islem_013`: çevrimdışı mevzuat PDF→LegalAST ve özgün konum/versiyon; gerçek yasal norm doğrulaması bundan sonra da ayrı kabul gerektirir. [İşlem 012](islem_012.md).
