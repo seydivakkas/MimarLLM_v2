@@ -63,3 +63,12 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F02 `KISMI / MEVCUT_KOD`:** `ezdxf.readfile`, `LINE`, `LWPOLYLINE` (bulge), `ARC`, `CIRCLE`, `TEXT`, `MTEXT`, `DIMENSION`, `INSERT`, nested INSERT ve MINSERT örnekleme, satır/katman ipucu ve native CAD handle + block path `DrawingIR` ilişkilendirmesi kodlandı. Kaynak birimleri `INFERRED` kalır.
 
 **F02 henüz tümden PASS değildir:** Dinamik bloklar, XREF çözümleme, ACAD proxy, gerçek nested OCS/3B, doğrulanmış DIMENSION fiziksel kalibrasyonu, seçili müşteri DXF'lerinde gerçek Windows kabulü yapılmadı. [İşlem kaydı](islem_008.md) · [DXF teknik şartnamesi](specs/dxf-import-v0.1.md).
+
+
+## İşlem 009 güncellemesi — F03 / F04
+
+**F03 `MEVCUT_KOD / SENTETİK CI KABUL`:** `pdf_ir.py` ile sayfa başına kaynak frame, native glyph bbox+matrix, gerçek PDF line/rect, Bezier flattening diagnostic, referans hash ve PDF kaynak polygon'u `DrawingIR`'ye bağlandı. `pdf.py` standart sayfa 0/90/180/270 döndürme ve sınırlandırılmış ROI render desteğiyle güncellendi. **Henüz tam PASS değil:** CropBox != MediaBox için ROI açık reddedilir; rotated native glyph gerçek quad yok; büyük döndürülmüş paftalarda tam sayfa render kapısı var.
+
+**F04 `KISMI`:** RapidOCR CPU adapter, `parse_pdf_ir(ocr_regions={...}, ocr_engine=...)` üzerinden poligonları kaynak PDF noktasına bağlar. Sentetik mock OCR ve kaynak ROI sınırları test edildi. **Gerçek model/Windows doğruluğu ve otomatik SHX/ROI kalite seçimi yapılmadı**; operasyonel OCR PASS yok.
+
+[İşlem 009](islem_009.md) · [PDF/OCR kaynak sözleşmesi](specs/pdf-ocr-drawingir-v0.1.md).
