@@ -342,3 +342,26 @@ def test_tight_dense_candidate_budgets_are_fail_closed(sample_pdf, metadata):
         with pytest.raises(RagStoreError, match="index budget"):
             db.index_document(ast, max_passages=1)
         assert search_legal(db, "ışıklık").results
+
+
+def test_forged_offpage_highlight_rejected_when_original_pdf_present(sample_pdf, metadata):
+    ast = parse_legal_pdf(sample_pdf, metadata)
+    first = ast.nodes[0]
+    bad_source = first.spans[0].model_copy(update={
+        "polygon": ((9000, 5), (9010, 5), (9010, 15), (9000, 15)),
+    })
+    forged_node = first.model_copy(update={"spans": (bad_source,)})
+    forged = ast.model_copy(update={
+        "nodes": [forged_node, *ast.nodes[1:]],
+    })
+    # Hash is genuine and page index is valid, but coordinates lie beyond page.
+    assert LegalDocument.model_validate(forged.model_dump())
+    with LegalRagStore() as db:
+        with pytest.raises(RagStoreError, match="polygon exceeds"):
+            db.index_document(forged, original_pdf_path=sample_pdf)
+        assert not search_legal(db, "ışıklık").results
+
+
+def test_index_requires_existing_parent_sqlite_directory(tmp_path):
+    with pytest.raises(RagStoreError, match="parent directory"):
+        LegalRagStore(tmp_path / "missing-dir" / "index.sqlite")
