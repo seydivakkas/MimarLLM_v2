@@ -516,3 +516,25 @@ def test_regulatory_wont_use_its_declared_effectivity_date_as_legal_approval(tmp
     assert out.status is RuleStatus.INSUFFICIENT_EVIDENCE
     assert out.legal_source.article_id == "unverified-article"
     assert out.legal_compliance_certified is False
+
+
+def test_zero_hop_self_path_cannot_count_as_reviewed_adjacency(tmp_path):
+    _, drawing, _ = _draw(tmp_path, two=True)
+    geometry = analyze_geometry(drawing, "cad:Model")
+    spaces = [
+        SpaceReview(
+            space_id=f"room-{i}", face_id=face.face_id,
+            kind=SpaceKind.ROOM, reviewer_id="synthetic",
+        )
+        for i, face in enumerate(geometry.faces)
+    ]
+    rule = scenario_rule(
+        metric=MetricKind.REVIEWED_TOPOLOGY_PATH, rule_id="synthetic.path",
+    )
+    out = RuleEngine([rule]).evaluate(rule.rule_id, RuleRequest(
+        drawing=drawing, geometry_analysis=geometry, spaces=spaces,
+        path_from_space_id="room-0", path_to_space_id="room-0",
+    ))
+    assert out.status is RuleStatus.REVIEW_REQUIRED
+    assert out.reason_code == "ZERO_HOP_SELF_PATH_IS_NOT_A_PASSAGE"
+    assert out.evidence_ids == ()
