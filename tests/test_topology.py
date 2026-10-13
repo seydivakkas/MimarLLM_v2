@@ -236,7 +236,7 @@ def test_overlapping_room_interiors_rejected():
         "source_area_squared": faces[0].source_area_squared,
     })
     overlapping = geometry.model_copy(update={"faces": faces})
-    with pytest.raises(TopologyInputError, match="Overlapping reviewed interiors"):
+    with pytest.raises(TopologyInputError, match="source geometry"):
         build_topology(drawing, overlapping, rooms, [])
 
 
@@ -348,3 +348,35 @@ def test_real_ezdxf_saved_loaded_then_reviewed_adjacency(tmp_path):
     assert graph.edges[0].supporting_entity_ids == (marker.entity_id,)
     assert graph.drawing_sha256 == imported.drawing.source_sha256
     assert shortest_passage_path(graph, "room", "hall").passage_ids == ("d1",)
+
+
+def test_forged_geometry_face_with_correct_hash_still_rejected():
+    drawing, geometry, rooms = scene()
+    faces = list(geometry.faces)
+    changed = [(x + .25, y) for x, y in faces[0].exterior]
+    faces[0] = faces[0].model_copy(update={"exterior": tuple(changed)})
+    forged = geometry.model_copy(update={"faces": faces})
+    assert forged.source_sha256 == drawing.source_sha256
+    with pytest.raises(TopologyInputError, match="source geometry"):
+        build_topology(drawing, forged, rooms, doors())
+
+
+def test_floor_labels_from_different_levels_are_not_connected_by_2d_plan():
+    drawing, geometry, rooms = scene()
+    labeled = [
+        s.model_copy(update={"floor_label": "floor-1" if i < 2 else "floor-2"})
+        for i, s in enumerate(rooms)
+    ]
+    with pytest.raises(TopologyInputError, match="floor labels"):
+        build_topology(drawing, geometry, labeled, doors())
+
+
+def test_forged_face_source_ids_are_rejected():
+    drawing, geometry, rooms = scene()
+    faces = list(geometry.faces)
+    faces[0] = faces[0].model_copy(
+        update={"boundary_entity_ids": ("door5",)}
+    )
+    forged = geometry.model_copy(update={"faces": faces})
+    with pytest.raises(TopologyInputError, match="source geometry"):
+        build_topology(drawing, forged, rooms, doors())
