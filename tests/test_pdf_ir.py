@@ -178,7 +178,7 @@ def test_pdf_import_json_roundtrip_and_page_origin(diagram_pdf):
 def test_nondefault_cropbox_is_fail_closed_not_false_source_highlight(tmp_path):
     output = tmp_path / "cropped.pdf"
     pdf = Canvas(str(output), pagesize=(432, 288))
-    pdf.setCropBox((300, 200))
+    pdf.setCropBox((0, 0, 300, 200))
     pdf.drawString(50, 180, "CROP TEST")
     pdf.save()
     # Native media-page observations remain possible.
