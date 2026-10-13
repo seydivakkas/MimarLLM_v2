@@ -141,3 +141,12 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Donanım/offline:** SQLite Python stdlib, `LocalSentenceTransformer` yalnız önceden hazır bir **yerel klasör**, CPU, `local_files_only=True`, `trust_remote_code=False`; sentence-transformers temel paket zorunluluğu yapılmadı. Embedding yoksa `LEXICAL_ONLY` çalışır. ANN/FAISS/haricî API henüz yok.
 - **Kanıt ve karar ayrımı:** Bütün sonuçlar `UNREVIEWED` / `legal_compliance_certified=False` ve `RETRIEVAL_CANDIDATE_NOT_LEGAL_ADVICE`. RRF skorundan hukukî `COMPLIANT` üretilemez, RuleEngine `REGULATORY` kilidi değişmedi.
 - **Sınırlar:** Sentetik CI'da dense pipeline **fake embedder** ile test edildi; gerçek çokdilli model Türkçe ölçüm ve tüm yıl/sürüm mevzuat corpus performansı hâlâ HOLD. 
+
+
+## İşlem 015 — Kaynak doğrulama, sürüm/uygulanabilirlik kanıtı, RuleEngine bağlayıcısı
+
+- [İşlem 015](docs/islem_015.md) · [Legal binding v0.1 teknik şartnamesi](docs/specs/legal-binding-v0.1.md).
+- **Kod:** `src/mimarllm/legal/verification.py` (yerel PDF SHA, sayfa ve polygon sınır denetimi), `legal/versions.py` (orijinal ve amendment PDF/source-node kimlikli insan beyanı, tarih çakışma uyarıları), `legal/applicability.py` (konum/ruhsat/kullanım/istisna eksiklikleri) ve `src/mimarllm/rules/evidence.py` (RuleDefinition→LegalAST node→isteğe bağlı RAG hit→yerel PDF ve proje bağlantısı).
+- **Önemli ayrım:** Yerel PDF'yi hash ile eşleştirmek belgeyi resmî yayımlanmış yapmaz; değişiklik ilişkileri henüz hukukî konsolide sürüm değildir. Girdi `reviewer_id` bağımsız hukukçu denetimi/kimlik doğrulaması değildir. Eksik amending özgün PDF kendi `HOLD_AMENDMENT_CHAIN` uyarısını üretir.
+- **Hukukî kilit:** RAG skoru veya tüm kullanıcı alanlarının dolu olması `APPROVED_FOR_CHECK` üretmez. `evaluate_regulatory_with_evidence` belge/versiyon/proje kanıtı eksiklerini ve değişmeyen `RuleEngine.REGULATORY: INSUFFICIENT_EVIDENCE` sonucunu birlikte döndürür. F08–F12 HUKUKI_HOLD devam eder.
+- **Sonraki mühendislik sınırı:** özgün Resmî Gazete yetkili kaynağının doğrulanması, madde/fıkra bazında gerçekte yürürlükte sürümlerin bağımsız konsolidasyonu ve imzalı uzman onay akışı ayrı geliştirme/bağımsız hukukî kabul ister.
