@@ -12,7 +12,7 @@
 | F02 | DXF ayrıştırma, block/nested INSERT ve layer sinyali | `importers/dxf.py`, `importers/layers.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrolü** | Katman/handle/transform ve bozulan bloklarda güvenli hata | (2) / eski 003 |
 | F03 | PDF native vector + ROI + source provenance | `importers/pdf.py` | **MEVCUT_KOD, kabul bekler** | PDF char/line/curve/rect; dönüş/limit/görsel bbox ölçümü | İlk PDF kararları |
 | F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py`, `ocr/layout.py` | **KISMI** (adapter) | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
-| F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | PLANLANDI | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
+| F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrollü** | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
 | F06 | Mekânsal topoloji, kapı bağlantısı, geçiş grafı | `geometry/topology.py` | PLANLANDI | Unreachable ve articulation; dış kapı/balkon ayrımı | (4) / eski 005 |
 | F07 | Deterministik rule engine + altı durum ve kanıt | `rules/base.py`, `rules/engine.py` | PLANLANDI | PASS/FAIL/REVIEW/INSUFFICIENT/NA/ERROR; hesap izi | (5) / eski 006 |
 | F08 | Planlı Alanlar İmar Yönetmeliği denetimi | `rules/registry/tr_imar.py` | **HUKUKI_HOLD** | Onaylı madde-fıkra-eşik, tarih, proje kapsamı ve bbox | (5) / eski 006 |
@@ -72,3 +72,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F04 `KISMI`:** RapidOCR CPU adapter, `parse_pdf_ir(ocr_regions={...}, ocr_engine=...)` üzerinden poligonları kaynak PDF noktasına bağlar. Sentetik mock OCR ve kaynak ROI sınırları test edildi. **Gerçek model/Windows doğruluğu ve otomatik SHX/ROI kalite seçimi yapılmadı**; operasyonel OCR PASS yok.
 
 [İşlem 009](islem_009.md) · [PDF/OCR kaynak sözleşmesi](specs/pdf-ocr-drawingir-v0.1.md).
+
+
+## İşlem 010 güncellemesi — F05
+
+**F05 `KISMI / MEVCUT_KOD`:** Shapely üzerinden planar noding, polygonize_full, kapalı yüzey `UNCLASSIFIED_FACE` adayları; kaynak ID ile çizgi uç/kesişim/T junction kanıtları; açık, çakışan, kendiyle kesişen kaynak diagnostikleri. `assess_area` için doğru iç oda sınırı veya dış footprint kullanıcı tarafından açıkça seçilmeli, **aynı frame kaynak ölçek CONFIRMED** olmadan `physical_area_m2` yok. `find_parallel_edge_gaps` paralel iki çizginin örtüşen bölüm aralığını yalnız `REVIEW_REQUIRED` aday olarak döndürür.
+
+**Tam kabul DEĞİL:** otomatik duvar iç-dış konturu, gerçek oda duvarı/kapı açıklığı, global duvar kalınlığı doğrulaması, net/brüt yasal alan toplamı, sahadan gerçek Windows pafta kabulü, NetworkX topoloji ve yangın mesafesi yok. [İşlem 010](islem_010.md) · [Teknik şartname](specs/geometry-v0.1.md).
