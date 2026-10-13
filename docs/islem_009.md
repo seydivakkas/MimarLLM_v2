@@ -44,7 +44,7 @@
 - İlk tümleştirme CI [38342025131](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342025131): **84 PASS / 1 FAIL**. Gerçek hata: /Rotate=90 sayfasında PDFium doğrudan ROI crop ile tam sayfa üzerinde aynı bölge uyuşmuyordu. Çözüm: rotasyonlu standart sayfada yalnız bellek bütçesine sığan tam sayfa render + Pillow ROI crop; bellek limitini aşan büyük sayfa açık hata.
 - ROI/CropBox negatif testindeki [38342268760](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342268760) çalışması: **87 PASS / 1 FAIL**. Bu hatanın nedeni üretim kodu değil, `reportlab.setCropBox` fonksiyonuna dört koordinat yerine iki değer verilerek geçersiz PDF fixture üretilmesiydi. Fixture düzeltildi.
 - Sonraki bütünleşik Ubuntu test [38342398039](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342398039): **88 PASS / 0 FAIL**, gerçek sentetik PDF, bbox, 4 sayfa rotasyonu, injected mock OCR ve DrawingIR testleri.
-- Güncel son commit'e yönelik [Linux + Windows matrix 38342517550](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342517550): sonucu ayrıca doğrulanacak. GitHub-hosted Windows runner **kullanıcının RTX 4070/i7/32GB makinesi değildir**.
+- **Doğrulandı:** [Linux + Windows matrix 38342517550](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342517550), kod commit `b1f72177`: **Ubuntu Python 3.11: 88 PASS / 0 FAIL (1.34 s)** ve **GitHub-hosted Windows Python 3.11: 88 PASS / 0 FAIL (6.31 s)**. İki işin sonucunu GitHub Actions iş loglarından kontrol ettim. GitHub-hosted Windows runner **kullanıcının RTX 4070/i7/32GB makinesi değildir**; gerçek RapidOCR model ağırlıkları, GPU veya müşteri pafta deneyi kullanılmadı.
 
 ### Biten / bitmeyen kabul kapıları
 
