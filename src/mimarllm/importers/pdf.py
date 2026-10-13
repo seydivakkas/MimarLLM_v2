@@ -24,6 +24,15 @@ class RenderedRegion:
     roi_points: tuple[float, float, float, float]
     pixels_per_point: float
     document_sha256: str
+    page_rotation_degrees: int = 0
+
+    def source_to_pixel(self, x: float, y: float) -> tuple[float, float]:
+        """Convert displayed-page PDF coordinates to ROI bitmap coordinates."""
+        from math import isfinite
+        x0, y0, _, _ = self.roi_points
+        if not all(isfinite(v) for v in (x, y, self.pixels_per_point)):
+            raise PdfInputError("Nonfinite source or render scale")
+        return ((x - x0) * self.pixels_per_point, (y - y0) * self.pixels_per_point)
 
     def pixel_to_source(self, x: float, y: float) -> tuple[float, float]:
         """Map the OCR bitmap pixel center to PDF top-left points."""
@@ -121,10 +130,10 @@ def render_region(
     max_pixels: int = 8_000_000,
     max_file_bytes: int = 50 * 1024 * 1024,
 ) -> RenderedRegion:
-    """Render only a PDF page ROI; page rotation is explicitly gated.
+    """Render a displayed-page ROI including standard /Rotate metadata.
 
-    `pypdfium2` crop uses (left, bottom, right, top) margins. Input ROI is
-    (x0, top, x1, bottom) in top-left PDF points on an unrotated page.
+    The PDF crop tuple uses displayed-page margins (left,bottom,right,top).
+    Non-default CropBox is rejected to prevent misleading source placement.
     """
     import pypdfium2 as pdfium
 
@@ -138,8 +147,20 @@ def render_region(
         if not 0 <= page_index < len(document):
             raise PdfInputError("PDF page index outside document")
         page = document[page_index]
-        if page.get_rotation() != 0:
-            raise PdfInputError("Rotated PDF render requires a verified coordinate transform")
+        # PDFium get_size()/render() use the displayed page coordinates even
+        # when /Rotate is 90/180/270. pypdfium2 render crop is post-rotation.
+        # A non-default CropBox changes the visible origin, and PDF plumber
+        # keeps media-based coordinates. Until that offset is proven by
+        # cross-engine tests, fail closed instead of forging OCR polygons.
+        rotation = int(page.get_rotation())
+        if rotation not in (0, 90, 180, 270):
+            raise PdfInputError("Unsupported PDF page rotation")
+        mediabox = tuple(float(v) for v in page.get_mediabox())
+        cropbox = tuple(float(v) for v in page.get_cropbox())
+        if any(abs(a - b) > 1e-6 for a, b in zip(mediabox, cropbox)):
+            raise PdfInputError(
+                "Non-default CropBox needs verified cross-engine page offset"
+            )
         width, height = [float(n) for n in page.get_size()]
         x0, y0, x1, y1 = roi_points
         if not (0 <= x0 < x1 <= width and 0 <= y0 < y1 <= height):
@@ -154,6 +175,7 @@ def render_region(
             image=image, page_index=page_index,
             roi_points=roi_points, pixels_per_point=scale,
             document_sha256=_hash_file(pdf),
+            page_rotation_degrees=rotation,
         )
     except PdfInputError:
         raise
