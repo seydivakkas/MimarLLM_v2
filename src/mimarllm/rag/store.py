@@ -271,9 +271,9 @@ class LegalRagStore:
             return []
         try:
             return [r[0] for r in self.conn.execute(
-                "SELECT p.passage_id FROM passage_fts f"
-                " JOIN passages p ON p.passage_id = f.passage_id"
-                " WHERE passage_fts MATCH ?"  # alias not valid in MATCH
+                "SELECT p.passage_id FROM passage_fts"
+                " JOIN passages p ON p.passage_id = passage_fts.passage_id"
+                " WHERE passage_fts MATCH ?"
                 " AND (? IS NULL OR p.regulation_id=?)"
                 " AND (? IS NULL OR p.doc_sha=?)"
                 " ORDER BY bm25(passage_fts), p.passage_id LIMIT ?",
