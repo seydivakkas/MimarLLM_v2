@@ -101,3 +101,13 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Güven:** Otomatik çizgi kapanması, snap, çizgi katmanı veya paralel boşluk kesin oda/duvar kanıtı sayılmaz. Desteklenmeyen/eksik/çakışan kaynak seçimi `REVIEW_REQUIRED`, ölçek onaysızsa `INSUFFICIENT_EVIDENCE`. Her yüzey baştan `UNCLASSIFIED_FACE`; mevzuat/yangın `PASS` yok.
 - **Kapsamı açık:** Gerçek katmanlardan duvar iç-dış yüzü çıkarma, açılmış kapı/pencere hatları, oda-topoloji geçiş grafı, hakiki saha çizimleri ve yerel RTX 4070 Windows kabulü henüz yapılmadı. GitHub-hosted Windows sentetik CI ayrı kanıttır.
 - **Sıradaki işlem:** `docs/islem_011.md` — gerçek kapı/açık geçiş/oda ilişki kanıtı ile NetworkX spatial adjacency graph; yangın yürüme ağı ayrıca.
+
+
+## İşlem 011 — İncelenmiş mekânsal geçiş topolojisi (NetworkX)
+
+- [İşlem 011 uygulama ve CI](docs/islem_011.md) · [Topoloji v0.1 sözleşmesi](docs/specs/topology-v0.1.md)
+- **Kodlandı:** `src/mimarllm/geometry/topology.py`; `SpaceReview` ile `ROOM/CORRIDOR/BALCONY/STAIR/LANDING` yüzey incelemeleri, `PassageReview` ile `DOOR/ARCHWAY/OPEN_PASSAGE/EXTERIOR_DOOR` geçiş beyanları, kaynak `DrawingIR` ile **yeniden doğrulanmış** Shapely yüzey sınırı ve native kapı marker referansı, NetworkX `MultiGraph`.
+- **İşlevler:** Bağlı bileşenler, en az *geçiş sayısına* göre olası bağlantı yolları, articulation node/bridge edge analizi, dış düğüme doğrulanmış ilişki ve kanıtı bulunmayan mekânlar, kaynak SHA/face/marker ID.
+- **Yanlış PASS yok:** Katman adları, OCR metni, oda merkezleri veya duvarda kesintisiz çizgi **otomatik kapı oluşturmaz**. Reviewer kimliği yalnız istemci beyanıdır; kapıların gerçekten geçilebilir olduğu bu modülde bağımsız doğrulanmaz. Sonuçlar yangın kaçış mesafesi, mevzuat veya metre cinsinden yürüyüş mesafesi değildir.
+- **Açık:** CAD'den otomatik kapı açıklığı ve net geçiş doğrulaması, kapı yönü, katlar arası merdiven/3B yapı, büyük plan performansı, gerçek i7/4070 Windows saha testi.
+- **Sıradaki:** islem_012 kural motoru çerçevesi; herhangi bir hukukî hüküm aktif olmadan önce sürümlü özgün kaynak dayanağı gerekir.
