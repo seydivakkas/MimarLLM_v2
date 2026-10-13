@@ -209,9 +209,13 @@ def test_unsupported_ocr_candidate_never_makes_room():
         "entity_id": "fake-ocr", "origin": EvidenceOrigin.OCR_CANDIDATE,
     })
     native.entities.append(false_entity)
+    # Broad discovery ignores non-linework rather than emitting 10K issues
+    # for each PDF glyph. Explicitly selecting OCR as a wall is rejected.
     result = analyze_geometry(native, FRAME)
-    assert any(issue.code == "UNSUPPORTED_BOUNDARY_SOURCE" for issue in result.issues)
-    assert not result.faces
+    assert not any(issue.code == "UNSUPPORTED_BOUNDARY_SOURCE" for issue in result.issues)
+    selected = analyze_geometry(native, FRAME, entity_ids=["fake-ocr"])
+    assert any(issue.code == "UNSUPPORTED_BOUNDARY_SOURCE" for issue in selected.issues)
+    assert not result.faces and not selected.faces
 
 
 def test_safety_budgets_reject_large_inputs(two_rooms):
@@ -319,3 +323,38 @@ def test_real_pdf_rect_is_face_candidate_not_physical_room(tmp_path):
     assert all(face.semantic_kind == "UNCLASSIFIED_FACE" for face in result.faces)
     assert pdf_drawing.calibration.metres_per_unit is None
     assert not pdf_drawing.findings
+
+
+def test_self_crossing_bowtie_not_certified_as_single_room():
+    crossing = make_drawing([
+        ((0, 0), (6, 6)), ((6, 6), (0, 6)),
+        ((0, 6), (6, 0)), ((6, 0), (0, 0)),
+    ], calibrated=True)
+    result = analyze_geometry(crossing, FRAME)
+    assert len(result.faces) != 1
+    review = assess_area(
+        crossing, FRAME, ["s0", "s1", "s2", "s3"],
+        boundary_role="INTERIOR_ROOM", reviewer_id="synthetic-review",
+    )
+    assert review.status is GeometryReviewStatus.REVIEW_REQUIRED
+    assert review.physical_area_m2 is None
+
+
+def test_explicit_text_point_cannot_complete_a_room():
+    drawing = make_drawing([
+        ((0, 0), (4, 0)), ((4, 0), (4, 3)), ((4, 3), (0, 3)),
+    ], calibrated=True)
+    text_like = drawing.entities[0].model_copy(update={
+        "entity_id": "text1", "origin": EvidenceOrigin.CAD_NATIVE,
+        "type_candidate": "TEXT",
+        "geometry": GeometryPrimitive(
+            kind=PrimitiveKind.POINT, points=((0, 0),),
+        ),
+    })
+    drawing.entities.append(text_like)
+    review = assess_area(
+        drawing, FRAME, ["s0", "s1", "s2", "text1"],
+        boundary_role="INTERIOR_ROOM", reviewer_id="synthetic-review",
+    )
+    assert review.status is GeometryReviewStatus.REVIEW_REQUIRED
+    assert review.physical_area_m2 is None
