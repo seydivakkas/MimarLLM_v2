@@ -21,7 +21,7 @@
 | F11 | Sığınak ihtiyacı, kapasite, alan, kapı/çıkış | `rules/registry/tr_siginak.py` | **HUKUKI_HOLD** | 2025 değişikliklerinin sürüm zinciri; ek proje verisi | (14)=(15) / eski 016 |
 | F12 | BEP/TS 825 pencere, enerji ve kabuk verileri | `rules/registry/tr_bep.py` | **HUKUKI_HOLD** | TS hakları + U/hesap/iklim/3B veri; 2B'den sahte PASS yok | (16) / eski 017 |
 | F13 | Hiyerarşik mevzuat AST ve değişiklik/yürürlük | `legal/models.py`, `legal/extractor.py`, `legal/parser.py`, `legal/changes.py`, `legal/etl.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Kaynak hash + madde/fıkra/ek + gerçek PDF page/quad | (7) / eski 008 |
-| F14 | SQLite FTS5 ve CPU dense hibrit RAG, RRF | `regulations/store.py`, `retrieval.py` | PLANLANDI | Kaynak/version ID, exact match ve lexical fallback | (7) / eski 008 |
+| F14 | SQLite FTS5 ve CPU dense hibrit RAG, RRF | `rag/store.py`, `rag/retriever.py`, `rag/embeddings.py`, `rag/indexer.py`, `rag/models.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Kaynak/version ID, exact match ve lexical fallback | (7) / eski 008 |
 | F15 | RuleResult–LegalNode kaynak bağlama | `rules/evidence.py`, `evidence/` | PLANLANDI | Exact verified binding; arama benzerliği asla hukukî PASS değil | (8) / eski 009 |
 | F16 | Analiz hattı + CLI | `pipeline.py`, `cli.py` | PLANLANDI | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
 | F17 | JSON/Markdown/HTML/PDF rapor | `reports/exporter.py` | PLANLANDI | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
@@ -100,3 +100,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F13 MEVCUT_KOD/KISMI:** Gerçek PDF dosyası `pdfplumber` üzerinden metin satırı, çok sayfalı BÖLÜM/MADDE/GEÇİCİ MADDE/FIKRA/BENT ağacı ve tablo hücresinin orijinal `pdf page_index + polygon + original PDF SHA256` bağlarıyla ayrıştırılıyor. `pypdfium2 + RapidOCR` yalnız açık OCR sayfası/enjekte edilen CPU okuyucuyla çalıştırılıyor. `LegalChangeCandidate` değişiklik/ilga/yürürlük/istisna sözcüklerini kanıt bağlantılı **adaya** dönüştürüyor; hukukî hüküm konsolidasyonu yapmıyor. JSON export mevcut dosya üzerine yazmayı reddediyor.
 
 **HOLD:** Gerçek Resmî Gazete PDF corpus/baskı ve hukukî kaynak orijin teyidi yok; bütün tarih/yıl değişiklikleri ve madde/fıkra istisnaları birleştirilmedi; gerçek OCR/iki sütun/dipnot karmaşıklığı bağımsız doğrulanmadı. `LegalDocument.review_status=UNREVIEWED`; `RuleEngine` hâlâ tüm `REGULATORY` kurallarını `INSUFFICIENT_EVIDENCE` statüsünde tutuyor. [İşlem 013](islem_013.md) · [LegalAST v0.1 teknik şartnamesi](specs/legalast-v0.1.md).
+
+
+## İşlem 014 güncellemesi — F14
+
+**F14 `KISMI / MEVCUT_KOD`:** SQLite FTS5 + BM25; `LegalAST` düğüm, fıkra, bent ve tablo hücresi orijinal `document_sha256/page_index/polygon` indekslenir; kaynak SHA ve hiyerarşi çoklu belgeden ayrılır. Unicode/Türkçe lexical normalizasyon, güvenli parametrik sorgu, re-index transaction, model açıkça verilirse yerel normalize dense cosine ve deterministik RRF. `RagHit` kaynak span / table row+column / FTS+dense rank / yerel orijinal PDF hash erişimini verir; tüm sonuçlar `UNREVIEWED`.
+
+**Açık:** Gerçek BGE-M3/e5/SentenceTransformer model dosyaları kurulup Türkçe arama/relevance benchmark yapılmadı, dense CI yalnız sentetik 4D stub; arama/model doğruluğu veya hukukî statü PASS değil. Çok yıllı Resmî Gazete corpus, yürürlük/istisna ve konsolidasyon HOLD; RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE` döndürmeye devam eder. Büyük indeks için ANN ve gerçek saha RAM/latency kabulü yok. [İşlem 014](islem_014.md) · [RAG v0.1 şartnamesi](specs/rag-v0.1.md).
