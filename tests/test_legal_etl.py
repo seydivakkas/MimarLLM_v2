@@ -254,3 +254,35 @@ def test_determinism_on_same_pdf_and_metadata(gazette_pdf, meta):
     b = parse_legal_pdf(gazette_pdf, meta)
     assert a.model_dump_json() == b.model_dump_json()
     assert not any(c.review_required is False for c in a.changes)
+
+
+def test_inline_article_paragraph_preserves_only_full_line_span(tmp_path, meta):
+    path = tmp_path / "inline.pdf"
+    c = Canvas(str(path), pagesize=(450, 260))
+    c.setFont(_font(), 11)
+    c.drawString(30, 220, "MADDE 8 - (1) Tek satırda sentetik hüküm.")
+    c.drawString(30, 200, "a) Bu hükme bağlı bent.")
+    c.save()
+    ast = parse_legal_pdf(path, meta)
+    article = next(n for n in ast.nodes if n.kind == LegalNodeKind.ARTICLE)
+    paragraph = next(n for n in ast.nodes if n.kind == LegalNodeKind.PARAGRAPH)
+    item = next(n for n in ast.nodes if n.kind == LegalNodeKind.ITEM)
+    assert article.article_number == "8"
+    assert paragraph.paragraph_number == "1"
+    assert paragraph.parent_node_id == article.node_id
+    assert item.parent_node_id == paragraph.node_id
+    assert paragraph.spans[0] == article.spans[0]
+    assert any(i.code == "INLINE_PARAGRAPH_FULL_LINE_BBOX" for i in ast.issues)
+
+
+def test_repeal_text_is_unreviewed_mention_not_a_repealed_rule(tmp_path, meta):
+    file = tmp_path / "repeal.pdf"
+    c = Canvas(str(file), pagesize=(420, 250))
+    c.setFont(_font(), 11)
+    c.drawString(30, 220, "MADDE 1 - Önceki hüküm yürürlükten kaldırılmıştır.")
+    c.save()
+    ast = parse_legal_pdf(file, meta)
+    assert any(c.kind == ChangeKind.REPEAL_MENTION for c in ast.changes)
+    assert all(c.review_required for c in ast.changes)
+    assert not hasattr(ast, "repealed_articles")
+    assert ast.review_status == "UNREVIEWED"
