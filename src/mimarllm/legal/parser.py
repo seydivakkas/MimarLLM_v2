@@ -17,7 +17,7 @@ _SECTION = re.compile(
     r"^\s*(?:[\wÇĞİÖŞÜçğıöşü]+\s+)?BÖLÜM\b", re.IGNORECASE,
 )
 _TEMP = re.compile(
-    r"^\s*GEÇ[İI]C[İI]\s+MADDE\s+([0-9]+(?:/[0-9]+)?)\s*(?:[—–-]|\b|:)\s*(.*)$",
+    r"^\s*GE[ÇC][İI]C[İI]\s+MADDE\s+([0-9]+(?:/[0-9]+)?)\s*(?:[—–-]|\b|:)\s*(.*)$",
     re.IGNORECASE,
 )
 _ARTICLE = re.compile(
