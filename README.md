@@ -122,3 +122,12 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Hukukî HOLD:** `REGULATORY` tanımı yasal madde/fıkra ve PDF kimliğini aday metadata olarak tutabilir; fakat resmî source/version/yürürlük/applicability/istisna zinciri ve bağımsız onay hattı bulunmadığından **REGULATORY hiçbir zaman COMPLIANT/NON_COMPLIANT/NOT_APPLICABLE üretmez**. Kullanıcı kaynak onay bayrağıyla motoru açamaz. `legal_compliance_certified=True` açıkça reddedilir.
 - **Sınırlamalar:** Kural paketleri `tr_imar.py`, `tr_yangin.py` vb. oluşturulmadı; yazılım gerçek mimari hesaplar veya hukuka uygunluk sertifikası sunmuyor. Gerçek Windows i7/4070, resmî mevzuat ve saha testleri ayrı tutulur.
 - **Sonraki iş:** `islem_013` resmî mevzuat kaynak PDF'lerini maddeler/fıkralar, değişiklikler ve konum kanıtıyla çevrimdışı LegalAST'ye dönüştürme.
+
+
+## İşlem 013 — Yerel PDF → LegalAST
+
+- [İşlem 013](docs/islem_013.md) · [LegalAST v0.1 sözleşmesi](docs/specs/legalast-v0.1.md)
+- **Gerçek kod:** `src/mimarllm/legal/models.py`, `extractor.py`, `parser.py`, `changes.py`, `etl.py`. Orijinal PDF sayfası/bbox ve hash'ine bağlı metin, bölüm/madde/fıkra/bent/geçici madde, vektör tablo hücreleri ve değişiklik/yürürlük/ilga ifade adayları.
+- **OCR:** RapidOCR CPU yalnız açıkça seçilmiş sayfalarda, mevcut yerel OCR reader üzerinden. Belgenin basılı sayfa numarası, resmî başlığı, yürürlük tarihi ve hukukî geçerliliği otomatik varsayılmaz.
+- **Dürüst statü:** F13 `MEVCUT_KOD/KISMI`, sentetik Linux+Windows CI doğrulaması. Gerçek Resmî Gazete belgeleri arşivlenmedi/konsolide edilmedi; hukukî uzman onayı/iki sütun/OCR doğrulaması ayrı. F08–F12 REGULATORY hâlâ `INSUFFICIENT_EVIDENCE`.
+- **Sıradaki:** islem_014 LegalAST kaynak geri izli SQLite FTS5 + yerel dense/hybrid retrieval.
