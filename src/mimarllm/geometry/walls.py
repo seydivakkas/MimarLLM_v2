@@ -58,7 +58,10 @@ def find_parallel_edge_gaps(
             or max_segments < 1 or max_pairs < 0 or max_candidates < 1):
         raise GeometryInputError("Invalid wall-gap source-unit budgets")
     entities = _entities(drawing, frame_id, entity_ids)
-    pieces, issues = _linework(entities, frame_id=frame_id, max_segments=max_segments)
+    pieces, issues = _linework(
+        entities, frame_id=frame_id, max_segments=max_segments,
+        report_ignored=entity_ids is not None,
+    )
     n = len(pieces)
     if n * (n - 1) // 2 > max_pairs:
         raise GeometryInputError("Wall-gap pair-check safety budget exceeded")
