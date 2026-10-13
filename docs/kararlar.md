@@ -186,3 +186,21 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-100 | Orijinal mevzuat PDF içerikleri ve modelleri GitHub'a yüklenmez, yalnız sentetik fixture | KESİN |
 
 [İşlem 013](islem_013.md) · [LegalAST kaynağı](specs/legalast-v0.1.md).
+
+
+## İşlem 014 — Lokal RAG indeks/kanıt kararları (2026-10-13)
+
+| Karar | Mühendislik uygulaması | Durum |
+| --- | --- | --- |
+| K-101 | SQLite FTS5/BM25 lexical arama; kaynak metni ayrı korunur, Türkçe Unicode normalize indeks kullanılır | KODLANDI |
+| K-102 | LegalAST düğüm, parent, madde/fıkra/bent ve tablo hücre row/column orijinal PDF span + SHA kimliğiyle dizinlenir | KODLANDI |
+| K-103 | SQL/MATCH girdi escape + parametrik filtre ve sorgu sınırı; yeniden indeksleme transaction içinde | KODLANDI |
+| K-104 | Dense embedding yalnız açıkça sağlanan **yerel** SentenceTransformer klasöründe CPU, `local_files_only` ve `trust_remote_code=False` | KODLANDI; gerçek model kabulü HOLD |
+| K-105 | Dense v0.1 SQLite JSON ve bounded exact cosine; ANN/FAISS/servis bağımlılığı yok | KODLANDI / BÜYÜK CORPUS PERF HOLD |
+| K-106 | RRF 1/(k+rank), aynı passage kimliğinin FTS/dense birleştirilmesi; skor mevzuat geçerlik puanı değildir | KODLANDI |
+| K-107 | Kaynak PDF sağlanırsa aynı SHA ve sayfa sınırları doğrulanır; dosya artık yok/bozuksa `source_pdf_available=False` | KODLANDI |
+| K-108 | `RagHit` `UNREVIEWED`, `legal_compliance_certified=False`; yasal RuleEngine REGULATORY kilidi açılmaz | KESİN |
+| K-109 | Sentetik dense stub CI, gerçek öğrenilmiş Türkçe embedding doğruluk testi veya milyarlarca parçacıklı RAG benchmarkı değildir | HOLD |
+| K-110 | Gerçek mevzuat PDF corpus, konsolidasyon, hukukî yürürlük, belediye/yapı istisna bağları yapılmadı | HOLD |
+
+[İşlem 014](islem_014.md) · [RAG v0.1 teknik şartnamesi](specs/rag-v0.1.md).
