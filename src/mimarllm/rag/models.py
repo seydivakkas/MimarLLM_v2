@@ -30,6 +30,9 @@ class IndexedPassage(BaseModel):
     node_kind: str
     node_id: str | None = None
     parent_node_id: str | None = None
+    table_id: str | None = None
+    row_index: int | None = Field(default=None, ge=0)
+    column_index: int | None = Field(default=None, ge=0)
     article_number: str | None = None
     paragraph_number: str | None = None
     item_key: str | None = None
