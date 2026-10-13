@@ -221,3 +221,19 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-119 | Gerçek tüm yıl Resmî Gazete incelemesi, uzman hukukî değerlendirme, gerçek müşteri Windows kabulü | HOLD |
 
 [İşlem 015](islem_015.md) · [Kanıt bağlama sözleşmesi](specs/legal-binding-v0.1.md).
+
+
+## İşlem 016 — PDF üzerinde kaynak inceleme kararları (2026-10-14)
+
+| Karar | Mühendislik sözleşmesi | Durum |
+| --- | --- | --- |
+| K-120 | HTML öncesi LegalAST kaynak metni, quad ve PDF SHA yeniden doğrulanır; sahte vurgu reddedilir | KODLANDI |
+| K-121 | pypdfium2 sayfa bitmap'i üstünde SVG sarı PDF üst-sol kaynak polygonu; bozuk CropBox/ölçümde fail closed | KODLANDI |
+| K-122 | NODE, TABLE_CELL, CHANGE_MENTION ve AMENDMENT_SIDE ayrı inceleme task türleridir | KODLANDI |
+| K-123 | Ana/orijinal ve değişiklik PDF'si ayrı gösterilir, aynı madde numarasından konsolidasyon yoktur | KODLANDI |
+| K-124 | VISUALLY_MATCHED kullanıcı görsel eşleşme beyanıdır; resmî doğrulama veya hukukî uzman imzası değildir | KESİN |
+| K-125 | Browser JSON taslağı task ID + kaynak digest ile Pydantic doğrulanır; yerel JSONL SHA-chain kayıt | KODLANDI |
+| K-126 | Yerel SHA-chain haricî anchor/e-imza olmadan tüm geçmişin yeniden yazılmasını engellemez | KESİN |
+| K-127 | Gerçek RG külliyatı, resmî belge imzası/yürürlük zinciri, bağımsız uzman ve son müşteri Windows testi | HOLD |
+
+[İşlem 016](islem_016.md) · [Görsel kanıt inceleme şartnamesi](specs/legal-review-v0.1.md).
