@@ -88,7 +88,7 @@ def test_original_sha_page_coords_and_turkish_ast(gazette_pdf, meta):
     assert sum(n.kind == LegalNodeKind.ARTICLE for n in ast.nodes) == 2
     assert sum(n.kind == LegalNodeKind.TEMPORARY_ARTICLE for n in ast.nodes) == 1
     paragraphs = [n for n in ast.nodes if n.kind == LegalNodeKind.PARAGRAPH]
-    assert len(paragraphs) == 3
+    assert len(paragraphs) == 4
     items = [n for n in ast.nodes if n.kind == LegalNodeKind.ITEM]
     assert [n.item_key for n in items] == ["a", "b"]
     by_id = {n.node_id: n for n in ast.nodes}
