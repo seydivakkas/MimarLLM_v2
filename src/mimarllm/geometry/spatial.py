@@ -11,7 +11,7 @@ from math import isfinite
 from typing import Literal, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
-from shapely.geometry import LineString, MultiLineString
+from shapely.geometry import LineString, MultiLineString, Point
 from shapely.ops import polygonize_full, snap, unary_union
 
 from mimarllm.core.ir import (
@@ -38,6 +38,17 @@ class GeometryIssue(BaseModel):
     detail: str
 
 
+class IntersectionObservation(BaseModel):
+    """A topological contact between original source-line segments."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    frame_id: str
+    first_entity_id: str
+    second_entity_id: str
+    coordinate: tuple[float, float]
+    kind: Literal["SHARED_ENDPOINT", "T_JUNCTION", "CROSSING"]
+
+
 class FaceCandidate(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     face_id: str
@@ -54,6 +65,7 @@ class GeometryAnalysis(BaseModel):
     frame_id: str
     source_sha256: str
     faces: list[FaceCandidate] = Field(default_factory=list)
+    intersections: list[IntersectionObservation] = Field(default_factory=list)
     issues: list[GeometryIssue] = Field(default_factory=list)
     input_entity_ids: list[str] = Field(default_factory=list)
     snapped_for_candidates_only: bool = False
@@ -62,6 +74,7 @@ class GeometryAnalysis(BaseModel):
 class AreaAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     boundary_role: Literal["INTERIOR_ROOM", "EXTERIOR_ENVELOPE"]
+    source_sha256: str
     frame_id: str
     source_entity_ids: tuple[str, ...]
     reviewer_id: str | None = None
@@ -142,24 +155,61 @@ def _linework(
 
 def _quality(
     parts: list[tuple[str, LineString]], frame_id: str, *, max_pairs: int,
-    overlap_epsilon: float = 1e-8,
-) -> list[GeometryIssue]:
+    max_intersections: int = 1500, overlap_epsilon: float = 1e-8,
+) -> tuple[list[GeometryIssue], list[IntersectionObservation]]:
+    """Detect coincident overlapping edges and source-aware junctions/crossings."""
     n = len(parts)
     if n * (n - 1) // 2 > max_pairs:
         raise GeometryInputError("Overlap pair-check safety budget exceeded")
     issues: list[GeometryIssue] = []
+    intersections: list[IntersectionObservation] = []
     for i in range(n):
         for j in range(i + 1, n):
-            # Adjacent edges that share ONLY an endpoint are not overlaps.
-            intersection = parts[i][1].intersection(parts[j][1])
+            line_a, line_b = parts[i][1], parts[j][1]
+            intersection = line_a.intersection(line_b)
+            # Sharing only an endpoint does not produce positive line length.
             if intersection.length > overlap_epsilon:
                 ids = tuple(sorted({parts[i][0], parts[j][0]}))
                 issues.append(GeometryIssue(
                     code="OVERLAPPING_SEGMENTS", frame_id=frame_id,
                     entity_ids=ids, detail="Coincident linear source overlap; review required",
                 ))
-    return issues
+                continue
+            if intersection.is_empty:
+                continue
+            if intersection.geom_type == "Point":
+                junctions = [intersection]
+            elif intersection.geom_type == "MultiPoint":
+                junctions = list(intersection.geoms)
+            else:
+                # Degenerate geometry collections are not trusted as points.
+                continue
+            for point in junctions:
+                if len(intersections) >= max_intersections:
+                    raise GeometryInputError("Intersection safety budget exceeded")
 
+                def endpoint(line: LineString) -> bool:
+                    return (
+                        point.distance(Point(line.coords[0])) <= overlap_epsilon or
+                        point.distance(Point(line.coords[-1])) <= overlap_epsilon
+                    )
+
+                a_end, b_end = endpoint(line_a), endpoint(line_b)
+                kind = ("SHARED_ENDPOINT" if a_end and b_end
+                        else "T_JUNCTION" if a_end or b_end else "CROSSING")
+                intersections.append(IntersectionObservation(
+                    frame_id=frame_id, first_entity_id=parts[i][0],
+                    second_entity_id=parts[j][0],
+                    coordinate=(float(point.x), float(point.y)), kind=kind,
+                ))
+                if (kind == "CROSSING" and
+                        parts[i][0] == parts[j][0]):
+                    issues.append(GeometryIssue(
+                        code="SELF_INTERSECTING_SOURCE", frame_id=frame_id,
+                        entity_ids=(parts[i][0],),
+                        detail="A source polyline crosses itself",
+                    ))
+    return issues, intersections
 
 def _polygon_faces(
     lines: list[tuple[str, LineString]],
@@ -230,6 +280,7 @@ def analyze_geometry(
     entity_ids: Sequence[str] | None = None,
     max_segments: int = 1200,
     max_pairs: int = 250_000,
+    max_intersections: int = 1500,
     max_faces: int = 300,
     min_face_area: float = 1e-9,
     snap_tolerance: float = 0.0,
@@ -238,6 +289,7 @@ def analyze_geometry(
     if (not isinstance(max_segments, int) or max_segments < 1 or
         not isinstance(max_pairs, int) or max_pairs < 0 or
         not isinstance(max_faces, int) or max_faces < 1 or
+        not isinstance(max_intersections, int) or max_intersections < 1 or
         not all(isfinite(x) for x in (min_face_area, snap_tolerance)) or
         min_face_area <= 0 or snap_tolerance < 0):
         raise GeometryInputError("Invalid geometry safety limits")
@@ -246,7 +298,11 @@ def analyze_geometry(
         chosen, frame_id=frame_id, max_segments=max_segments,
         report_ignored=entity_ids is not None,
     )
-    issues.extend(_quality(parts, frame_id, max_pairs=max_pairs))
+    quality_issues, intersections = _quality(
+        parts, frame_id, max_pairs=max_pairs,
+        max_intersections=max_intersections,
+    )
+    issues.extend(quality_issues)
     faces, polygon_issues = _polygon_faces(
         parts, frame_id, min_face_area=min_face_area,
         max_faces=max_faces, snap_tolerance=snap_tolerance,
@@ -254,7 +310,7 @@ def analyze_geometry(
     issues.extend(polygon_issues)
     return GeometryAnalysis(
         frame_id=frame_id, source_sha256=drawing.source_sha256,
-        faces=faces, issues=issues,
+        faces=faces, intersections=intersections, issues=issues,
         input_entity_ids=[e.entity_id for e in chosen],
         snapped_for_candidates_only=snap_tolerance > 0,
     )
@@ -304,7 +360,8 @@ def assess_area(
             semantics = "INTERIOR_ROOM_AREA_M2" if boundary_role == "INTERIOR_ROOM" else "EXTERIOR_FOOTPRINT_M2"
             status = GeometryReviewStatus.MEASURED
     return AreaAssessment(
-        boundary_role=boundary_role, frame_id=frame_id,
+        boundary_role=boundary_role, source_sha256=drawing.source_sha256,
+        frame_id=frame_id,
         source_entity_ids=selected, reviewer_id=reviewer_id,
         status=status, reason_code=reason,
         source_area_squared=source_area, physical_area_m2=physical,
