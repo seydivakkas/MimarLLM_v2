@@ -91,3 +91,13 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Offline:** RapidOCR yalnız açıkça sağlanan yerel CPU engine ile çağrılır. Otomatik model indirme veya bulut OCR tetiklenmez. Native PDF/OCR karakterinin gerçek geometrik ölçü veya hukukî `PASS` olduğu iddia edilmez.
 - **Sınırlar:** Native glyph polygon'u eksenlere paralel bbox'dır, gerçek rotated quad değildir; OCR quad tespit alanıdır. SHX/kalite kapısı ve Türkçe/OCR modelin gerçek doğruluğu hâlâ açık. `max_pixels`, hash ve sınırlı ROI kontrolleri uygulanır.
 - **Sonraki işlem:** `islem_010` — Shapely temel oda/duvar çizgi geometri ve net/brüt alan; kaynak/ölçek bilgisi belirsizse sahte fiziksel alan yok.
+
+
+## İşlem 010 — Shapely geometri, yüzey ve duvar aralığı adayları
+
+- [İşlem 010](docs/islem_010.md) · [Shapely teknik şartnamesi](docs/specs/geometry-v0.1.md)
+- **Kod:** `src/mimarllm/geometry/spatial.py`, `walls.py`; `DrawingIR` üzerinden source-hash/frame/entity ID korunarak polygonization (noding, intersections), kapalı yüzey adayları, açık/çakışan çizgi diagnostikleri ve paralel çizgiler arası duvar aralığı **adayları** üretilir.
+- **Net/brüt ayrımı:** `assess_area` ancak ayrı seçilip gözden geçirilmiş **iç oda sınırı** (`INTERIOR_ROOM`) veya **bina dış zarfı footprint'i** (`EXTERIOR_ENVELOPE`) tek ve çelişkisiz kapalı yüzeyse, ayrıca aynı coordinate frame için `CONFIRMED` metre dönüşümü varsa fiziksel m² hesaplar. `EXTERIOR_FOOTPRINT_M2` tüm katların yasal brüt alanı değildir.
+- **Güven:** Otomatik çizgi kapanması, snap, çizgi katmanı veya paralel boşluk kesin oda/duvar kanıtı sayılmaz. Desteklenmeyen/eksik/çakışan kaynak seçimi `REVIEW_REQUIRED`, ölçek onaysızsa `INSUFFICIENT_EVIDENCE`. Her yüzey baştan `UNCLASSIFIED_FACE`; mevzuat/yangın `PASS` yok.
+- **Kapsamı açık:** Gerçek katmanlardan duvar iç-dış yüzü çıkarma, açılmış kapı/pencere hatları, oda-topoloji geçiş grafı, hakiki saha çizimleri ve yerel RTX 4070 Windows kabulü henüz yapılmadı. GitHub-hosted Windows sentetik CI ayrı kanıttır.
+- **Sıradaki işlem:** `docs/islem_011.md` — gerçek kapı/açık geçiş/oda ilişki kanıtı ile NetworkX spatial adjacency graph; yangın yürüme ağı ayrıca.
