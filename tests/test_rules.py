@@ -206,11 +206,13 @@ def test_unknown_rule_duplicate_registry_and_invalid_operators(tmp_path):
 
 def test_source_sha_mismatch_fails_model_validation_as_error(tmp_path):
     _, drawing, _ = _draw(tmp_path)
+    request = RuleRequest(
+        drawing=drawing, measurement_evidence_id="test-length"
+    )
+    # A caller might mutate a once-valid model after validation.
     drawing.source_sha256 = "0" * 64
     out = RuleEngine([scenario_rule()]).evaluate(
-        "synthetic.min", RuleRequest(
-            drawing=drawing, measurement_evidence_id="test-length"
-        ),
+        "synthetic.min", request,
     )
     assert out.status is RuleStatus.ERROR
     assert out.reason_code == "INPUT_MODEL_VALIDATION_FAILED"
