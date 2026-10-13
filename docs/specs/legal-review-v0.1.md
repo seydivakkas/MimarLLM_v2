@@ -62,6 +62,7 @@ html = create_visual_review_html(
     },
     "C:/mevzuat/tarihsel_inceleme.html",
     amendment_claims=[manual_amendment_claim],
+    version_review=packet.chain_assessment,
 )
 ```
 
@@ -92,3 +93,6 @@ history = read_review_ledger("C:/mevzuat/inceleme_gecmisi.jsonl")
 **Bu işte kodlandı:** PDF bitmap + SVG sayfa polygon, tek sayfa OCR/native metin/madde/fıkra/tablo hücresi ve değişiklik PDF karşılaştırma kuyruğu; kullanıcı gözlemi JSON export/import; hash bağlantılı yerel inceleme tarihi.
 
 **Kodlanmadı / HOLD:** Resmî Gazete'nin tarihsel bütün değişikliklerinin doğrulanması, kaynak kurumun kriptografik resmiyet kontrolü, gerçek hukukî norm konsolidasyonu, elektronik imzalı onay, canlı PDF gezgini, gerçek müşteri Windows kabulü, RuleEngine REGULATORY COMPLIANT/NON_COMPLIANT. F15'in görsel kaynak gözden geçirmesi **kısmi olarak ilerledi**, F18'in rapor/PDF işaretleme hedefinin yalnız **mevzuat özelindeki alt parçası** bu aşamada kodlandı. F08–F12 `HUKUKI_HOLD` korunur.
+
+
+**VersionReview HTML görünürlüğü:** `create_visual_review_html(..., version_review=packet.chain_assessment)` parametresi verildiğinde hedef kaynak PDF SHA/düğümüyle eşleşen `VersionReview.issues[]` gerekçe kodları ve açıklamaları offline HTML içinde ayrı **Tarihsel sürüm inceleme uyarıları** bölümünde gösterilir. Bu ifadeler yalnız kaynaklı inceleme uyarılarıdır; yürürlükte hangi normun uygulanacağını onaylamaz.
