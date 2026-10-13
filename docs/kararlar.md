@@ -152,3 +152,20 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-082 | Çoklu kat, 3B merdiven ve yangın yürünebilir yol sistemi `islem_011` kapsamında üretilmez | KESİN |
 
 [islem_011](islem_011.md) · [Topology v0.1 sözleşmesi](specs/topology-v0.1.md).
+
+
+## İşlem 012 — Deterministik RuleEngine ve mevzuat HOLD (2026-10-13)
+
+| Karar | Kural | Durum |
+| --- | --- | --- |
+| K-083 | `RuleDefinition` yalnız Pydantic/JSON deklaratif kısıtlı `>= > <= < ==` operatörlerini kullanır; `eval/exec` yasak | KODLANDI |
+| K-084 | Teknik sonuç 6 durum: COMPLIANT/NON_COMPLIANT/INSUFFICIENT_EVIDENCE/REVIEW_REQUIRED/NOT_APPLICABLE/ERROR | KODLANDI |
+| K-085 | Segment uzunluğu native gerçek çizimden, alan Shapely'den, geçiş NetworkX'ten aynı kaynak ve frame ile **yeniden doğrulanır** | KODLANDI |
+| K-086 | `COMPLIANT` ve `NON_COMPLIANT` yalnız teknik senaryo kıyasıdır; yapı hukuku sertifikası değildir | KESİN |
+| K-087 | Bütün `REGULATORY` sonuçları bağımsız Resmî Gazete/versiyon/yürürlük/uygulanabilirlik kapısı kurulana kadar `INSUFFICIENT_EVIDENCE` | KODLANDI / HUKUKI_HOLD |
+| K-088 | `LegalSourceLocator` kullanıcıdan gelen hash/madde bilgisiyle yasal onay açamaz | KODLANDI |
+| K-089 | Hatalı kaynak, onaysız SI ölçek, sahte alan/graf, eksik kanıt veya belirsizlik bandından olumlu kural kararı çıkarılmaz | KODLANDI |
+| K-090 | `NOT_APPLICABLE` yalnız technical reviewer declaration + DrawingIR SHA/entity bağı ile mümkündür, yasal uygulanabilirlik kararına dönüştürülemez | KODLANDI |
+| K-091 | Resmî yönetmelik kuralları, bağımsız hukukî inceleme ve gerçek Windows saha kabulü bu aşamada yapılmadı | HOLD |
+
+[İşlem 012](islem_012.md) · [Rule Engine v0.1 sözleşmesi](specs/rule-engine-v0.1.md).
