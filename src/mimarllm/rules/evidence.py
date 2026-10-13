@@ -53,6 +53,7 @@ class RuleEvidenceBinding(BaseModel):
     source_node_id: str
     original_spans: tuple[LegalSourceSpan, ...]
     local_source_audit: SourceAudit | None = None
+    amendment_source_audits: tuple[SourceAudit, ...] = ()
     version_review: VersionReview | None = None
     project_review: ApplicabilityEvidence | None = None
     rag_passage_id: str | None = None
@@ -93,6 +94,7 @@ def bind_regulatory_evidence(
     local_pdf_path: str | Path | None,
     project: ProjectLegalContext | None = None,
     amendment_claims: list[AmendmentClaim] | None = None,
+    amendment_pdf_paths: dict[str, str | Path] | None = None,
     rag_hit: RagHit | None = None,
     max_documents: int = 100,
 ) -> RuleEvidenceBinding:
@@ -190,6 +192,30 @@ def bind_regulatory_evidence(
     else:
         reasons.append("LOCAL_PDF_INTEGRITY_NOT_PROOF_OF_OFFICIAL_PUBLICATION")
 
+    # A user-asserted amendment link has two independent PDF identities.
+    # Verify source files of every relevant amending document, not only the
+    # target statute. Absence of a local amendment PDF remains an explicit HOLD.
+    amendment_pdf_paths = amendment_pdf_paths or {}
+    related_amendment_hashes = sorted({
+        claim.amending_document_sha256 for claim in claims
+        if claim.target_document_sha256 == target.document_sha256
+        and claim.target_node_id == node.node_id
+    })
+    document_map = {d.document_sha256: d for d in docs}
+    amendment_audits = tuple(
+        verify_local_pdf(
+            document_map[hash_value],
+            amendment_pdf_paths.get(hash_value),
+        )
+        for hash_value in related_amendment_hashes
+        if hash_value in document_map
+    )
+    if len(amendment_audits) != len(related_amendment_hashes):
+        reasons.append("AMENDING_PDF_AST_NOT_SUPPLIED")
+    if any(audit.status != SourceAuditStatus.LOCAL_SOURCE_MATCHED
+           for audit in amendment_audits):
+        reasons.append("AMENDING_ORIGINAL_PDF_NOT_VERIFIED")
+
     version = assess_version_chain(
         docs, claims, target_document_sha256=target.document_sha256,
         target_node_id=node.node_id,
@@ -216,7 +242,10 @@ def bind_regulatory_evidence(
         status = BindingStatus.HOLD_RAG_CANDIDATE
     elif source.status != SourceAuditStatus.LOCAL_SOURCE_MATCHED:
         status = BindingStatus.HOLD_ORIGINAL_SOURCE
-    elif version.status == "REVIEW_REQUIRED":
+    elif (version.status == "REVIEW_REQUIRED"
+          or len(amendment_audits) != len(related_amendment_hashes)
+          or any(a.status != SourceAuditStatus.LOCAL_SOURCE_MATCHED
+                 for a in amendment_audits)):
         status = BindingStatus.HOLD_AMENDMENT_CHAIN
     elif app is None or app.unknown_fields or app.status == "REVIEW_REQUIRED":
         status = BindingStatus.HOLD_PROJECT_CONTEXT
@@ -230,7 +259,8 @@ def bind_regulatory_evidence(
         reason_codes=tuple(dict.fromkeys(reasons)),
         source_document_sha256=target.document_sha256,
         source_node_id=node.node_id, original_spans=node.spans,
-        local_source_audit=source, version_review=version,
+        local_source_audit=source, amendment_source_audits=amendment_audits,
+        version_review=version,
         project_review=app,
         rag_passage_id=rag_hit.passage.passage_id if rag_hit else None,
         rag_rrf_score=rag_hit.rrf_score if rag_hit else None,
@@ -247,6 +277,7 @@ def evaluate_regulatory_with_evidence(
     local_pdf_path: str | Path | None,
     project: ProjectLegalContext | None = None,
     amendment_claims: list[AmendmentClaim] | None = None,
+    amendment_pdf_paths: dict[str, str | Path] | None = None,
     rag_hit: RagHit | None = None,
 ) -> RegulatoryEvidenceEvaluation:
     """Report bound source and existing RuleEngine HOLD side-by-side."""
@@ -254,7 +285,8 @@ def evaluate_regulatory_with_evidence(
     binding = bind_regulatory_evidence(
         rule, documents, source_node_id=source_node_id,
         local_pdf_path=local_pdf_path, project=project,
-        amendment_claims=amendment_claims, rag_hit=rag_hit,
+        amendment_claims=amendment_claims,
+        amendment_pdf_paths=amendment_pdf_paths, rag_hit=rag_hit,
     )
     result = engine.evaluate(rule.rule_id, request)
     if (result.domain != RuleDomain.REGULATORY
