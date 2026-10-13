@@ -8,6 +8,7 @@ on:
       - "src/mimarllm/ocr/**"
       - "src/mimarllm/geometry/**"
       - "src/mimarllm/rules/**"
+      - "src/mimarllm/legal/**"
       - "tests/**"
       - "pyproject.toml"
       - ".github/workflows/core-contracts.yml"
@@ -35,4 +36,4 @@ jobs:
           python -m pip install --disable-pip-version-check -e . --no-deps
           python -m pip install --disable-pip-version-check "pydantic>=2,<3" "pytest>=8,<10" "pdfplumber>=0.11,<0.13" "pypdfium2>=4,<6" "reportlab>=4,<5" "ezdxf>=1.4,<2" "shapely>=2.0,<3" "networkx>=3.2,<4"
       - name: Validate core import geometry topology and rule contracts
-        run: python -m pytest -q tests/test_units.py tests/test_drawing_ir.py tests/test_pdf_contract.py tests/test_dxf_parser.py tests/test_pdf_ir.py tests/test_geometry.py tests/test_topology.py tests/test_rules.py
+        run: python -m pytest -q tests/test_units.py tests/test_drawing_ir.py tests/test_pdf_contract.py tests/test_dxf_parser.py tests/test_pdf_ir.py tests/test_geometry.py tests/test_topology.py tests/test_rules.py tests/test_legal_etl.py
