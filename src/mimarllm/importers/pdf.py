@@ -25,18 +25,22 @@ class RenderedRegion:
     pixels_per_point: float
     document_sha256: str
     page_rotation_degrees: int = 0
+    pixel_origin_pdf_points: tuple[float, float] | None = None
 
     def source_to_pixel(self, x: float, y: float) -> tuple[float, float]:
         """Convert displayed-page PDF coordinates to ROI bitmap coordinates."""
         from math import isfinite
-        x0, y0, _, _ = self.roi_points
+        x0, y0 = self.pixel_origin_pdf_points or self.roi_points[:2]
         if not all(isfinite(v) for v in (x, y, self.pixels_per_point)):
             raise PdfInputError("Nonfinite source or render scale")
         return ((x - x0) * self.pixels_per_point, (y - y0) * self.pixels_per_point)
 
     def pixel_to_source(self, x: float, y: float) -> tuple[float, float]:
         """Map the OCR bitmap pixel center to PDF top-left points."""
-        x0, y0, _, _ = self.roi_points
+        from math import isfinite
+        if not all(isfinite(v) for v in (x, y)):
+            raise PdfInputError("Nonfinite OCR pixel coordinate")
+        x0, y0 = self.pixel_origin_pdf_points or self.roi_points[:2]
         return (x0 + x / self.pixels_per_point, y0 + y / self.pixels_per_point)
 
 
@@ -167,11 +171,11 @@ def render_region(
             raise PdfInputError("ROI must fall inside the PDF page in points")
         if (x1 - x0) * (y1 - y0) * scale * scale > max_pixels:
             raise PdfInputError("Rendered region pixel budget exceeded")
+        from math import ceil
         if rotation in (90, 180, 270):
             # PDFium's partial-page crop under /Rotate=90 can disagree with
             # full-page crop (verified by synthetic regression). Render fully
             # and crop with PIL ONLY when the full bitmap is safely bounded.
-            from math import ceil
             full_width, full_height = ceil(width * scale), ceil(height * scale)
             if full_width * full_height > max_pixels:
                 raise PdfInputError(
@@ -179,8 +183,9 @@ def render_region(
                 )
             full_bitmap = page.render(scale=scale)
             full_image = full_bitmap.to_pil()
+            left_px, top_px = round(x0 * scale), round(y0 * scale)
             image = full_image.crop((
-                round(x0 * scale), round(y0 * scale),
+                left_px, top_px,
                 round(x1 * scale), round(y1 * scale),
             )).copy()
         else:
@@ -188,6 +193,7 @@ def render_region(
                 scale=scale, crop=(x0, height - y1, width - x1, y0)
             )
             image = bitmap.to_pil().copy()
+            left_px, top_px = ceil(x0 * scale), ceil(y0 * scale)
         if image.width * image.height > max_pixels:
             raise PdfInputError("Actual render exceeded pixel budget")
         return RenderedRegion(
@@ -195,6 +201,7 @@ def render_region(
             roi_points=roi_points, pixels_per_point=scale,
             document_sha256=_hash_file(pdf),
             page_rotation_degrees=rotation,
+            pixel_origin_pdf_points=(left_px / scale, top_px / scale),
         )
     except PdfInputError:
         raise
