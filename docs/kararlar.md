@@ -104,3 +104,18 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-058 | Gerçek Windows, büyük pafta, dinamik blok, tüm OCS, DWG ve DXF mevzuat kabulü | HOLD |
 
 [islem_008.md](islem_008.md) · [DXF source sözleşmesi](specs/dxf-import-v0.1.md).
+
+
+## İşlem 009 — Kaynak-geometri bütünleştirme kararları (2026-10-13)
+
+| Kod | Karar | Durum |
+| --- | --- | --- |
+| K-059 | PDF/ROI RapidOCR metinleri ayrı provenansla `DrawingIR` entity ve `SourceReference` içinde tutulur | KODLANDI |
+| K-060 | Native glyph `bbox` gerçek rotated glyph dörtgeniymiş gibi sunulmaz; char.matrix korunur | KESİN |
+| K-061 | PDF çizgisinde bbox diyagonali değil gerçek `line.pts`; cubic Bezier yaklaşıklaştırma uyarısı | KODLANDI |
+| K-062 | Standart /Rotate 90/180/270: sınırlı full-page bitmap + ROI; bellek bütçesi aşılırsa ret | KODLANDI |
+| K-063 | Non-default CropBox için pypdfium2–pdfplumber source mapping doğrulanana kadar OCR ROI açık ret | HOLD |
+| K-064 | OCR engine açık verilmeden model yükleme, indirme veya haricî API çağrısı yapılmaz | KODLANDI |
+| K-065 | Gerçek RapidOCR Windows inference, 45° Türkçe/simge CER ve karmaşık CAD PDF source yerleşimi | HOLD |
+
+[İşlem 009](islem_009.md) · [PDF/OCR teknik şartname](specs/pdf-ocr-drawingir-v0.1.md).
