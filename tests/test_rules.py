@@ -196,8 +196,7 @@ def test_unknown_rule_duplicate_registry_and_invalid_operators(tmp_path):
     with pytest.raises(ValidationError):
         scenario_rule(threshold=math.inf)
     with pytest.raises(ValidationError):
-        scenario_rule(metric=MetricKind.REVIEWED_TOPOLOGY_PATH,
-                      threshold=2, operator=Comparison.GE) if False else RuleDefinition(
+        RuleDefinition(
             rule_id="bad", version="1", domain="TECHNICAL",
             metric="REVIEWED_TOPOLOGY_PATH", description="bad",
             threshold=2, operator=">=",
@@ -457,3 +456,63 @@ def test_json_roundtrip_determinism_and_registry_limit(tmp_path):
     assert RuleResult.model_validate_json(first.model_dump_json()) == first
     with pytest.raises(RuleInputError, match="registry size"):
         RuleEngine([r], max_rules=0)
+
+
+def test_result_schema_rejects_forged_technical_verdict_and_scope():
+    kwargs = dict(
+        rule_id="synthetic", rule_version="1", status=RuleStatus.COMPLIANT,
+        domain=RuleDomain.TECHNICAL, metric=MetricKind.SEGMENT_LENGTH_M,
+        drawing_sha256="a" * 64, reason_code="forged",
+    )
+    with pytest.raises(ValidationError, match="needs native evidence"):
+        RuleResult(**kwargs)
+    with pytest.raises(ValidationError):
+        RuleResult(**(kwargs | {
+            "entity_ids": ("e1",), "evidence_ids": ("m1",),
+            "observed_value": 2.0, "threshold": 1.0,
+            "operator": Comparison.GE, "unit": "m",
+            "claim_scope": "LEGALLY_CERTIFIED",
+        }))
+    with pytest.raises(ValidationError, match="source evidence"):
+        RuleResult(
+            **(kwargs | {
+                "status": RuleStatus.NOT_APPLICABLE,
+            })
+        )
+    with pytest.raises(ValidationError, match="not proven disconnection"):
+        RuleResult(
+            **(kwargs | {
+                "status": RuleStatus.NON_COMPLIANT,
+                "metric": MetricKind.REVIEWED_TOPOLOGY_PATH,
+                "entity_ids": ("e1",), "evidence_ids": ("p1",),
+            })
+        )
+
+
+def test_segment_with_wrong_method_must_not_pass(tmp_path):
+    _, drawing, _ = _draw(tmp_path)
+    drawing.measurements[0] = drawing.measurements[0].model_copy(
+        update={"method_id": "unverified_text_dimension"}
+    )
+    out = RuleEngine([scenario_rule()]).evaluate(
+        "synthetic.min", RuleRequest(
+            drawing=drawing, measurement_evidence_id="test-length"
+        ),
+    )
+    assert out.status is RuleStatus.REVIEW_REQUIRED
+    assert out.reason_code == "MEASUREMENT_METHOD_UNVERIFIED"
+
+
+def test_regulatory_wont_use_its_declared_effectivity_date_as_legal_approval(tmp_path):
+    _, drawing, _ = _draw(tmp_path)
+    rule = _regulatory()
+    assert rule.legal_source.effective_from == date(2026, 1, 1)
+    out = RuleEngine([rule]).evaluate(
+        rule.rule_id, RuleRequest(
+            drawing=drawing, measurement_evidence_id="test-length",
+            applicability=ApplicabilityReview(status=ApplicabilityStatus.APPLICABLE),
+        ),
+    )
+    assert out.status is RuleStatus.INSUFFICIENT_EVIDENCE
+    assert out.legal_source.article_id == "unverified-article"
+    assert out.legal_compliance_certified is False
