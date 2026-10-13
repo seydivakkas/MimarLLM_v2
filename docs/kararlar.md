@@ -119,3 +119,20 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-065 | Gerçek RapidOCR Windows inference, 45° Türkçe/simge CER ve karmaşık CAD PDF source yerleşimi | HOLD |
 
 [İşlem 009](islem_009.md) · [PDF/OCR teknik şartname](specs/pdf-ocr-drawingir-v0.1.md).
+
+
+## İşlem 010 — Shapely geometri ve alan kararı (2026-10-13)
+
+| Kod | Karar | Durum |
+| --- | --- | --- |
+| K-066 | Shapely `unary_union + polygonize_full` tek frame native çizimden yalnız `UNCLASSIFIED_FACE` adayları üretir | KODLANDI |
+| K-067 | Açık, fazla, çakışan veya kendiyle kesişen kaynakta kesinsiz alan m² verilmez | KODLANDI |
+| K-068 | Bütünleşik kaynak entity ID+document hash ve kesişim noktası/T junction kaydı | KODLANDI |
+| K-069 | Fiziksel iç alan ayrı gözden geçirilmiş iç sınır + onaylı aynı frame ölçek ister; metrik değilse `INSUFFICIENT_EVIDENCE` | KODLANDI |
+| K-070 | Dış zarfın `EXTERIOR_FOOTPRINT_M2` hesabı yasal brüt kat alanı değildir | KESİN |
+| K-071 | Paralel çizgi aralığı `WALL_THICKNESS` kanıtı değil `PARALLEL_EDGE_GAP_CANDIDATE` | KODLANDI |
+| K-072 | `snap_tolerance>0` yalnız aday; kesin ölçüm snap kullanılmadan, seçili ham çizimde | KESİN |
+| K-073 | CPU O(n²) segment/pair kontrolüne açık güvenlik üst limitleri, büyük pafta optimizasyonu sonraki iş | KODLANDI / PERF HOLD |
+| K-074 | Gerçek Windows i7/4070 mimari çizimleri ve otomatik oda/duvar/kapı bağlantısı | HOLD |
+
+[İşlem 010](islem_010.md) · [Geometry v0.1 sözleşmesi](specs/geometry-v0.1.md).
