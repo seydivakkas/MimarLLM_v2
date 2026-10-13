@@ -282,6 +282,10 @@ def evaluate_regulatory_with_evidence(
 ) -> RegulatoryEvidenceEvaluation:
     """Report bound source and existing RuleEngine HOLD side-by-side."""
     rule = RuleDefinition.model_validate(rule.model_dump())
+    # A project context cannot be borrowed from another DXF/PDF drawing.
+    request = RuleRequest.model_validate(request.model_dump())
+    if project is not None and project.drawing_sha256 != request.drawing.source_sha256:
+        raise BindingInputError("Project legal context belongs to another drawing SHA")
     binding = bind_regulatory_evidence(
         rule, documents, source_node_id=source_node_id,
         local_pdf_path=local_pdf_path, project=project,
