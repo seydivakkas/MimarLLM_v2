@@ -136,3 +136,19 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-074 | Gerçek Windows i7/4070 mimari çizimleri ve otomatik oda/duvar/kapı bağlantısı | HOLD |
 
 [İşlem 010](islem_010.md) · [Geometry v0.1 sözleşmesi](specs/geometry-v0.1.md).
+
+
+## İşlem 011 — NetworkX geçiş grafı (2026-10-13)
+
+| Karar | Kural | Durum |
+| --- | --- | --- |
+| K-075 | Yalnız açık inceleme kaydı bulunan `FaceCandidate` düğüm; DrawingIR'den yeniden üretilemeyen yüzey reddedilir | KODLANDI |
+| K-076 | Aynı frame/kattaki, iç bölgeleri örtüşmeyen mekânlar arası pozitif ortak sınır ve tek geometrik geçiş kesişimi gerekir | KODLANDI |
+| K-077 | Yakın native source marker ve manuel açıklık inceleme beyanı yoksa graf kenarı kurulmaz; OCR/metin kabul edilmez | KODLANDI |
+| K-078 | NetworkX `MultiGraph` ile birden fazla kapı, connected components, articulation, bridge ve passage-ID yolu | KODLANDI |
+| K-079 | `EXTERIOR` düğümü bir mimari çıkış uygunluğu veya yangın kaçış kararı değildir | KESİN |
+| K-080 | Centroid tabanlı kısa yol yalnız kenar sayısına göre topolojik ilişki; yürüme mesafesi değildir | KESİN |
+| K-081 | `reviewer_id` güvenilir kimlik/onay kaydı olarak doğrulanmaz; UI audit ve gerçek kapı/boşluk belirleme ileride | HOLD |
+| K-082 | Çoklu kat, 3B merdiven ve yangın yürünebilir yol sistemi `islem_011` kapsamında üretilmez | KESİN |
+
+[islem_011](islem_011.md) · [Topology v0.1 sözleşmesi](specs/topology-v0.1.md).
