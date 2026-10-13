@@ -25,7 +25,7 @@
 | F15 | RuleResult–LegalNode kaynak bağlama | `rules/evidence.py`, `legal/verification.py`, `legal/versions.py`, `legal/applicability.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Exact verified binding; arama benzerliği asla hukukî PASS değil | (8) / eski 009 |
 | F16 | Analiz hattı + CLI | `pipeline.py`, `cli.py` | PLANLANDI | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
 | F17 | JSON/Markdown/HTML/PDF rapor | `reports/exporter.py` | PLANLANDI | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
-| F18 | SVG/HTML koordinatlı işaretleme | `reports/visualizer.py` | PLANLANDI | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
+| F18 | SVG/HTML koordinatlı işaretleme | `legal/review_viewer.py` (mevzuat PDF alt kümesi), `reports/visualizer.py` (plan) | **KISMI / MEVCUT_KOD — yalnız mevzuat PDF inceleme** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
 | F19 | Tek kullanıcılı localhost dashboard | `app/server.py`, `app/static/` | PLANLANDI | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
 | F20 | Windows `run.bat`, `build_exe.bat`, `mimar.spec` | Root / `scripts/` | PLANLANDI | Sonraki gerçek CLI/dashboard entrypoint ile offline onedir | Sohbet / eski 013 |
 | F21 | Yerel Qwen-VL ile aday sınıflandırma | `vision/vlm.py`, `vision/prompts.py` | PLANLANDI | GGUF + mmproj/Windows ölçümü; 8 GB peak VRAM | (17) / eski 018 |
@@ -114,3 +114,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F15 KISMI/MEVCUT_KOD:** `RuleDefinition.legal_source` ile LegalAST node ID, madde/fıkra, sayfa ve özgün source polygon karşılaştırılıyor. Opsiyonel RAG hit'i aynen LegalAST metni/quad'a dönmek zorunda. PDF ve ilgili değişiklik PDF'lerinin yerel SHA ve sayfa koordinatları kontrol edilir; boşluk, bozuk source, yanlış madde, çift amendment, proje tarihi/konumu/istisna eksikleri ayrı kodlu `HOLD` raporu üretir. RuleEngine REGULATORY hâlâ `INSUFFICIENT_EVIDENCE` döndürür. Bu bir resmî kaynak doğrulaması değil, **fiziksel dosya ve kanıt referansı tutarlılık denetimidir**.
 
 **F08–F12 HUKUKI_HOLD:** Resmî belge orijin/otantiklik, her yıllık değişikliğin hukukî konsolidasyonu, geçiş hükümleri, yerel proje uygulanabilirliği ve bağımsız uzman onayı yoktur. Kullanıcı verdiği tam metadata, bağıntı ve RAG sonucu bile `APPROVED_FOR_CHECK` yapamaz. [İşlem 015](islem_015.md) · [Teknik şartname](specs/legal-binding-v0.1.md).
+
+
+## İşlem 016 güncellemesi — F15 ve F18 alt modülü
+
+**Kodlandı:** `legal/review.py` ile gerçek LegalAST node/fıkra, tablo hücresi, değişiklik kaynakları için tekil PDF SHA/page/quad `ReviewTask`; `review_viewer.py` pypdfium2 bitmap üzerinde sarı SVG dörtgen ve offline kullanıcı görsel inceleme JSON taslak dışa aktarımı; `version_workflow.py` tarihsel base/amendment iki özgün PDF inceleme kuyruğu; `review_ledger.py` kaynak task digest denetimli, tek yazıcı varsayımlı yerel SHA-chain JSONL.
+
+**KISMI:** F18 yalnız mevzuat görsel kaynak inceleme alt modülüdür. Mimari analiz bulgularını CAD/PDF üzerine işleyecek `reports/visualizer.py` ve tam raporlama **PLANLANDI**. SHA zinciri elektronik imza değil; `VISUALLY_MATCHED` kullanıcı beyanıdır, bağımsız uzman kaynak/yürürlük onayı değildir. F08–F12 HUKUKI_HOLD, RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE`. [İşlem 016](islem_016.md) · [Şartname](specs/legal-review-v0.1.md).
