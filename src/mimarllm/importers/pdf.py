@@ -167,8 +167,27 @@ def render_region(
             raise PdfInputError("ROI must fall inside the PDF page in points")
         if (x1 - x0) * (y1 - y0) * scale * scale > max_pixels:
             raise PdfInputError("Rendered region pixel budget exceeded")
-        bitmap = page.render(scale=scale, crop=(x0, height - y1, width - x1, y0))
-        image = bitmap.to_pil().copy()
+        if rotation in (90, 180, 270):
+            # PDFium's partial-page crop under /Rotate=90 can disagree with
+            # full-page crop (verified by synthetic regression). Render fully
+            # and crop with PIL ONLY when the full bitmap is safely bounded.
+            from math import ceil
+            full_width, full_height = ceil(width * scale), ceil(height * scale)
+            if full_width * full_height > max_pixels:
+                raise PdfInputError(
+                    "Rotated page requires bounded full-page render; page too large"
+                )
+            full_bitmap = page.render(scale=scale)
+            full_image = full_bitmap.to_pil()
+            image = full_image.crop((
+                round(x0 * scale), round(y0 * scale),
+                round(x1 * scale), round(y1 * scale),
+            )).copy()
+        else:
+            bitmap = page.render(
+                scale=scale, crop=(x0, height - y1, width - x1, y0)
+            )
+            image = bitmap.to_pil().copy()
         if image.width * image.height > max_pixels:
             raise PdfInputError("Actual render exceeded pixel budget")
         return RenderedRegion(
