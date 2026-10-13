@@ -81,3 +81,13 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 **Kabul:** [islem_008.md](docs/islem_008.md), [DXF teknik şartnamesi](docs/specs/dxf-import-v0.1.md), [GitHub Actions](https://github.com/seydivakkas/MimarLLM_v2/actions/workflows/core-contracts.yml). CI sentetik/geometri sözleşme testini doğrular; Windows gerçek mimari pafta, DWG/XREF çözümleme, DXF geometri semantiği ve mevzuat uygunluğu **HOLD**.
 
 **Sıradaki paket:** islem_009 PDF native/ROI/OCR koordinat entegrasyonu.
+
+
+## İşlem 009 — PDF/OCR → DrawingIR kaynak bütünleştirmesi
+
+- [İşlem kaydı](docs/islem_009.md) · [Teknik şartname](docs/specs/pdf-ocr-drawingir-v0.1.md)
+- **Kod:** `src/mimarllm/importers/pdf_ir.py` PDF native metin, gerçek line/rect, yaklaşık Bezier curve ve açık ROI'den gelen RapidOCR dörtgenini `DrawingIR` ile aynı kaynak PDF SHA-256/page koordinatına bağlar.
+- **Sayfa rotasyonu:** 0° native ROI; 90°/180°/270° bellek sınırı dahilinde tam sayfa render + ROI crop ile tutarlı koordinat. Non-default CropBox + OCR ROI açıkça reddedilir (güvenli fallback).
+- **Offline:** RapidOCR yalnız açıkça sağlanan yerel CPU engine ile çağrılır. Otomatik model indirme veya bulut OCR tetiklenmez. Native PDF/OCR karakterinin gerçek geometrik ölçü veya hukukî `PASS` olduğu iddia edilmez.
+- **Sınırlar:** Native glyph polygon'u eksenlere paralel bbox'dır, gerçek rotated quad değildir; OCR quad tespit alanıdır. SHX/kalite kapısı ve Türkçe/OCR modelin gerçek doğruluğu hâlâ açık. `max_pixels`, hash ve sınırlı ROI kontrolleri uygulanır.
+- **Sonraki işlem:** `islem_010` — Shapely temel oda/duvar çizgi geometri ve net/brüt alan; kaynak/ölçek bilgisi belirsizse sahte fiziksel alan yok.
