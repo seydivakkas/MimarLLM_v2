@@ -204,3 +204,20 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-110 | Gerçek mevzuat PDF corpus, konsolidasyon, hukukî yürürlük, belediye/yapı istisna bağları yapılmadı | HOLD |
 
 [İşlem 014](islem_014.md) · [RAG v0.1 teknik şartnamesi](specs/rag-v0.1.md).
+
+
+## İşlem 015 — Kaynak/versiyon/proje bağlayıcı kararları (2026-10-13)
+
+| Karar | Mühendislik sözleşmesi | Durum |
+| --- | --- | --- |
+| K-111 | `LegalAST` ve fiziksel yerel PDF SHA256+sayfa sayısı+polygon bounds karşılaştırılır; resmî yayımlanma iddiası üretilmez | KODLANDI |
+| K-112 | Kural `LegalSourceLocator` SHA/regulation/article/clause/page tam LegalAST ancestry ile eşleşmeli | KODLANDI |
+| K-113 | RAG skorları hiçbir onay kapısını açmaz; hit node/text/spans tam AST ile karşılaştırılır | KODLANDI |
+| K-114 | Amendment'ın kendi MADDE numarası hedef hüküm değildir; `target_node_id` ve `amending_node_id` ayrı gerekir | KODLANDI |
+| K-115 | Değişiklik PDF'lerinin fiziksel dosya/hash/source polygon'u ayrıca doğrulanır; eksikse `HOLD_AMENDMENT_CHAIN` | KODLANDI |
+| K-116 | Tarih sırası, çakışma, eksik proje/ruhsat/kullanım ve istisna `REVIEW_REQUIRED/INSUFFICIENT_EVIDENCE` olur | KODLANDI |
+| K-117 | Teknik kaynak bütünlüğü resmî yayımlanma/dijital imza/hukukî sürüm konsolidasyonu veya geçerli madde incelemesi değildir | KESİN |
+| K-118 | Tüm `REGULATORY` `RuleEngine` kararları kilitli; `APPROVED_FOR_CHECK` alanı üretilmez | KODLANDI |
+| K-119 | Gerçek tüm yıl Resmî Gazete incelemesi, uzman hukukî değerlendirme, gerçek müşteri Windows kabulü | HOLD |
+
+[İşlem 015](islem_015.md) · [Kanıt bağlama sözleşmesi](specs/legal-binding-v0.1.md).
