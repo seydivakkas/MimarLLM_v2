@@ -231,6 +231,12 @@ def test_hybrid_rrf_preserves_lexical_and_dense_ranks(sample_pdf, metadata):
                    for h in result.results)
         assert all(h.rrf_score > 0 and not h.legal_compliance_certified
                    for h in result.results)
+        for hit in result.results:
+            manual_rrf = (
+                (1 / (60 + hit.fts_rank) if hit.fts_rank is not None else 0)
+                + (1 / (60 + hit.dense_rank) if hit.dense_rank is not None else 0)
+            )
+            assert hit.rrf_score == pytest.approx(manual_rrf)
         rerun = search_legal(db, "aydınlatma", embedder=engine, top_k=10)
         assert result.model_dump_json() == rerun.model_dump_json()
 
