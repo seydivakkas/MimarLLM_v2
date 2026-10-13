@@ -23,7 +23,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | islem_013 | Yerel mevzuat ETL + LegalAST + PDF span/source index | F13 | 009 | Özgün kaynak ve değişiklik zinciri |
 | islem_014 | FTS5/dense/RRF + source spans ile RAG sonuçları | F14 | 012/013 | PDF SHA/page/quad ve BM25/RRF; semantic benchmark HOLD |
 | islem_015 | Yerel özgün PDF SHA ve polygon denetimi + hukuki değişiklik/proje applicability bağlayıcısı | F15 | 012/013/014 | Source consistency + RuleEngine REGULATORY HOLD |
-| islem_016 | Otopark/sığınak/BEP (önce source onayı) | F10/F11/F12 | 015 + ek proje verisi | İnsan hukukî inceleme; hold ayrı |
+| islem_016 | Özgün PDF görsel vurgulu kaynak inceleme ve tarihsel sürüm kıyas iş akışı | F15 ve F18 mevzuat alt küme | 013–015 | Source SHA, sayfa, quad, imzasız reviewer; hukukî HOLD |
 | islem_017 | Rapor, çizim işaretleme + bulgudan belge sayfasına geçiş | F17/F18 | 014–016 | İki kaynak bbox doğrulama |
 | islem_018 | Pipeline + CLI + offline yerel FastAPI dashboard | F16/F19 | 017 | Sentetik çizim/rapor, localhost güvenliği |
 | islem_019 | Windows run.bat + PyInstaller onedir + offline wheelhouse | F20 | Gerçek CLI/dashboard | Yerel Windows paket smoke ve SBOM |
@@ -121,3 +121,10 @@ F14 `KISMI/MEVCUT_KOD`; gerçek embedding Türkçe benchmarkı, gerçek Resmî G
 `legal/verification.py`, `versions.py`, `applicability.py` ve `rules/evidence.py` ile yerel PDF kaynak byte/page/quad denetimi, açıklanmış değişiklik hedef–kaynak bağları, proje tarih/yer/yapı/istisna eksikleri ve `RuleDefinition`→LegalAST node→RAG hit tam eşleştirme kodlandı. Yalnız beyanların birbirini tutması hukukî gerçek tarih/istisna veya resmî yayın kaynağını **doğrulamaz**.
 
 F15 `KISMI/MEVCUT_KOD`. F08–F12 mevzuat paketleri hâlâ `HUKUKI_HOLD`; kural eşikleri yazılmayacak. İzleyen mühendislik: kaynak belgeyi görsel olarak inceleme, tarihsel sürüm konsolidasyonu, uzman audit/imza kapıları ve sonrasında ayrı teknik mimari denetimler. [İşlem 015](islem_015.md).
+
+
+## İşlem 016 uygulama notu (2026-10-14)
+
+`legal/review.py`, `review_viewer.py`, `review_ledger.py` ve `version_workflow.py` ile kaynak PDF'de sarı kanıt polygonu ve offline incelemeci karar JSON taslağı, gerçek node/table cell/amendment source seçimi, iki farklı orijinal PDF arasında beyanlı tarihsel karşılaştırma, hash-chain yerel inceleme günlüğü kodlandı.
+
+**Hukukî sürüm doğrulaması tamamlanmadı:** kaynak resmiyeti, yürürlükte konsolide hükümler, yerel uygulama geçiş/istisna kararları ve kurumsal onay bağımsız olarak bekleniyor. Kullanıcı `VISUALLY_MATCHED` seçimi yalnız metin/konum inceleme beyanıdır. F08–F12 HUKUKI_HOLD; F17 raporlama ve genel F18 CAD/PDF çizim görsel bulgu katmanı ayrı geliştirmedir.
