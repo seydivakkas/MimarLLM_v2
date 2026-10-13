@@ -14,7 +14,7 @@
 | F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py`, `ocr/layout.py` | **KISMI** (adapter) | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
 | F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrollü** | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
 | F06 | Mekânsal topoloji, kapı bağlantısı, geçiş grafı | `geometry/topology.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Unreachable ve articulation; dış kapı/balkon ayrımı | (4) / eski 005 |
-| F07 | Deterministik rule engine + altı durum ve kanıt | `rules/base.py`, `rules/engine.py` | PLANLANDI | PASS/FAIL/REVIEW/INSUFFICIENT/NA/ERROR; hesap izi | (5) / eski 006 |
+| F07 | Deterministik rule engine + altı durum ve kanıt | `rules/base.py`, `rules/engine.py` | **KISMI / MEVCUT_KOD — sentetik CI** | PASS/FAIL/REVIEW/INSUFFICIENT/NA/ERROR; hesap izi | (5) / eski 006 |
 | F08 | Planlı Alanlar İmar Yönetmeliği denetimi | `rules/registry/tr_imar.py` | **HUKUKI_HOLD** | Onaylı madde-fıkra-eşik, tarih, proje kapsamı ve bbox | (5) / eski 006 |
 | F09 | BYKHY kaçış, kapı, çıkmaz koridor, sirkülasyon | `rules/registry/tr_yangin.py` | **HUKUKI_HOLD** | Ek-5/B doğru sürüm; yürünebilir yol/exit/sprinkler/occupancy | (12) / eski 014 |
 | F10 | Otopark adedi, boyut, rampa ve manevra | `rules/registry/tr_otopark.py` | **HUKUKI_HOLD** | Kullanım/konum/tarih, gerçek kural, 3B rampa bilgisi | (13) / eski 015 |
@@ -86,3 +86,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F06 `KISMI / MEVCUT_KOD`:** `src/mimarllm/geometry/topology.py`, NetworkX `MultiGraph`, kullanıcıca açıkça gözden geçirilmiş Shapely face→SpaceReview düğümü; yakın native source marker ve geometrik shared-boundary crossing ile incelenmiş PassageReview kenarı, koridor/balkon/merdiven/sahanlık türleri, EXTERIOR soyut düğümü, components/reachability/articulation/bridges, passage-ID'li en az adımlı topolojik rota. Güncel `DrawingIR` native geometri yeniden çözülüp yüzey poligonu/katmanı doğrulanır; sahte face ID/SHA ile graph üretilemez.
 
 **Tam uygunluk DEĞİL:** kapı boşluğu otomatik görüntü/CAD çözümüyle doğrulanmadı; dış çıkış ve kullanıcı `reviewer_id` beyanları güvenilir kurum imzası değil; yürünebilir alan/gerçek yangın kaçış **mesafesi** veya kapı açılış yönü yok. Kaynak kimliği, tek frame, aynı kat, gerçek sınır ve kullanıcının işaretli portal konumu şarttır. [İşlem 011](islem_011.md) · [Topoloji teknik şartnamesi](specs/topology-v0.1.md).
+
+
+## İşlem 012 güncellemesi — F07
+
+**F07 `KISMI / MEVCUT_KOD`:** `rules/base.py` ve `rules/engine.py` ile 6 sonuç sınıfı, sürümlü `RuleDefinition`, sonlu sayı ve kısıtlı operatörler, segment uzunluğu / gözden geçirilmiş net iç sınır alanı / bina footprint'i / incelenmiş topolojik bağlantı için DrawingIR+Shapely+NetworkX kaynak yeniden hesaplama geliştirildi. Tekil evidence ID, drawing SHA, frame, sınır sonucu, karşılaştırma ve neden kodu çıkarılır. Sadece teknik kurallar COMPLIANT/NON_COMPLIANT üretebilir.
+
+**Hukukî kesin HOLD:** `LegalSourceLocator` yalnız yapılandırılmış **aday yasal kaynak konumu**; orijinal Resmî Gazete PDF, madde/fıkra, mevzuat değişiklik zinciri, yürürlük tarihi ve istisna/applicability denetlenmedi. Bu nedenle **tüm `REGULATORY`** tanımları, kaynak yazılmış olsa bile, `INSUFFICIENT_EVIDENCE` döner. F08–F12 halen **HUKUKI_HOLD**. [İşlem 012](islem_012.md) · [RuleEngine teknik sözleşmesi](specs/rule-engine-v0.1.md).
