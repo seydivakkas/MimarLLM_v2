@@ -1,7 +1,7 @@
 # İşlem 009 — PDF native/OCR kaynaklarının DrawingIR ile bütünleştirilmesi
 
 - Tarih: 2026-10-13
-- Durum: **ÖN KAYIT** — uygulama kodundan önce oluşturuldu.
+- Durum: **UYGULANDI — kaynak kod ve sentetik testler; Windows model/saha ve mevzuat kabulü ayrı.** Ön kayıt ilk commit'te açıldı.
 - Öncelik: F03 (PDF native vektör/provenance), F04 (RapidOCR CPU entegrasyonu — gerçek model benchmark ayrı).
 - Ön koşul: islem_007 DrawingIR v0.1; islem_008 DXF parsing; teknoloji kararı ADR-002.
 - Kesin motorlar: `pdfplumber` karakter/vektör, `pypdfium2` raster bölge render, `rapidocr + onnxruntime` CPU; başka PDF/OCR motoru eklenmeyecek.
@@ -26,6 +26,32 @@
 - Model indirme/runtime telemetry bağımsız kontrol; GPU belleği gerçek cihazda ölçülmeden '0 MB VRAM' iddiası yok.
 - `DrawingIR.findings` bu işlemde boş; mevzuat ya da sahte geometrik PASS yok.
 
-## Çalışma kaydı
+## Gerçek uygulama ve commit kayıtları
 
-Gerçek commit SHA, CI durumu ve bilinen açık limitler uygulama sonunda işlenecek.
+**Ön-kayıt ilk commit:** `b89c2c81b4b7e4502237192fd2745bfecf70ebdb` — diğer kaynak değişikliklerinden **önce** `docs/islem_009.md` oluşturuldu.
+
+| Dosya | Gerçek geliştirilen özellik | Örnek commit |
+| --- | --- | --- |
+| `src/mimarllm/importers/pdf.py` | 0/90/180/270 standart /Rotate için koordinatlı ROI; 90° crop uyuşmazlığına bounded full-page çözümü; subpixel pixel-origin metadata; CropBox fail-closed | `b179f036`, `cbefd89b`, `c57a4611` |
+| `src/mimarllm/importers/pdf_ir.py` | pdfplumber glyph/line/rect/Bezier gözlemlerini DrawingIR ve kaynağa bağlı text candidate; kullanıcı seçili ROI'de injected RapidOCR CPU four-point quad | `caba5fb7` |
+| `tests/test_pdf_ir.py` | Çok sayfa/provenance, gerçek diagonal line, yaklaşık eğri, mock OCR, wrong page/source, OCR polygon ROI, 4 PDF /Rotate, malformed CropBox, memory cap, subpixel origin | `557221a7`, `d1a0b711`, `475ee2ec` |
+| `.github/workflows/core-contracts.yml` | PDF OCR entegre testinin CI'a eklenmesi; sonrasında ubuntu+Windows sentetik matrix | `ef382d6d`, `b1f72177` |
+| `docs/specs/pdf-ocr-drawingir-v0.1.md` | Çizim kaynak sözleşmesi; rotasyon, bbox gerçeği, veri güvenlik/sınır tablosu | `fdb85702` |
+| `README.md`, `docs/ozellik-envanteri.md`, `docs/uygulama-yol-haritasi.md`, `docs/kararlar.md` | F03/F04 gerçek durum + sonraki iş + kararlar | `9c6d4433`, `d93ce873`, `85394e5e`, `7a40dbfd` |
+
+### GitHub Actions testleri ve gerçek hata analizi
+
+- İlk tümleştirme CI [38342025131](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342025131): **84 PASS / 1 FAIL**. Gerçek hata: /Rotate=90 sayfasında PDFium doğrudan ROI crop ile tam sayfa üzerinde aynı bölge uyuşmuyordu. Çözüm: rotasyonlu standart sayfada yalnız bellek bütçesine sığan tam sayfa render + Pillow ROI crop; bellek limitini aşan büyük sayfa açık hata.
+- ROI/CropBox negatif testindeki [38342268760](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342268760) çalışması: **87 PASS / 1 FAIL**. Bu hatanın nedeni üretim kodu değil, `reportlab.setCropBox` fonksiyonuna dört koordinat yerine iki değer verilerek geçersiz PDF fixture üretilmesiydi. Fixture düzeltildi.
+- Sonraki bütünleşik Ubuntu test [38342398039](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342398039): **88 PASS / 0 FAIL**, gerçek sentetik PDF, bbox, 4 sayfa rotasyonu, injected mock OCR ve DrawingIR testleri.
+- Güncel son commit'e yönelik [Linux + Windows matrix 38342517550](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38342517550): sonucu ayrıca doğrulanacak. GitHub-hosted Windows runner **kullanıcının RTX 4070/i7/32GB makinesi değildir**.
+
+### Biten / bitmeyen kabul kapıları
+
+**Kodlandı:** Native karakter matrisi ve bbox, gerçek line/rect, Bezier flattening diagnostic, kaynak hash ve sayfa, 4 noktalı OCR candidate, render pixel↔PDF point dönüşümü, standart /Rotate, ROI bazında kaynak doğrulama.
+
+**HOLD:** Gerçek RapidOCR model inference, Türkçe/Ö/Ø/±/°/² karakter CER, font outline/SHX için otomatik ROI kalite kontrolü, tek PDF içinde değişik CropBox, rotasyonlu dev pafta tiled-render, kırpılmış PDF sayfalarda source mapping, gerçek Windows/AutoCAD/Revit/ArchiCAD paftalarıyla kabul. Başka PDF/OCR motoru eklenmedi.
+
+**Anlam sınırı:** Native glyph bounding rectangle, gerçek eğik glyph poligonu değildir. OCR quad, tespit poligonudur; fiziksel ölçüm/duvar/kapı/mevzuat `PASS` değildir. `DrawingIR.findings` ve fiziksel ölçümler boş, kalibrasyon `UNKNOWN`.
+
+**Sonraki işlem `docs/islem_010.md`:** Shapely ile segment noding, snap toleransı, gerçek oda iç poligonu, duvar sınır adayları ve geometrik belirsizlik; doğrulanmamış fiziksel alan üretimi yok.
