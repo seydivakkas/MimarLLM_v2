@@ -79,3 +79,10 @@ Sıradaki `islem_009`: `pdfplumber` glyph/vektör, `pypdfium2` ROI ve `RapidOCR`
 `src/mimarllm/importers/pdf_ir.py` ile PDF native ve açıkça istenen OCR ROI kaynakları DrawingIR v0.1'e bağlandı. 90° ROI render'da PDFium doğrudan crop uyuşmazlığı sentetik testte tespit edildi; güvenli çözüm: **döndürülmüş sayfalarda yalnız sınıra sığan tam sayfayı rasterleştirip Pillow ile ROI al**. `CropBox != MediaBox` durumu yanlış koordinat göstermemek adına şimdilik reddedilir. F03/F04 kabul kapıları için [islem_009.md](islem_009.md) güncel referanstır.
 
 **Sırada:** `islem_010` Shapely geometri; güvenilir duvar iç sınırı, oda poligonu, topolojik açıklık adayı ve kalibrasyonsuz net alan `INSUFFICIENT_EVIDENCE`.
+
+
+## İşlem 010 uygulama notu (2026-10-13)
+
+`src/mimarllm/geometry/spatial.py` ve `walls.py`, sentetik **gerçek DXF kaydedip açma** + PDF DrawingIR üzerinde Shapely ile doğrulanmış geometrik aday hesaplarını içerir. Frame-bound kaynak SHA/ID, kesişim/tolerans, açık/overlap teşhisleri ve yalnız **reviewer seçilmiş iç yüz/footprint** için CONFIRMED ölçek sonrası alan sözleşmesi eklendi. Büyük pafta `max_segments/max_pairs` kısıtına tabidir; yüksek hacim spatial index optimizasyonu sonra.
+
+F05 `KISMI`: sentetik geometri testleri Linux/Windows CI'da çalışır, gerçek oda/duvar semantiği halen HOLD. Sonraki islem_011: **NetworkX ile oda ve geçiş grafı**, otonom kapı/yangın tespiti iddiası olmadan doğrulanmış adjacency kanıtı.
