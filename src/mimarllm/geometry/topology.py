@@ -16,7 +16,7 @@ from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import unary_union
 
 from mimarllm.core.ir import DrawingIR, EvidenceOrigin, PrimitiveKind
-from mimarllm.geometry.spatial import GeometryAnalysis
+from mimarllm.geometry.spatial import GeometryAnalysis, GeometryInputError, analyze_geometry
 
 EXTERIOR_ID = "__EXTERIOR__"
 
@@ -220,8 +220,28 @@ def build_topology(
         raise TopologyInputError("Duplicate/reserved space ID")
     if len({s.face_id for s in spaces}) != len(spaces):
         raise TopologyInputError("Two reviewed spaces refer to the same face")
+    if any(not s.reviewer_id.strip() or not s.space_id.strip() for s in spaces):
+        raise TopologyInputError("Space review identity cannot be blank")
+    if len({s.floor_label for s in spaces if s.floor_label is not None}) > 1:
+        raise TopologyInputError("Contradictory floor labels in a single source frame")
     if len({p.passage_id for p in passages}) != len(passages):
         raise TopologyInputError("Duplicate passage ID")
+    if any(not p.reviewer_id.strip() or not p.passage_id.strip() for p in passages):
+        raise TopologyInputError("Passage review identity cannot be blank")
+
+    # GeometryAnalysis is serialized user-visible data, not a trusted proof.
+    # Reproduce its selected native faces from current DrawingIR before
+    # permitting it to create graph nodes or traversable graph edges.
+    try:
+        verified_geometry = analyze_geometry(
+            drawing, geometry.frame_id,
+            entity_ids=geometry.input_entity_ids,
+        )
+    except GeometryInputError as error:
+        raise TopologyInputError(
+            f"Cannot reproduce source faces: {error}"
+        ) from error
+    verified_faces = {face.face_id: face for face in verified_geometry.faces}
 
     reviewed: dict[str, Polygon] = {}
     face_for: dict[str, object] = {}
@@ -234,7 +254,15 @@ def build_topology(
         for eid in face.boundary_entity_ids:
             if eid not in entities or entities[eid].frame_id != geometry.frame_id:
                 raise TopologyInputError("Face cannot be traced to native drawing entities")
+        trusted_face = verified_faces.get(face.face_id)
         polygon = Polygon(face.exterior, holes=face.holes)
+        if (trusted_face is None
+                or set(face.boundary_entity_ids) != set(trusted_face.boundary_entity_ids)
+                or Polygon(trusted_face.exterior, holes=trusted_face.holes).hausdorff_distance(polygon)
+                > coordinate_tolerance
+                or abs(face.source_area_squared - trusted_face.source_area_squared)
+                > max(coordinate_tolerance**2, trusted_face.source_area_squared * 1e-10)):
+            raise TopologyInputError("Reviewed face differs from DrawingIR source geometry")
         if not polygon.is_valid or polygon.is_empty or polygon.area <= coordinate_tolerance**2:
             raise TopologyInputError("Reviewed space polygon is invalid")
         reviewed[space.space_id] = polygon
@@ -251,7 +279,7 @@ def build_topology(
     selected_boundary_ids = {
         eid for space in spaces for eid in face_for[space.space_id].boundary_entity_ids
     }
-    for issue in geometry.issues:
+    for issue in verified_geometry.issues:
         if issue.code in {
             "OVERLAPPING_SEGMENTS", "SELF_INTERSECTING_SOURCE",
             "INVALID_RING", "BOUNDARY_SOURCE_UNRESOLVED",
