@@ -29,6 +29,7 @@ class WallGapCandidate(BaseModel):
 
 
 class WallGapResult(BaseModel):
+    source_sha256: str
     frame_id: str
     candidates: list[WallGapCandidate] = Field(default_factory=list)
     issues: list[GeometryIssue] = Field(default_factory=list)
@@ -109,4 +110,5 @@ def find_parallel_edge_gaps(
             ))
     results.sort(key=lambda c: (c.first_entity_id, c.second_entity_id,
                                 c.gap_source_units))
-    return WallGapResult(frame_id=frame_id, candidates=results, issues=issues)
+    return WallGapResult(source_sha256=drawing.source_sha256, frame_id=frame_id,
+                         candidates=results, issues=issues)
