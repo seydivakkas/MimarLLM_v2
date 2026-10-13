@@ -21,8 +21,8 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | islem_011 | Mekânsal topoloji/erişilebilirlik | F06 | 010 | Gerçek kapı/geçit grafı; dışa çıkış sınıfı |
 | islem_012 | Kural motoru + durumlar + güvenilir kural kaydı | F07 | 010/011 | Kaynak eksikliğinde hukukî PASS yok |
 | islem_013 | Yerel mevzuat ETL + LegalAST + PDF span/source index | F13 | 009 | Özgün kaynak ve değişiklik zinciri |
-| islem_014 | FTS5/dense/RRF + provenance + rule evidence | F14/F15 | 012/013 | Kesin citation ve applicability |
-| islem_015 | İmar/yangın kural paketleri (önce source onayı) | F08/F09 | 011/012/014 | Kontrol başına veri/yürürlük/özel durum |
+| islem_014 | FTS5/dense/RRF + source spans ile RAG sonuçları | F14 | 012/013 | PDF SHA/page/quad ve BM25/RRF; semantic benchmark HOLD |
+| islem_015 | Yerel özgün PDF SHA ve polygon denetimi + hukuki değişiklik/proje applicability bağlayıcısı | F15 | 012/013/014 | Source consistency + RuleEngine REGULATORY HOLD |
 | islem_016 | Otopark/sığınak/BEP (önce source onayı) | F10/F11/F12 | 015 + ek proje verisi | İnsan hukukî inceleme; hold ayrı |
 | islem_017 | Rapor, çizim işaretleme + bulgudan belge sayfasına geçiş | F17/F18 | 014–016 | İki kaynak bbox doğrulama |
 | islem_018 | Pipeline + CLI + offline yerel FastAPI dashboard | F16/F19 | 017 | Sentetik çizim/rapor, localhost güvenliği |
@@ -114,3 +114,10 @@ F06 yalnız sentetik tek kat/topolojik kanıta dayalı çalışır; yangın kaç
 `src/mimarllm/rag/` içinde offline **SQLite FTS5 BM25 + isteğe bağlı CPU local SentenceTransformer + bounded cosine + RRF** kodlandı. `LegalAST` source spans ve tablo cell bbox kayıtları, source PDF hash/0-based page, adım hiyerarşisiyle veritabanına alınır; `search_legal` PDF'de vurgulanabilir konum adaylarını döner. Testler sentetik gerçek PDF'den SQLite ingest→lexical ve sentetik dense rank→RRF akışını kapsar.
 
 F14 `KISMI/MEVCUT_KOD`; gerçek embedding Türkçe benchmarkı, gerçek Resmî Gazete çok yıllı corpus ve hukuki yürürlük onayı henüz yok. **Arama skoru ve aday doküman sonucu hiçbir `RuleEngine.REGULATORY` kilidini açmaz.** Sonraki iş islem_015: kaynak doğrulama/effectivity/applicability sürümlü bağlantısı ve kural bağlayıcı güven kapısı; mevcut hukukî HOLD korunacak.
+
+
+## İşlem 015 uygulama notu (2026-10-13)
+
+`legal/verification.py`, `versions.py`, `applicability.py` ve `rules/evidence.py` ile yerel PDF kaynak byte/page/quad denetimi, açıklanmış değişiklik hedef–kaynak bağları, proje tarih/yer/yapı/istisna eksikleri ve `RuleDefinition`→LegalAST node→RAG hit tam eşleştirme kodlandı. Yalnız beyanların birbirini tutması hukukî gerçek tarih/istisna veya resmî yayın kaynağını **doğrulamaz**.
+
+F15 `KISMI/MEVCUT_KOD`. F08–F12 mevzuat paketleri hâlâ `HUKUKI_HOLD`; kural eşikleri yazılmayacak. İzleyen mühendislik: kaynak belgeyi görsel olarak inceleme, tarihsel sürüm konsolidasyonu, uzman audit/imza kapıları ve sonrasında ayrı teknik mimari denetimler. [İşlem 015](islem_015.md).
