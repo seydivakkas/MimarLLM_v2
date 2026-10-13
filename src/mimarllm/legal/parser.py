@@ -86,18 +86,32 @@ def parse_legal_tree(lines: list[LegalLine], metadata: LegalDocumentMetadata,
         if m_section:
             section = add(LegalNodeKind.SECTION, text, line, None)
             article = paragraph = item = None
-        elif m_temp:
+        elif m_temp or m_article:
+            header = m_temp or m_article
+            number = header.group(1)
+            inline = _PARAGRAPH.match(header.group(2).strip())
+            # The parent and inline paragraph share one original PDF line;
+            # both retain the SAME full-line source polygon. No invented
+            # sub-line coordinate is passed off as original glyph geometry.
+            article_text = text
+            if inline:
+                article_text = text[:text.find(header.group(2))].strip()
             article = add(
-                LegalNodeKind.TEMPORARY_ARTICLE, text, line, section,
-                article_no=m_temp.group(1),
+                LegalNodeKind.TEMPORARY_ARTICLE if m_temp else LegalNodeKind.ARTICLE,
+                article_text, line, section, article_no=number,
             )
             paragraph = item = None
-        elif m_article:
-            article = add(
-                LegalNodeKind.ARTICLE, text, line, section,
-                article_no=m_article.group(1),
-            )
-            paragraph = item = None
+            if inline:
+                paragraph = add(
+                    LegalNodeKind.PARAGRAPH, header.group(2).strip(), line,
+                    article, article_no=number, paragraph_no=inline.group(1),
+                )
+                issues.append(LegalReviewIssue(
+                    code="INLINE_PARAGRAPH_FULL_LINE_BBOX",
+                    page_index=line.source.page_index,
+                    source_line_id=line.line_id,
+                    detail="Inline article/paragraph source span covers complete PDF line",
+                ))
         elif m_para and article:
             paragraph = add(
                 LegalNodeKind.PARAGRAPH, text, line, article,
