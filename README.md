@@ -111,3 +111,14 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Yanlış PASS yok:** Katman adları, OCR metni, oda merkezleri veya duvarda kesintisiz çizgi **otomatik kapı oluşturmaz**. Reviewer kimliği yalnız istemci beyanıdır; kapıların gerçekten geçilebilir olduğu bu modülde bağımsız doğrulanmaz. Sonuçlar yangın kaçış mesafesi, mevzuat veya metre cinsinden yürüyüş mesafesi değildir.
 - **Açık:** CAD'den otomatik kapı açıklığı ve net geçiş doğrulaması, kapı yönü, katlar arası merdiven/3B yapı, büyük plan performansı, gerçek i7/4070 Windows saha testi.
 - **Sıradaki:** islem_012 kural motoru çerçevesi; herhangi bir hukukî hüküm aktif olmadan önce sürümlü özgün kaynak dayanağı gerekir.
+
+
+## İşlem 012 — Deterministik teknik RuleEngine v0.1
+
+- [İşlem 012 geliştirme kaydı](docs/islem_012.md) · [RuleEngine v0.1 teknik şartnamesi](docs/specs/rule-engine-v0.1.md)
+- **Uygulandı:** `src/mimarllm/rules/base.py` (sürüm/kimlik, metrik ve kanıt şemaları, 6 durum, `LegalSourceLocator`) ile `src/mimarllm/rules/engine.py` (`RuleEngine`).
+- **Teknik metrikler:** DrawingIR'den yeniden ölçülen native `SEGMENT_LENGTH_M`; aynı dosyadan yeniden hesaplanan gözden geçirilmiş `REVIEWED_INTERIOR_AREA_M2` ve `REVIEWED_FOOTPRINT_M2`; Shapely/NetworkX'ten yeniden kurulan `REVIEWED_TOPOLOGY_PATH`.
+- **Karar türleri:** `COMPLIANT`, `NON_COMPLIANT`, `INSUFFICIENT_EVIDENCE`, `REVIEW_REQUIRED`, `NOT_APPLICABLE`, `ERROR`. `COMPLIANT` burada **yalnız senaryoya ait teknik eşik/bağlantı** anlamına gelir, yapının mevzuata uygunluğu değildir.
+- **Hukukî HOLD:** `REGULATORY` tanımı yasal madde/fıkra ve PDF kimliğini aday metadata olarak tutabilir; fakat resmî source/version/yürürlük/applicability/istisna zinciri ve bağımsız onay hattı bulunmadığından **REGULATORY hiçbir zaman COMPLIANT/NON_COMPLIANT/NOT_APPLICABLE üretmez**. Kullanıcı kaynak onay bayrağıyla motoru açamaz. `legal_compliance_certified=True` açıkça reddedilir.
+- **Sınırlamalar:** Kural paketleri `tr_imar.py`, `tr_yangin.py` vb. oluşturulmadı; yazılım gerçek mimari hesaplar veya hukuka uygunluk sertifikası sunmuyor. Gerçek Windows i7/4070, resmî mevzuat ve saha testleri ayrı tutulur.
+- **Sonraki iş:** `islem_013` resmî mevzuat kaynak PDF'lerini maddeler/fıkralar, değişiklikler ve konum kanıtıyla çevrimdışı LegalAST'ye dönüştürme.
