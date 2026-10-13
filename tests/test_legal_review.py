@@ -148,18 +148,30 @@ def test_review_table_cell_has_exact_row_column_bbox(documents, tmp_path):
     assert "TABLE_CELL_BBOX" in html
 
 
-def test_same_multiline_node_each_original_span_can_be_selected(documents):
-    _, _, base, _, paragraph, _, _ = documents
-    assert len(paragraph.spans) >= 1
-    if len(paragraph.spans) == 1:
-        pytest.skip("Fixture parser has no multiline paragraph")
-    queue = build_review_queue([base], [
-        ReviewSelection(document_sha256=base.document_sha256,
+def test_same_multiline_node_each_original_span_can_be_selected(tmp_path):
+    pdf = tmp_path / "multiline_clause.pdf"
+    c = Canvas(str(pdf), pagesize=(420, 330))
+    c.setFont("Helvetica", 11)
+    c.drawString(30, 300, "MADDE 3 - A synthetic source.")
+    c.drawString(30, 276, "(1) First line of a paragraph.")
+    c.drawString(30, 255, "Continuation of this exact paragraph.")
+    c.save()
+    doc = parse_legal_pdf(pdf, LegalDocumentMetadata(regulation_id="MULTILINE"))
+    paragraph = next(n for n in doc.nodes if n.kind == LegalNodeKind.PARAGRAPH)
+    assert len(paragraph.spans) == 2
+    queue = build_review_queue([doc], [
+        ReviewSelection(document_sha256=doc.document_sha256,
                         kind=TargetKind.NODE, reference_id=paragraph.node_id,
                         span_index=i)
         for i in range(len(paragraph.spans))
     ])
     assert [x.source for x in queue.tasks] == list(paragraph.spans)
+    html = create_visual_review_html(
+        queue, [doc], {doc.document_sha256: pdf},
+        tmp_path / "multiline.html",
+    ).read_text("utf-8")
+    assert html.count('data:image/png;base64,') == 2
+    assert html.count("<polygon points=") == 2
 
 
 def test_wrong_sha_bad_reference_and_duplicate_selection_fail(documents):
