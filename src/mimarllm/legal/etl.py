@@ -33,7 +33,10 @@ def parse_legal_pdf(
         max_total_lines=max_total_lines, max_ocr_pages=max_ocr_pages,
         max_render_pixels=max_render_pixels,
     )
-    parsed = parse_legal_tree(lines, metadata, max_nodes=max_nodes)
+    try:
+        parsed = parse_legal_tree(lines, metadata, max_nodes=max_nodes)
+    except ValueError as exc:
+        raise LegalInputError(str(exc)) from exc
     tables, table_issues = suggest_table_parents(tables, lines, parsed)
     issues += parsed.issues + table_issues
     changes = find_change_candidates(lines, parsed.line_to_node_id)
