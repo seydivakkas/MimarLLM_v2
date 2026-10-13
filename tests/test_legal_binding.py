@@ -348,10 +348,19 @@ def test_ruleengine_remains_locked_even_with_all_claims_and_high_rrf(sources, pr
         db.index_document(base, original_pdf_path=pdf)
         hit = next(h for h in search_legal(db, "door", top_k=20).results
                    if h.passage.node_id == target.node_id)
+    with pytest.raises(BindingInputError, match="another drawing SHA"):
+        evaluate_regulatory_with_evidence(
+            engine, rule, request, [base],
+            source_node_id=target.node_id, local_pdf_path=pdf,
+            project=project, rag_hit=hit,
+        )
+    correct_project = project.model_copy(update={
+        "drawing_sha256": drawing.source_sha256,
+    })
     wrapped = evaluate_regulatory_with_evidence(
         engine, rule, request, [base],
         source_node_id=target.node_id, local_pdf_path=pdf,
-        project=project, rag_hit=hit,
+        project=correct_project, rag_hit=hit,
     )
     assert wrapped.regulatory_gate == "LOCKED_IN_RULEENGINE_V0_1"
     assert wrapped.rule_result.status == RuleStatus.INSUFFICIENT_EVIDENCE
