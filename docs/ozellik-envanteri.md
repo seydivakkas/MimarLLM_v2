@@ -20,7 +20,7 @@
 | F10 | Otopark adedi, boyut, rampa ve manevra | `rules/registry/tr_otopark.py` | **HUKUKI_HOLD** | Kullanım/konum/tarih, gerçek kural, 3B rampa bilgisi | (13) / eski 015 |
 | F11 | Sığınak ihtiyacı, kapasite, alan, kapı/çıkış | `rules/registry/tr_siginak.py` | **HUKUKI_HOLD** | 2025 değişikliklerinin sürüm zinciri; ek proje verisi | (14)=(15) / eski 016 |
 | F12 | BEP/TS 825 pencere, enerji ve kabuk verileri | `rules/registry/tr_bep.py` | **HUKUKI_HOLD** | TS hakları + U/hesap/iklim/3B veri; 2B'den sahte PASS yok | (16) / eski 017 |
-| F13 | Hiyerarşik mevzuat AST ve değişiklik/yürürlük | `regulations/parser.py`, `versions.py`, `citations.py` | PLANLANDI | Kaynak hash + madde/fıkra/ek + gerçek PDF page/quad | (7) / eski 008 |
+| F13 | Hiyerarşik mevzuat AST ve değişiklik/yürürlük | `legal/models.py`, `legal/extractor.py`, `legal/parser.py`, `legal/changes.py`, `legal/etl.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Kaynak hash + madde/fıkra/ek + gerçek PDF page/quad | (7) / eski 008 |
 | F14 | SQLite FTS5 ve CPU dense hibrit RAG, RRF | `regulations/store.py`, `retrieval.py` | PLANLANDI | Kaynak/version ID, exact match ve lexical fallback | (7) / eski 008 |
 | F15 | RuleResult–LegalNode kaynak bağlama | `rules/evidence.py`, `evidence/` | PLANLANDI | Exact verified binding; arama benzerliği asla hukukî PASS değil | (8) / eski 009 |
 | F16 | Analiz hattı + CLI | `pipeline.py`, `cli.py` | PLANLANDI | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
@@ -93,3 +93,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F07 `KISMI / MEVCUT_KOD`:** `rules/base.py` ve `rules/engine.py` ile 6 sonuç sınıfı, sürümlü `RuleDefinition`, sonlu sayı ve kısıtlı operatörler, segment uzunluğu / gözden geçirilmiş net iç sınır alanı / bina footprint'i / incelenmiş topolojik bağlantı için DrawingIR+Shapely+NetworkX kaynak yeniden hesaplama geliştirildi. Tekil evidence ID, drawing SHA, frame, sınır sonucu, karşılaştırma ve neden kodu çıkarılır. Sadece teknik kurallar COMPLIANT/NON_COMPLIANT üretebilir.
 
 **Hukukî kesin HOLD:** `LegalSourceLocator` yalnız yapılandırılmış **aday yasal kaynak konumu**; orijinal Resmî Gazete PDF, madde/fıkra, mevzuat değişiklik zinciri, yürürlük tarihi ve istisna/applicability denetlenmedi. Bu nedenle **tüm `REGULATORY`** tanımları, kaynak yazılmış olsa bile, `INSUFFICIENT_EVIDENCE` döner. F08–F12 halen **HUKUKI_HOLD**. [İşlem 012](islem_012.md) · [RuleEngine teknik sözleşmesi](specs/rule-engine-v0.1.md).
+
+
+## İşlem 013 güncellemesi — F13 (LegalAST)
+
+**F13 MEVCUT_KOD/KISMI:** Gerçek PDF dosyası `pdfplumber` üzerinden metin satırı, çok sayfalı BÖLÜM/MADDE/GEÇİCİ MADDE/FIKRA/BENT ağacı ve tablo hücresinin orijinal `pdf page_index + polygon + original PDF SHA256` bağlarıyla ayrıştırılıyor. `pypdfium2 + RapidOCR` yalnız açık OCR sayfası/enjekte edilen CPU okuyucuyla çalıştırılıyor. `LegalChangeCandidate` değişiklik/ilga/yürürlük/istisna sözcüklerini kanıt bağlantılı **adaya** dönüştürüyor; hukukî hüküm konsolidasyonu yapmıyor. JSON export mevcut dosya üzerine yazmayı reddediyor.
+
+**HOLD:** Gerçek Resmî Gazete PDF corpus/baskı ve hukukî kaynak orijin teyidi yok; bütün tarih/yıl değişiklikleri ve madde/fıkra istisnaları birleştirilmedi; gerçek OCR/iki sütun/dipnot karmaşıklığı bağımsız doğrulanmadı. `LegalDocument.review_status=UNREVIEWED`; `RuleEngine` hâlâ tüm `REGULATORY` kurallarını `INSUFFICIENT_EVIDENCE` statüsünde tutuyor. [İşlem 013](islem_013.md) · [LegalAST v0.1 teknik şartnamesi](specs/legalast-v0.1.md).
