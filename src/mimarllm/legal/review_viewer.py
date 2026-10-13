@@ -48,16 +48,19 @@ def create_visual_review_html(
     if not 1 <= len(checked.tasks) <= 24 or not 72 <= dpi <= 200:
         raise VisualReviewError("Review HTML safety budget or DPI invalid")
     docs = [LegalDocument.model_validate(doc.model_dump()) for doc in documents]
-    reconstructed = build_review_queue(
-        docs,
-        [ReviewSelection(
+    try:
+        reconstructed = build_review_queue(
+            docs,
+            [ReviewSelection(
             document_sha256=t.document_sha256,
             kind=t.kind, reference_id=t.reference_id, span_index=t.span_index,
             row_index=t.row_index, column_index=t.column_index,
             amendment_side=t.amendment_side,
         ) for t in checked.tasks],
-        amendment_claims=amendment_claims,
-    )
+            amendment_claims=amendment_claims,
+        )
+    except ReviewInputError as exc:
+        raise VisualReviewError(f"Review selection differs from LegalAST: {exc}") from exc
     if reconstructed != checked:
         raise VisualReviewError("Review task text or source polygon differs from LegalAST")
 
@@ -91,7 +94,7 @@ def create_visual_review_html(
                 dpi=dpi, max_pixels=max_pixels_per_page,
                 max_file_bytes=100 * 1024 * 1024,
             )
-        except (PdfInputError, Exception) as exc:
+        except Exception as exc:
             raise VisualReviewError(
                 f"Cannot display source coordinates safely: {type(exc).__name__}"
             ) from exc
@@ -123,7 +126,10 @@ def create_visual_review_html(
         points = " ".join(f"{x:.6f},{y:.6f}" for x, y in polygon)
         description = f"{task.kind.value} · {task.reference_id}"
         if task.amendment_side is not None:
-            description += f" · {task.amendment_side.value} ({task.claimed_relation})"
+            description += (
+                f" · {task.amendment_side.value} ({task.claimed_relation})"
+                f" · Beyan edilen etki başlangıcı: {task.claimed_effective_from}"
+            )
         items.append(f"""<section class="card" data-task="{escape(task.task_id, quote=True)}">
 <h2>{index}. {escape(description)}</h2>
 <p class="provenance">PDF SHA-256: <code>{escape(task.document_sha256)}</code> ·
