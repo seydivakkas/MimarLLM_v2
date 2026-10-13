@@ -6,6 +6,7 @@ hash, legal citation, or approval flag cannot authorize compliance verdicts.
 from __future__ import annotations
 
 from datetime import date
+from typing import Literal
 from enum import Enum
 from math import isfinite
 
@@ -153,7 +154,7 @@ class RuleResult(BaseModel):
     calculated_tolerance: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     legal_source: LegalSourceLocator | None = None
     legal_compliance_certified: bool = False
-    claim_scope: str = "TECHNICAL_ONLY_NOT_LEGAL"
+    claim_scope: Literal["TECHNICAL_ONLY_NOT_LEGAL"] = "TECHNICAL_ONLY_NOT_LEGAL"
 
     @model_validator(mode="after")
     def deny_legal_certification(self) -> "RuleResult":
@@ -163,4 +164,16 @@ class RuleResult(BaseModel):
             RuleStatus.COMPLIANT, RuleStatus.NON_COMPLIANT, RuleStatus.NOT_APPLICABLE,
         }:
             raise ValueError("Unverified regulatory results must remain on HOLD")
+        if self.domain == RuleDomain.TECHNICAL:
+            if self.status in {RuleStatus.COMPLIANT, RuleStatus.NON_COMPLIANT}:
+                if not self.evidence_ids or not self.entity_ids:
+                    raise ValueError("Technical verdict needs native evidence and source entities")
+                if self.metric != MetricKind.REVIEWED_TOPOLOGY_PATH:
+                    if (self.observed_value is None or self.threshold is None
+                            or self.operator is None or self.unit not in {"m", "m2"}):
+                        raise ValueError("Numeric technical verdict needs measured comparison")
+                elif self.status == RuleStatus.NON_COMPLIANT:
+                    raise ValueError("Missing topology evidence is not proven disconnection")
+            if self.status == RuleStatus.NOT_APPLICABLE and not self.entity_ids:
+                raise ValueError("Technical scope exception needs drawing source evidence")
         return self
