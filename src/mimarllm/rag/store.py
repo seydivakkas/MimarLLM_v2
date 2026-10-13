@@ -128,6 +128,42 @@ def _sha_file(path: Path, *, max_bytes: int = 100 * 1024 * 1024):
     return digest.hexdigest()
 
 
+
+def validate_pdf_page_bounds(
+    pdf_path: Path, document: LegalDocument,
+    entries: Sequence[IndexedPassage],
+) -> None:
+    """Check highlight polygons are inside the ORIGINAL PDF page rectangles.
+
+    This is a coordinate-bound check, NOT OCR/glyph matching or a guarantee
+    the text is really on that page. Visual source confirmation stays HOLD.
+    """
+    try:
+        import pypdfium2 as pdfium
+        with pdfium.PdfDocument(str(pdf_path)) as original:
+            if len(original) != document.page_count:
+                raise RagStoreError("Original PDF page count differs from LegalAST")
+            page_sizes = [tuple(float(v) for v in page.get_size())
+                          for page in original]
+    except RagStoreError:
+        raise
+    except Exception as exc:
+        raise RagStoreError(
+            f"Original PDF geometry not inspectable: {type(exc).__name__}"
+        ) from exc
+    for entry in entries:
+        for span in entry.spans:
+            if span.page_index >= len(page_sizes):
+                raise RagStoreError("Source span points to missing original PDF page")
+            width, height = page_sizes[span.page_index]
+            if any(not (-1e-5 <= x <= width + 1e-5 and
+                        -1e-5 <= y <= height + 1e-5)
+                   for x, y in span.polygon):
+                raise RagStoreError(
+                    "Source polygon exceeds original PDF page dimensions"
+                )
+
+
 class LegalRagStore:
     """One local SQLite database. Caller is responsible for close()."""
 
@@ -206,6 +242,7 @@ class LegalRagStore:
             p = Path(original_pdf_path).expanduser().resolve(strict=True)
             if _sha_file(p) != checked.document_sha256:
                 raise RagStoreError("Original PDF hash does not match LegalAST")
+            validate_pdf_page_bounds(p, checked, entries)
             local_pdf = str(p)
         vectors: list[tuple[float, ...]] = []
         if embedder is not None:
