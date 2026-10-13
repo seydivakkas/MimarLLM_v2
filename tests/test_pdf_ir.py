@@ -173,3 +173,36 @@ def test_pdf_import_json_roundtrip_and_page_origin(diagram_pdf):
     assert loaded.drawing.source_sha256 == result.drawing.source_sha256
     assert loaded.text_candidates[0].text_matrix is not None
     assert all(ent.source.page_index is not None for ent in loaded.drawing.entities)
+
+
+def test_nondefault_cropbox_is_fail_closed_not_false_source_highlight(tmp_path):
+    output = tmp_path / "cropped.pdf"
+    pdf = Canvas(str(output), pagesize=(432, 288))
+    pdf.setCropBox((300, 200))
+    pdf.drawString(50, 180, "CROP TEST")
+    pdf.save()
+    # Native media-page observations remain possible.
+    parsed = parse_pdf_ir(output)
+    assert parsed.text_candidates
+    with pytest.raises(PdfInputError, match="CropBox"):
+        render_region(output, 0, (10, 10, 50, 50), dpi=144)
+
+
+def test_rotated_large_page_fails_instead_of_full_render_oom(tmp_path):
+    output = tmp_path / "large-rotated.pdf"
+    pdf = Canvas(str(output), pagesize=(1000, 800))
+    pdf.setPageRotation(90)
+    pdf.drawString(40, 40, "BIG DRAWING")
+    pdf.save()
+    # A tiny ROI is cheap; but this rotated path needs full bitmap.
+    with pytest.raises(PdfInputError, match="full-page render"):
+        render_region(output, 0, (10, 10, 30, 30), dpi=150,
+                      max_pixels=150_000)
+
+
+def test_subpixel_crop_records_actual_rendered_origin(diagram_pdf):
+    crop = render_region(diagram_pdf, 0,
+                         (25.25, 20.75, 125.25, 120.75), dpi=144)
+    assert crop.pixel_origin_pdf_points == pytest.approx((25.5, 21.0))
+    assert crop.pixel_to_source(0, 0) == pytest.approx((25.5, 21.0))
+    assert crop.source_to_pixel(*crop.pixel_to_source(19, 15)) == pytest.approx((19, 15))
