@@ -13,7 +13,7 @@
 | F03 | PDF native vector + ROI + source provenance | `importers/pdf.py` | **MEVCUT_KOD, kabul bekler** | PDF char/line/curve/rect; dönüş/limit/görsel bbox ölçümü | İlk PDF kararları |
 | F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py`, `ocr/layout.py` | **KISMI** (adapter) | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
 | F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrollü** | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
-| F06 | Mekânsal topoloji, kapı bağlantısı, geçiş grafı | `geometry/topology.py` | PLANLANDI | Unreachable ve articulation; dış kapı/balkon ayrımı | (4) / eski 005 |
+| F06 | Mekânsal topoloji, kapı bağlantısı, geçiş grafı | `geometry/topology.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Unreachable ve articulation; dış kapı/balkon ayrımı | (4) / eski 005 |
 | F07 | Deterministik rule engine + altı durum ve kanıt | `rules/base.py`, `rules/engine.py` | PLANLANDI | PASS/FAIL/REVIEW/INSUFFICIENT/NA/ERROR; hesap izi | (5) / eski 006 |
 | F08 | Planlı Alanlar İmar Yönetmeliği denetimi | `rules/registry/tr_imar.py` | **HUKUKI_HOLD** | Onaylı madde-fıkra-eşik, tarih, proje kapsamı ve bbox | (5) / eski 006 |
 | F09 | BYKHY kaçış, kapı, çıkmaz koridor, sirkülasyon | `rules/registry/tr_yangin.py` | **HUKUKI_HOLD** | Ek-5/B doğru sürüm; yürünebilir yol/exit/sprinkler/occupancy | (12) / eski 014 |
@@ -79,3 +79,10 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F05 `KISMI / MEVCUT_KOD`:** Shapely üzerinden planar noding, polygonize_full, kapalı yüzey `UNCLASSIFIED_FACE` adayları; kaynak ID ile çizgi uç/kesişim/T junction kanıtları; açık, çakışan, kendiyle kesişen kaynak diagnostikleri. `assess_area` için doğru iç oda sınırı veya dış footprint kullanıcı tarafından açıkça seçilmeli, **aynı frame kaynak ölçek CONFIRMED** olmadan `physical_area_m2` yok. `find_parallel_edge_gaps` paralel iki çizginin örtüşen bölüm aralığını yalnız `REVIEW_REQUIRED` aday olarak döndürür.
 
 **Tam kabul DEĞİL:** otomatik duvar iç-dış konturu, gerçek oda duvarı/kapı açıklığı, global duvar kalınlığı doğrulaması, net/brüt yasal alan toplamı, sahadan gerçek Windows pafta kabulü, NetworkX topoloji ve yangın mesafesi yok. [İşlem 010](islem_010.md) · [Teknik şartname](specs/geometry-v0.1.md).
+
+
+## İşlem 011 güncellemesi — F06
+
+**F06 `KISMI / MEVCUT_KOD`:** `src/mimarllm/geometry/topology.py`, NetworkX `MultiGraph`, kullanıcıca açıkça gözden geçirilmiş Shapely face→SpaceReview düğümü; yakın native source marker ve geometrik shared-boundary crossing ile incelenmiş PassageReview kenarı, koridor/balkon/merdiven/sahanlık türleri, EXTERIOR soyut düğümü, components/reachability/articulation/bridges, passage-ID'li en az adımlı topolojik rota. Güncel `DrawingIR` native geometri yeniden çözülüp yüzey poligonu/katmanı doğrulanır; sahte face ID/SHA ile graph üretilemez.
+
+**Tam uygunluk DEĞİL:** kapı boşluğu otomatik görüntü/CAD çözümüyle doğrulanmadı; dış çıkış ve kullanıcı `reviewer_id` beyanları güvenilir kurum imzası değil; yürünebilir alan/gerçek yangın kaçış **mesafesi** veya kapı açılış yönü yok. Kaynak kimliği, tek frame, aynı kat, gerçek sınır ve kullanıcının işaretli portal konumu şarttır. [İşlem 011](islem_011.md) · [Topoloji teknik şartnamesi](specs/topology-v0.1.md).
