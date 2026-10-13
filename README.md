@@ -150,3 +150,12 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Önemli ayrım:** Yerel PDF'yi hash ile eşleştirmek belgeyi resmî yayımlanmış yapmaz; değişiklik ilişkileri henüz hukukî konsolide sürüm değildir. Girdi `reviewer_id` bağımsız hukukçu denetimi/kimlik doğrulaması değildir. Eksik amending özgün PDF kendi `HOLD_AMENDMENT_CHAIN` uyarısını üretir.
 - **Hukukî kilit:** RAG skoru veya tüm kullanıcı alanlarının dolu olması `APPROVED_FOR_CHECK` üretmez. `evaluate_regulatory_with_evidence` belge/versiyon/proje kanıtı eksiklerini ve değişmeyen `RuleEngine.REGULATORY: INSUFFICIENT_EVIDENCE` sonucunu birlikte döndürür. F08–F12 HUKUKI_HOLD devam eder.
 - **Sonraki mühendislik sınırı:** özgün Resmî Gazete yetkili kaynağının doğrulanması, madde/fıkra bazında gerçekte yürürlükte sürümlerin bağımsız konsolidasyonu ve imzalı uzman onay akışı ayrı geliştirme/bağımsız hukukî kabul ister.
+
+
+## İşlem 016 — Offline mevzuat PDF kaynak incelemesi
+
+- [İşlem 016](docs/islem_016.md) · [Görsel review v0.1 şartnamesi](docs/specs/legal-review-v0.1.md).
+- **Uygulandı:** `legal/review.py` LegalAST node, fıkra, tablo hücresi ve değişiklik kaynağı seçimi; `legal/review_viewer.py` ile özgün yerel PDF sayfa görüntüsü üzerine gerçek source page/quad koordinatında **sarı SVG vurgu** ve kullanıcı inceleme seçimli internet gerektirmeyen HTML.
+- **Sürüm kıyası:** `legal/version_workflow.py` ayrı base ve amendment PDF'lerini, tarih beyanı/ilişkiyle iki özgün kaynak olarak sunar. İlgili amendment'ın geçerli hukukî etki tarihi veya konsolide metni üretilmez.
+- **Kaynaklı kayıt:** `legal/review_ledger.py` HTML'den indirilen JSON taslak kararlarını kaynak `task_digest` ile eşleştirir, SHA-chain JSONL tarihçesine ekler. Bu imzalanmış belge veya kurum onayı değildir, kimliği doğrulamaz, haricî anchor olmadan geçmişin tümden değiştirilmesini önleyemez.
+- **Sınır:** Bu geliştirme yalnız **mevzuat PDF görsel kanıt alt modülü**. Genel mimari pafta hata işaretleme, raporlama, localhost UI ve tam Windows uygulaması henüz yapılmadı. `RuleEngine REGULATORY` ve F08–F12 `HUKUKI_HOLD` korunur.
