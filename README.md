@@ -131,3 +131,13 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **OCR:** RapidOCR CPU yalnız açıkça seçilmiş sayfalarda, mevcut yerel OCR reader üzerinden. Belgenin basılı sayfa numarası, resmî başlığı, yürürlük tarihi ve hukukî geçerliliği otomatik varsayılmaz.
 - **Dürüst statü:** F13 `MEVCUT_KOD/KISMI`, sentetik Linux+Windows CI doğrulaması. Gerçek Resmî Gazete belgeleri arşivlenmedi/konsolide edilmedi; hukukî uzman onayı/iki sütun/OCR doğrulaması ayrı. F08–F12 REGULATORY hâlâ `INSUFFICIENT_EVIDENCE`.
 - **Sıradaki:** islem_014 LegalAST kaynak geri izli SQLite FTS5 + yerel dense/hybrid retrieval.
+
+
+## İşlem 014 — Yerel hibrit mevzuat RAG (SQLite FTS5 + yerel dense + RRF)
+
+- [İşlem 014](docs/islem_014.md) · [RAG v0.1 teknik şartnamesi](docs/specs/rag-v0.1.md)
+- **Kod:** `src/mimarllm/rag/{models,store,embeddings,retriever,indexer}.py`. `LegalDocument` düğüm/fıkra ve tablo hücresi kayıtları SQLite FTS5/BM25 ile aranabilir; kullanıcı bir yerel embedding modelini **açıkça** sağlarsa aynı SQLite üzerinde normalize cosine ve Reciprocal Rank Fusion (RRF) kullanılır.
+- **Kaynak izi:** Sonuçlarda `document_sha256`, `regulation_id`, `node_id`, `article/paragraph/item`, `table_id/row/column`, gerçek `LegalSourceSpan.page_index` ve PDF `polygon` ile özgün metin vardır. Yerel PDF hash'i erişilebilir değilse görüntü varmış gibi davranılmaz.
+- **Donanım/offline:** SQLite Python stdlib, `LocalSentenceTransformer` yalnız önceden hazır bir **yerel klasör**, CPU, `local_files_only=True`, `trust_remote_code=False`; sentence-transformers temel paket zorunluluğu yapılmadı. Embedding yoksa `LEXICAL_ONLY` çalışır. ANN/FAISS/haricî API henüz yok.
+- **Kanıt ve karar ayrımı:** Bütün sonuçlar `UNREVIEWED` / `legal_compliance_certified=False` ve `RETRIEVAL_CANDIDATE_NOT_LEGAL_ADVICE`. RRF skorundan hukukî `COMPLIANT` üretilemez, RuleEngine `REGULATORY` kilidi değişmedi.
+- **Sınırlar:** Sentetik CI'da dense pipeline **fake embedder** ile test edildi; gerçek çokdilli model Türkçe ölçüm ve tüm yıl/sürüm mevzuat corpus performansı hâlâ HOLD. 
