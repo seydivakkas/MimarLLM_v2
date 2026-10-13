@@ -99,6 +99,8 @@ def _passages(document: LegalDocument, *, max_passages: int) -> list[IndexedPass
                 regulation_id=document.metadata.regulation_id,
                 document_kind=document.metadata.document_kind,
                 entry_kind=RagKind.TABLE_CELL, node_kind="TABLE_CELL",
+                table_id=table.table_id, row_index=cell.row_index,
+                column_index=cell.column_index,
                 node_id=table.suggested_parent_node_id,
                 parent_node_id=None,
                 article_number=article, paragraph_number=paragraph, item_key=item,
