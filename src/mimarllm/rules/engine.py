@@ -254,6 +254,11 @@ class RuleEngine:
                 or not request.path_to_space_id):
             return outcome(RuleStatus.INSUFFICIENT_EVIDENCE,
                            "TOPOLOGY_WITNESS_INCOMPLETE")
+        if request.path_from_space_id == request.path_to_space_id:
+            return outcome(
+                RuleStatus.REVIEW_REQUIRED,
+                "ZERO_HOP_SELF_PATH_IS_NOT_A_PASSAGE",
+            )
         topo = build_topology(
             drawing, request.geometry_analysis,
             request.spaces, request.passages,
