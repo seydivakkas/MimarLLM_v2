@@ -358,7 +358,9 @@ def test_amendment_version_packet_shows_both_original_pdfs(documents,tmp_path):
         packet.review_queue,[base,changed],
         {base.document_sha256:original,changed.document_sha256:amendment},
         tmp_path/"compare.html",amendment_claims=[claim],
+        version_review=packet.chain_assessment,
     ).read_text("utf-8")
+    assert "LATER_AMENDMENT_REQUIRES_HISTORICAL_REVIEW" in html
     assert html.count('data:image/png;base64,')==2
     assert "AMENDING" in html and "TARGET" not in html.split("<main>")[0]
     assert claim.claim_id in html
