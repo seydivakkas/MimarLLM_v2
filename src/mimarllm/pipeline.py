@@ -63,7 +63,9 @@ class CalibrationReference(BaseModel):
     entity_id: str = Field(min_length=1)
     known_length_metres: float = Field(gt=0, allow_inf_nan=False)
     reviewer_id: str = Field(min_length=1, max_length=120)
-    method: Literal["USER_REFERENCE", "DIMENSION", "GRAPHIC_SCALE"] = "USER_REFERENCE"
+    # A DIMENSION/GRAPHIC_SCALE method would require independent source
+    # annotation verification; v0.1 can only attest a manual native line reference.
+    method: Literal["USER_REFERENCE"] = "USER_REFERENCE"
 
     @model_validator(mode="after")
     def validated_reviewer(self):
