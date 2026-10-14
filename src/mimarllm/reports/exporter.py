@@ -316,7 +316,7 @@ def export_report(
         lines=[
             "# MimarLLM — kaynaklı mimari analiz raporu",
             "",
-            f"Çizim SHA-256: \`{report.drawing_sha256}\`",
+            f"Çizim SHA-256: `{report.drawing_sha256}`",
             f"Kalibrasyon: **{report.calibration_state}**",
             "",
             "**UYARI:** Teknik bulgular hukukî uygunluk değildir. REGULATORY_LOCKED.",
