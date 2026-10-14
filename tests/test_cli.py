@@ -174,3 +174,17 @@ def test_cli_format_order_and_duplicate_format_not_duplicate_outputs(dxf,tmp_pat
     assert sorted(p.name for p in out.iterdir())==[
         "analysis.json","analysis.md","pipeline-manifest.json",
     ]
+
+def test_cli_partial_still_writes_held_manifest_and_returns_exit_4(dxf,tmp_path,capsys):
+    out=tmp_path/"partial"
+    out.mkdir()
+    cfg=tmp_path/"limited.json"
+    cfg.write_text(json.dumps({"max_segments_per_frame":1}),encoding="utf-8")
+    code=main(["analyze",str(dxf),"--output-dir",str(out),
+               "--config",str(cfg)])
+    assert code==4
+    assert (out/"analysis.json").exists()
+    manifest=json.loads((out/"pipeline-manifest.json").read_text("utf-8"))
+    assert manifest["completion"]=="PARTIAL_WITH_ERRORS"
+    assert any(s["status"]=="ERROR" for s in manifest["stages"])
+    assert "MIMARLLM_PARTIAL_WITH_ERRORS" in capsys.readouterr().out
