@@ -120,6 +120,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         files, digest, completion = _write_pipeline(
             source, output, cfg, args.formats or ["json", "html"],
         )
+    except KeyboardInterrupt:
+        print("MIMARLLM_CANCELLED: No analysis approval issued", file=sys.stderr)
+        return 130
     except (CliError, PipelineInputError, ReportExportError,
             ValidationError, OSError, ValueError) as exc:
         print("MIMARLLM_ERROR: " + str(exc), file=sys.stderr)
