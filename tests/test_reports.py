@@ -142,7 +142,7 @@ def test_pdf_render_true_original_background_and_source_overlay(pdf_drawing):
     report=build_analysis_report(one_finding(drawing))
     html=render_report_html(report,drawing_pdf_path=pdf)
     assert "data:image/png;base64," in html
-    assert 'viewBox="0 0 450.000000 350.000000"' in html
+    assert 'viewBox="0.000000 0.000000 450.000000 350.000000"' in html
     assert "Gerçek orijinal PDF" in html
     assert "<polyline points=" in html or "<polygon points=" in html
     assert html_id("finding","drawing:inspection-one") in html
