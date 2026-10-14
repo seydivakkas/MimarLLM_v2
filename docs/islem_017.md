@@ -1,7 +1,7 @@
 # İşlem 017 — Mimari Analiz Bulgusu → Geometrik Kaynak → Mevzuat PDF Kanıtı Çift Yönlü Raporlama
 
 - **Tarih:** 2026-10-14
-- **Durum:** ÖN KAYIT — İşlem 017'nin **ilk GitHub yazımı**, bütün kod ve diğer belge değişikliklerinden önce.
+- **Durum:** UYGULANDI — çevrimdışı DrawingIR→bulgu→geometri/LegalAST kaynak HTML/JSON/Markdown/PDF raporu; Ubuntu/Windows 248/248 sentetik CI PASS. Gerçek CAD tam pafta görseli, hukukî resmiyet/yürürlük ve kullanıcı Windows kabulü HOLD.
 - **Önkoşullar:** 007 DrawingIR v0.1; 008 DXF; 009 PDF; 010 Shapely; 011 NetworkX; 012 RuleEngine; 013–016 LegalAST, RAG, kaynak bağlama ve sarı vurgulu özgün PDF görsel inceleme.
 - **Mimari:** Windows-first, çevrimdışı tek kullanıcı, yerel dosyalar; ücretli/uzak API, indirilen model, CDN yasak.
 - **Güven sınırı:** Teknik senaryo PASS/FAIL **hukukî uygunluk değildir**. REGULATORY/HUKUKI_HOLD açık kalır; RAG skoru veya sarı kaynak kutusu mevzuatın yürürlükte olduğuna dair kanıt değildir.
@@ -22,6 +22,38 @@
 - Orijinal mevzuat PDF konumu yalnız `SourceAudit.LOCAL_SOURCE_MATCHED` ve `LegalSourceSpan` exact node referansı varsa görüntülenir; yine de **hukukî kaynak resmiyeti/yürürlük garanti edilmez**. Eğer hukukî PDF yoksa açık “PDF kanıt görseli mevcut değil” notu.
 - Kod kapsamı raporlama ve yerel HTML kaynak gezintisidir; localhost dashboard, gerçek Windows installer, tam mimari çizim semantiği, gerçek yangın/imar uygunluk algoritmaları ayrı paketlerde. Testler sentetik; gerçek projeler/hukukî görsel bağımsız kabul son aşamada.
 
-## 3. İş sonunda gerçek kayıt
+## 3. GitHub'a yazılan gerçek kod ve commitler
 
-Gerçek file/commit SHA'lar, Linux/Windows CI run test sayıları, regressions, kalan F17/F18 açık işleri ve hukukî HOLD kapsamı bu **aynı dosyanın son GitHub güncellemesinde** kaydedilecek.
+**İlk yazılan işlem dosyası:** `docs/islem_017.md`; commit **`4ac8aa41326c3d4a0aab3b6652eb4b6abc6ba38f`**. İlk GitHub değişikliğiydi; bütün İşlem 017 kaynak dosyaları ve doküman güncellemeleri bundan sonra yapıldı. İşlem 001–016 kayıtları değiştirilmedi.
+
+| Dosya | Gerçek uygulama | Commit |
+| --- | --- | --- |
+| `src/mimarllm/reports/models.py` | `AnalysisReport`, `ReportFinding`, `ReportSource`, `ReportFrame` ve `LegalEvidenceLink` Pydantic kaynak/frame/kanunî onay kilidi | `e2ebdac0`; ölçüm ID / passage evidence ayrımı `cae9c984` |
+| `src/mimarllm/reports/builder.py` | `DrawingIR` ve kaynak SHA/frame/evidence referanslarından bulguları, teknik RuleResult'ları, Shapely issue/face ve NetworkX issue'larını rapora bağlama; `RegulatoryEvidenceEvaluation` exact rule/source uyumu | `a356a131`, duplicate rule ret `32bb372f` |
+| `src/mimarllm/reports/visualizer.py` | CAD layout vektör kaynak SVG, PDF point frame, CAD Y-up ekran koordinatı, source→finding/finding→source anchor; CAD handle/nested block yolunu koruma | `11fe643d` |
+| `src/mimarllm/reports/exporter.py` | Gerçek Drawing PDF SHA doğrulanmış pypdfium2 sayfası + DrawingIR SVG, özgün mevzuat PDF LegalAST node/quad sarı vurgusu, çift yönlü anchor, JSON/Markdown/HTML ve ReportLab PDF **metinsel özet**; kaynak eksik/uyuşmazsa fail closed | `e1b6ed9d`, `5014bcbc`, `fe22cf96`; Markdown uyarı düzeltme `37a6e336` |
+| `src/mimarllm/reports/__init__.py` | Dışa açılan rapor API'leri | `65de0b9d` |
+| `tests/test_reports.py` | ReportLab sentetik mimari plan PDF + gerçek ezdxf DXF, DrawingIR source geometry, gerçek RuleEngine technical length, held regulatory LegalAST node/quad HTML, hash fake, XSS, PDF background, JSON/MD/HTML/PDF ve referential integrity regresyonları | `ead2be74`; fixture/UI beklentileri `837f00dd`, `e7eff337`, `340dcef` |
+| `.github/workflows/core-contracts.yml` | `src/mimarllm/reports/**` değişimleri ve `tests/test_reports.py` Ubuntu+Windows matrix | `d21318dd` |
+| `pyproject.toml` | İsteğe bağlı `reports` ekstra: yerel `reportlab>=4,<5` | `e06a9cd6` |
+| `docs/specs/analysis-reports-v0.1.md` | Kullanım, CAD/PDF kaynak koordinatı, çift yönlü kaynak navigasyonu, PDF özet sınırları ve HUKUKI_HOLD | `cfbea5c8` |
+| `README.md`, `docs/ozellik-envanteri.md`, `docs/uygulama-yol-haritasi.md`, `docs/kararlar.md` | F17/F18 `KISMI/MEVCUT_KOD`, F16/F19 ayrı, K-128–K-136 ve güven/hukukî sınırlamalar | `8bcf955c`, `071108dc`, `56eec0cc`, `94a09197` |
+
+## 4. CI gerçekte neyi sınadı?
+
+- İlk tümleşik CI [**38524425745**](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38524425745): **245 PASS, 3 FAIL**. PDF kaynak SVG viewBox ondalık format beklentisi; orijinal PDF'nin yokluğu uyarısı metninin büyük/küçük harf farklılığı; önemli uygulama hatası olarak LegalAST/yerel PDF hiç verilmediğinde mevzuat-source HOLD kartının görünmemesi.
+- Eksik kaynaklı hukukî HOLD kartı kodda düzeltildi, format/uyarı beklentileri testte revize edildi. [**38524569799**](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38524569799): **247 PASS, 1 FAIL**. Test PDF'deki gerçek vektör yerine kaynak glyph/point seçiyordu; buna rağmen `<polyline>` bekliyordu. Gerçek çizgi/poligon kaynak varlığı test fixture'ında açıkça seçildi.
+- [**38524680293**](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38524680293) : **Ubuntu 248/248 PASS**, **Windows 248/248 PASS**; 2 Python uyarısının nedeni Markdown backtick'te gereksiz ters-slash karakteriydi.
+- **Son kod HEAD `37a6e336fc4d30d6c96b51e7214e5364a8808aea`** için [**GitHub Actions 38525132239**](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38525132239): **Ubuntu Python 3.11 248/248 PASS (6,60 sn), GitHub-hosted Windows Python 3.11 248/248 PASS (10,70 sn)**; Python pytest uyarısı yok. İki OS job logları ayrı incelendi.
+- Testler gerçekten sentetik ReportLab PDF ve ezdxf DXF üretip `parse_pdf_ir` / `parse_dxf` ile DrawingIR'ye alır; teknik RuleEngine hesabını, kaynak geometri SVG HTML, gerçek PDFium page PNG embedding, özgün LegalAST span bazlı hukukî PDF vurgusu, sahte source SHA ve yasa dışı verdict reddini kontrol eder. **İnsan gözüyle gerçek RG/bina paftası görsel kabulü, gerçek kullanıcı Windows bilgisayarı, gerçek hukukî uzman/source imza kabulü bu CI kapsamı değildir.**
+
+## 5. Kalan eksikler ve sonraki işlem
+
+**F17 KISMI:** JSON/Markdown/HTML + ReportLab PDF metinsel raporu var. PDF, HTML kadar interaktif ya da vurgulu orijinal kaynak görsellerini içine almış değil. Rapor çıktısı tek rapor API'siyle ve verilen mevcut DrawingIR/RuleResult girdisiyle yapılır; uçtan uca otomatik CLI/workspace orchestration henüz yok.
+
+**F18 KISMI:** DXF/CAD için SVG sadece rapor bulgularının kullandığı DrawingIR kaynak geometrisini gösterir, bütün paftanın tam mühendislik CAD görünümü değil. PDF kanıtındaki sarı konum için gerçek SHA eşleşmiş sayfa ve exact LegalAST node/span gerekir. Tarayıcı click davranışının gerçek Chrome/Edge kabulü ve uzun belge performansı henüz ayrıca görülmeli.
+
+**F08–F12 HUKUKI_HOLD:** Resmî Gazete PDF yetkili kaynak/doğruluk imzası, yıl yıl hüküm konsolidasyonu, geçici maddeler/istisna/belediye projeye uygulanabilirliği, gerçek uzman imzalı karar henüz yok. Teknik `COMPLIANT` yalnız teknik sentetik kıyastır; `RuleEngine REGULATORY` sonuçları `INSUFFICIENT_EVIDENCE` olmaya devam eder. Kullanıcı dosyasına ait RAG skoru veya sarı görsel hukukî PASS oluşturmaz.
+
+**Sonraki işlem:** `docs/islem_018.md` **henüz oluşturulmadı**. F16 mevcut modüllerin ortak analiz pipeline/CLI'si ve rapor/yerel arayüz entegrasyonu mantıklı sonraki mühendislik paketi. Sonraki ilk GitHub yazımı işlem kayıt dosyası oluşturulması olacak; 001–017 önceki kayıtlar korunacak.
+
