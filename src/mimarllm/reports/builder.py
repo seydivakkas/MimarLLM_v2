@@ -28,6 +28,7 @@ def build_analysis_report(
     geometries: Sequence[GeometryAnalysis] = (),
     topologies: Sequence[TopologyResult] = (),
     max_entities: int = 2_000,
+    include_unlinked_sources: bool = False,
     max_findings: int = 2_000,
 ) -> AnalysisReport:
     """Build source-anchored findings without reclassifying legal candidates.
@@ -205,7 +206,9 @@ def build_analysis_report(
     if len(findings) > max_findings:
         raise ReportInputError("Report finding count budget exceeded")
 
-    source_ids = {eid for f in findings for eid in f.entity_ids}
+    source_ids = ({e.entity_id for e in drawing.entities}
+                  if include_unlinked_sources
+                  else {eid for f in findings for eid in f.entity_ids})
     report = AnalysisReport(
         drawing_id=drawing.drawing_id,
         drawing_sha256=drawing.source_sha256,
