@@ -23,7 +23,7 @@
 | F13 | Hiyerarşik mevzuat AST ve değişiklik/yürürlük | `legal/models.py`, `legal/extractor.py`, `legal/parser.py`, `legal/changes.py`, `legal/etl.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Kaynak hash + madde/fıkra/ek + gerçek PDF page/quad | (7) / eski 008 |
 | F14 | SQLite FTS5 ve CPU dense hibrit RAG, RRF | `rag/store.py`, `rag/retriever.py`, `rag/embeddings.py`, `rag/indexer.py`, `rag/models.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Kaynak/version ID, exact match ve lexical fallback | (7) / eski 008 |
 | F15 | RuleResult–LegalNode kaynak bağlama | `rules/evidence.py`, `legal/verification.py`, `legal/versions.py`, `legal/applicability.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Exact verified binding; arama benzerliği asla hukukî PASS değil | (8) / eski 009 |
-| F16 | Analiz hattı + CLI | `pipeline.py`, `cli.py` | PLANLANDI | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
+| F16 | Analiz hattı + CLI | `src/mimarllm/pipeline.py`, `src/mimarllm/cli.py`, `reports/builder.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
 | F17 | JSON/Markdown/HTML/PDF rapor | `reports/models.py`, `reports/builder.py`, `reports/exporter.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
 | F18 | SVG/HTML koordinatlı işaretleme | `reports/visualizer.py` + `reports/exporter.py` + `legal/review_viewer.py` | **KISMI / MEVCUT_KOD — DrawingIR ve mevzuat kaynakları** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
 | F19 | Tek kullanıcılı localhost dashboard | `app/server.py`, `app/static/` | PLANLANDI | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
@@ -130,3 +130,12 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **F18 KISMI/MEVCUT_KOD:** `reports/visualizer.py` kaynak CAD y-up→SVG ekran dönüşümü, CAD handle/blok source kimliği; PDF DrawingIR için özgün PDF byte SHA/sayfa doğrulanırsa pypdfium2 PNG üzerine SVG kaynak çizimi, `#finding_*`↔`#source_*` anchor navigasyonu. Yasal kaynak yalnız exact `RegulatoryEvidenceEvaluation`, LegalAST source node ve orijinal yasal PDF dosyası varsa sarı PDF sayfa quad. F17/F18 **tam CAD baskı görünümü, F19 localhost GUI veya imzalı hukukî inceleme anlamına gelmez**.
 
 **Açık:** F16 CLI/pipeline, F19 arayüz, kullanıcı gerçek Windows hedef kabulü, büyük çizim bellek/perf, tam DXF grafik render ve tüm yılların resmî mevzuat norm konsolidasyonu. F08–F12 `HUKUKI_HOLD` ve `RuleEngine.REGULATORY=INSUFFICIENT_EVIDENCE`. [İşlem 017](islem_017.md) · [Şartname](specs/analysis-reports-v0.1.md).
+
+
+## İşlem 018 — F16 uygulaması ve kalan kabul
+
+**F16 KISMI/MEVCUT_KOD:** `src/mimarllm/pipeline.py` ile .dxf/.pdf yerel input, her DrawingIR frame için sınırlandırılmış Shapely geometrisi, yalnız kullanıcı `SpaceReview/PassageReview` beyanıyla NetworkX, açık `RuleRun` ile teknik karşılaştırma, varsa exact native referans çizgisine dayalı kullanıcı `CalibrationReference` ve tek kaynak SHA üzerinde `build_analysis_report`. `cli.py` ile `mimarllm analyze`, yerel JSON config, yeni dosyada JSON/MD/HTML/PDF raporu ve `pipeline-manifest.json`; sonuç aşamaları `COMPLETE/REVIEW_REQUIRED/SKIPPED/ERROR`, kısmi ERROR çıktısında exit `4`. Çok sayfalı PDF geometrisi ayrı frame'lerde kalır. Report builder `include_unlinked_sources=True` pipeline sayesinde analiz bulgusu olmasa da gerçek kaynak çizgilerinin raporda görülmesini sağlar; sahte finding oluşturulmaz.
+
+**Teknik kontrol güvenlik:** `$INSUNITS`/layer/ODA yazısı fiziksel ölçek ve net alan hükmü değildir. Kullanıcının bilinen metre referansı, kaynak native SEGMENT+inceleme beyanı olmadan teknik metre karşılaştırması `INSUFFICIENT_EVIDENCE`. Geçiş/kapı kaynağı seçilmezse NetworkX `SKIPPED`; topo hop ile gerçek yangın tahliye rotası veya hukukî uygunluk üretilmez. RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE` kaldı. OCR yalnız kullanıcı ROI + açıkça kurulmuş yerel CPU motorla.
+
+**Açık:** F16 otomatik analiz destekli tek tuş GUI, Windows kurulum/paket acceptance, gerçek mevzuat sürüm/hukukî onay, gerçek mimari plan alanları/uzman sınaması; F19 localhost dashboard ve F20 dağıtım planlı. **F08–F12 HUKUKI_HOLD**. [İşlem 018](islem_018.md) · [Şartname](specs/pipeline-cli-v0.1.md).
