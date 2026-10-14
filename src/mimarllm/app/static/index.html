@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MimarLLM · Yerel Mimari Analiz</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <script defer src="/static/dashboard.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mark">M</div><div><strong>MimarLLM</strong><small>Kaynaklı Analiz Stüdyosu</small></div></div>
+    <nav aria-label="Bölüm menüsü">
+      <a href="#overview" class="nav-link active"><span>◈</span> Genel Bakış</a>
+      <a href="#projects" class="nav-link"><span>▤</span> Çizimlerim</a>
+      <a href="#analysis" class="nav-link"><span>⌘</span> Analiz Laboratuvarı</a>
+      <a href="#evidence" class="nav-link"><span>◇</span> Kanıt ve Bulgular</a>
+    </nav>
+    <div class="sidebar-note"><span class="online-dot"></span> Yerel · 127.0.0.1
+      <p>Kaynak dışı hiçbir API isteği veya bulut zorunluluğu yok.</p>
+    </div>
+  </aside>
+  <main class="main" id="overview">
+    <header class="topbar">
+      <div><div class="eyebrow">MİMARİ ANALİZ ÇALIŞMA ALANI</div><h1>Proje inceleme paneli</h1>
+        <p>DXF ve PDF çizimlerden kaynaklı teknik gözlem, ölçüm ve kanıt raporu.</p></div>
+      <div class="top-state"><span class="status-dot"></span><span>Çevrimdışı çalışma</span></div>
+    </header>
+    <div class="legal-note"><strong>Hukukî doğrulama kilitli</strong>
+      <span>Teknik senaryolar bir yönetmelik uygunluk kararı değildir. Fiziksel ölçek ve mekân geçişleri yalnız doğrulanmış kaynaklarla değerlendirilir.</span>
+    </div>
+    <section class="stats" aria-label="Çalışma alanı istatistikleri">
+      <article class="stat"><span>Yerel projeler</span><strong id="count-projects">—</strong><small>Kaynak çizimler</small></article>
+      <article class="stat"><span>Seçili çizim</span><strong id="source-type">—</strong><small id="source-meta">DXF / PDF</small></article>
+      <article class="stat"><span>Analiz sonucu</span><strong id="count-findings">—</strong><small id="run-state">Henüz çalıştırılmadı</small></article>
+      <article class="stat"><span>Mevzuat kapısı</span><strong class="locked">HOLD</strong><small>Bağımsız doğrulama gerekli</small></article>
+    </section>
+    <div class="layout">
+      <div class="primary">
+        <section class="panel" id="projects">
+          <div class="panel-heading"><div><div class="eyebrow">01 / KAYNAK YÖNETİMİ</div><h2>Çizim yükle</h2>
+            <p>Dosya sadece bu bilgisayardaki rastgele kimlikli proje klasörüne kaydedilir.</p></div>
+            <span class="mini-label">PDF · DXF</span></div>
+          <div class="upload">
+            <label for="drawing-file" class="upload-target"><span class="upload-icon">⇧</span>
+              <strong>Bir çizim dosyası seçin</strong><small>DXF en fazla 25 MB · PDF en fazla 50 MB</small></label>
+            <input id="drawing-file" type="file" accept=".dxf,.pdf" aria-label="Çizim dosyası">
+            <p id="picked-file" class="hint">Henüz dosya seçilmedi.</p>
+            <button id="upload-button" type="button" class="btn solid">Çizimi projelere ekle</button>
+          </div>
+          <div class="divider-line"></div>
+          <div class="stack-title"><h3>Kaydedilen projeler</h3><button id="refresh-button" class="btn minor" type="button">Yenile</button></div>
+          <div id="project-list" class="project-list"><p class="muted">Yerel projeler yükleniyor…</p></div>
+        </section>
+        <section class="panel" id="analysis">
+          <div class="panel-heading"><div><div class="eyebrow">02 / DETERMINİSTİK ANALİZ</div><h2>Analiz laboratuvarı</h2>
+            <p>Orijinal kaynak kimlikleri korunur; hiçbir sonuç otomatik hukukî onay olmaz.</p></div></div>
+          <div class="field"><label for="selected-project">Analiz edilecek proje</label>
+            <select id="selected-project"><option value="">Önce bir DXF veya PDF yükleyin</option></select></div>
+          <div class="calibrate">
+            <div class="stack-title"><h3>Fiziksel ölçekte referans çizgisi</h3><span class="mini-label">İsteğe bağlı</span></div>
+            <p class="hint">İlk analizden sonra kaynak native LINE nesnesini seçin. Bilinen fiziksel uzunluğu bağımsız olarak doğrulamadıysanız boş bırakın.</p>
+            <div class="field"><label for="native-line">Gerçek kaynak çizgi</label>
+              <select id="native-line"><option value="">Kalibrasyon yapma · ölçek belirsiz kalsın</option></select></div>
+            <div class="field-grid">
+              <div class="field"><label for="known-metres">Doğrulanmış uzunluk (metre)</label>
+                <input id="known-metres" type="number" min="0" step="any" placeholder="Örn. 4,0"></div>
+              <div class="field"><label for="reviewer-label">İncelemeci etiketi</label>
+                <input id="reviewer-label" type="text" maxlength="120" placeholder="Yerel incelemeci"></div>
+            </div>
+          </div>
+          <details class="advanced"><summary>Gelişmiş mühendislik ayarları · PipelineConfig JSON</summary>
+            <p class="hint">Kural eşiği ancak teknik kullanıcı senaryosudur. Mevzuat REGULATORY kilidi korunur.</p>
+            <textarea id="config-json" rows="7" spellcheck="false">{}</textarea>
+          </details>
+          <div class="report-options"><label><input type="checkbox" id="export-md"> Markdown ekle</label>
+            <label><input type="checkbox" id="export-pdf"> PDF özeti ekle</label></div>
+          <button id="analyze-button" type="button" class="btn solid action" disabled>Kaynaklı analizi çalıştır <span>→</span></button>
+          <p class="hint">İlk analiz kaynak çizgileri ve alan adaylarını listeler; ileri analiz için aynı projeyi yeniden çalıştırabilirsiniz.</p>
+        </section>
+      </div>
+      <div class="secondary">
+        <section class="panel summary">
+          <div class="panel-heading"><div><div class="eyebrow">03 / İŞ AKIŞI KONTROLÜ</div><h2>Aşama görünümü</h2>
+            <p>Her aşama kendi teknik kanıt durumunu bildirir.</p></div></div>
+          <div id="stage-list" class="stage-list"><p class="muted">Analiz başladığında modül durumları burada görünür.</p></div>
+        </section>
+        <section class="panel" id="evidence">
+          <div class="panel-heading"><div><div class="eyebrow">04 / BULGU VE KANIT</div><h2>Analiz geçmişi</h2>
+            <p>Kaynak çizime ve HTML görsel kanıta bağlı raporlar.</p></div></div>
+          <div id="run-list" class="run-list"><p class="muted">Bir proje seçin.</p></div>
+          <div id="finding-list" class="finding-list"></div>
+          <div id="report-files" class="report-files"></div>
+        </section>
+      </div>
+    </div>
+    <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
+    <footer>MimarLLM V2 · Offline-first · Sentetik mühendislik doğrulaması · Gerçek kullanıcı ve hukukî kabul bekliyor</footer>
+  </main>
+</div>
+</body>
+</html>
