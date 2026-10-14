@@ -165,7 +165,7 @@ class PipelineManifest(BaseModel):
     calibration_state: str
     stages: tuple[StageRecord, ...]
     import_issue_codes: tuple[str, ...]
-    completion: Literal["COMPLETED_WITH_REVIEW_GATES"] = "COMPLETED_WITH_REVIEW_GATES"
+    completion: Literal["COMPLETED_WITH_REVIEW_GATES", "PARTIAL_WITH_ERRORS"]
     legal_gate: Literal["REGULATORY_LOCKED"] = "REGULATORY_LOCKED"
 
 
@@ -418,7 +418,8 @@ def run_local_pipeline(
         stages.append(StageRecord(
             stage="RULES", frame_id=outcome.frame_id,
             status=(
-                StageStatus.REVIEW_REQUIRED
+                StageStatus.ERROR if outcome.status.value == "ERROR"
+                else StageStatus.REVIEW_REQUIRED
                 if outcome.status.value not in {"COMPLIANT", "NON_COMPLIANT"}
                 or definition.domain.value == "REGULATORY"
                 else StageStatus.COMPLETE
@@ -458,6 +459,9 @@ def run_local_pipeline(
         rule_count=len(rule_results), report_finding_count=len(report.findings),
         calibration_state=drawing.calibration.state.value,
         stages=tuple(stages), import_issue_codes=import_codes[:100],
+        completion=("PARTIAL_WITH_ERRORS"
+                    if any(s.status == StageStatus.ERROR for s in stages)
+                    else "COMPLETED_WITH_REVIEW_GATES"),
     )
     return PipelineResult(
         drawing=drawing, geometries=tuple(geometries),
