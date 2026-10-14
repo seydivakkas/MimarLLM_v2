@@ -24,8 +24,8 @@
 | F14 | SQLite FTS5 ve CPU dense hibrit RAG, RRF | `rag/store.py`, `rag/retriever.py`, `rag/embeddings.py`, `rag/indexer.py`, `rag/models.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Kaynak/version ID, exact match ve lexical fallback | (7) / eski 008 |
 | F15 | RuleResult–LegalNode kaynak bağlama | `rules/evidence.py`, `legal/verification.py`, `legal/versions.py`, `legal/applicability.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Exact verified binding; arama benzerliği asla hukukî PASS değil | (8) / eski 009 |
 | F16 | Analiz hattı + CLI | `pipeline.py`, `cli.py` | PLANLANDI | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
-| F17 | JSON/Markdown/HTML/PDF rapor | `reports/exporter.py` | PLANLANDI | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
-| F18 | SVG/HTML koordinatlı işaretleme | `legal/review_viewer.py` (mevzuat PDF alt kümesi), `reports/visualizer.py` (plan) | **KISMI / MEVCUT_KOD — yalnız mevzuat PDF inceleme** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
+| F17 | JSON/Markdown/HTML/PDF rapor | `reports/models.py`, `reports/builder.py`, `reports/exporter.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
+| F18 | SVG/HTML koordinatlı işaretleme | `reports/visualizer.py` + `reports/exporter.py` + `legal/review_viewer.py` | **KISMI / MEVCUT_KOD — DrawingIR ve mevzuat kaynakları** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
 | F19 | Tek kullanıcılı localhost dashboard | `app/server.py`, `app/static/` | PLANLANDI | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
 | F20 | Windows `run.bat`, `build_exe.bat`, `mimar.spec` | Root / `scripts/` | PLANLANDI | Sonraki gerçek CLI/dashboard entrypoint ile offline onedir | Sohbet / eski 013 |
 | F21 | Yerel Qwen-VL ile aday sınıflandırma | `vision/vlm.py`, `vision/prompts.py` | PLANLANDI | GGUF + mmproj/Windows ölçümü; 8 GB peak VRAM | (17) / eski 018 |
@@ -121,3 +121,12 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **Kodlandı:** `legal/review.py` ile gerçek LegalAST node/fıkra, tablo hücresi, değişiklik kaynakları için tekil PDF SHA/page/quad `ReviewTask`; `review_viewer.py` pypdfium2 bitmap üzerinde sarı SVG dörtgen ve offline kullanıcı görsel inceleme JSON taslak dışa aktarımı; `version_workflow.py` tarihsel base/amendment iki özgün PDF inceleme kuyruğu; `review_ledger.py` kaynak task digest denetimli, tek yazıcı varsayımlı yerel SHA-chain JSONL.
 
 **KISMI:** F18 yalnız mevzuat görsel kaynak inceleme alt modülüdür. Mimari analiz bulgularını CAD/PDF üzerine işleyecek `reports/visualizer.py` ve tam raporlama **PLANLANDI**. SHA zinciri elektronik imza değil; `VISUALLY_MATCHED` kullanıcı beyanıdır, bağımsız uzman kaynak/yürürlük onayı değildir. F08–F12 HUKUKI_HOLD, RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE`. [İşlem 016](islem_016.md) · [Şartname](specs/legal-review-v0.1.md).
+
+
+## İşlem 017 güncellemesi — F17/F18
+
+**F17 KISMI/MEVCUT_KOD:** `reports/models.py`, `builder.py`, `exporter.py` ile DrawingIR.Finding, kaynak entity/measurement evidence, RuleResult, Shapely GeometryAnalysis issue/face candidate ve NetworkX TopologyResult issue'larını kaynak SHA/frame üzerinden tek rapora bağlıyoruz. JSON tüm yapılandırılmış kaynak IDs/quad; Markdown metinsel durum, kaynak/yasal HOLD; HTML offline çift yönlü görüntüleme; ReportLab PDF yalnız özet (opsiyonel extra).
+
+**F18 KISMI/MEVCUT_KOD:** `reports/visualizer.py` kaynak CAD y-up→SVG ekran dönüşümü, CAD handle/blok source kimliği; PDF DrawingIR için özgün PDF byte SHA/sayfa doğrulanırsa pypdfium2 PNG üzerine SVG kaynak çizimi, `#finding_*`↔`#source_*` anchor navigasyonu. Yasal kaynak yalnız exact `RegulatoryEvidenceEvaluation`, LegalAST source node ve orijinal yasal PDF dosyası varsa sarı PDF sayfa quad. F17/F18 **tam CAD baskı görünümü, F19 localhost GUI veya imzalı hukukî inceleme anlamına gelmez**.
+
+**Açık:** F16 CLI/pipeline, F19 arayüz, kullanıcı gerçek Windows hedef kabulü, büyük çizim bellek/perf, tam DXF grafik render ve tüm yılların resmî mevzuat norm konsolidasyonu. F08–F12 `HUKUKI_HOLD` ve `RuleEngine.REGULATORY=INSUFFICIENT_EVIDENCE`. [İşlem 017](islem_017.md) · [Şartname](specs/analysis-reports-v0.1.md).
