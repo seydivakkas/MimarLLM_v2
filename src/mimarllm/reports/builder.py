@@ -25,6 +25,8 @@ def build_analysis_report(
     regulatory_evaluations: Sequence[RegulatoryEvidenceEvaluation] = (),
     geometry: GeometryAnalysis | None = None,
     topology: TopologyResult | None = None,
+    geometries: Sequence[GeometryAnalysis] = (),
+    topologies: Sequence[TopologyResult] = (),
     max_entities: int = 2_000,
     max_findings: int = 2_000,
 ) -> AnalysisReport:
@@ -57,20 +59,28 @@ def build_analysis_report(
     for k in by_rule:
         if k not in {(r.rule_id, r.rule_version) for r in checked_rules}:
             raise ReportInputError("Orphan regulatory source binding")
-    if geometry is not None:
-        geometry = GeometryAnalysis.model_validate(geometry.model_dump())
-        if geometry.source_sha256 != drawing.source_sha256:
+    all_geometry = ([geometry] if geometry is not None else []) + list(geometries)
+    all_topology = ([topology] if topology is not None else []) + list(topologies)
+    all_geometry = [GeometryAnalysis.model_validate(x.model_dump()) for x in all_geometry]
+    all_topology = [TopologyResult.model_validate(x.model_dump()) for x in all_topology]
+    known_frames = {f.frame_id for f in drawing.frames}
+    if len({x.frame_id for x in all_geometry}) != len(all_geometry):
+        raise ReportInputError("Duplicate geometry result for coordinate frame")
+    if len({x.frame_id for x in all_topology}) != len(all_topology):
+        raise ReportInputError("Duplicate topology result for coordinate frame")
+    for g in all_geometry:
+        if g.source_sha256 != drawing.source_sha256:
             raise ReportInputError("Geometry analysis from a different drawing")
-        if geometry.frame_id not in {f.frame_id for f in drawing.frames}:
+        if g.frame_id not in known_frames:
             raise ReportInputError("Geometry analysis uses an unknown coordinate frame")
-    if topology is not None:
-        topology = TopologyResult.model_validate(topology.model_dump())
-        if topology.drawing_sha256 != drawing.source_sha256:
+    for t in all_topology:
+        if t.drawing_sha256 != drawing.source_sha256:
             raise ReportInputError("Topology from another drawing")
-        if topology.frame_id not in {f.frame_id for f in drawing.frames}:
+        if t.frame_id not in known_frames:
             raise ReportInputError("Topology coordinate frame missing")
-        if geometry is not None and geometry.frame_id != topology.frame_id:
-            raise ReportInputError("Geometry/topology frame mismatch")
+    if all_geometry and any(t.frame_id not in {g.frame_id for g in all_geometry}
+                            for t in all_topology):
+        raise ReportInputError("Geometry/topology frame mismatch")
 
     def source_frame(ids: tuple[str, ...], suggested: str | None) -> str | None:
         if not set(ids).issubset(indexed):
@@ -96,8 +106,8 @@ def build_analysis_report(
         ))
 
     available_passages = {
-        edge.passage_id for edge in topology.edges
-    } if topology is not None else set()
+        edge.passage_id for t in all_topology for edge in t.edges
+    }
     for rule in checked_rules:
         if rule.drawing_sha256 != drawing.source_sha256:
             raise ReportInputError("RuleResult source SHA mismatch")
@@ -152,11 +162,11 @@ def build_analysis_report(
             legal_evidence=legal,
         ))
 
-    if geometry is not None:
+    for geometry in all_geometry:
         for i, issue in enumerate(geometry.issues):
             frame = source_frame(issue.entity_ids, issue.frame_id)
             findings.append(ReportFinding(
-                finding_id=f"geometry:issue:{i}",
+                finding_id=f"geometry:issue:{geometry.frame_id}:{i}",
                 kind=ReportKind.GEOMETRY_ISSUE,
                 check_id="shapely.geometry",
                 status="REVIEW_REQUIRED",
@@ -167,7 +177,7 @@ def build_analysis_report(
         for face in geometry.faces:
             frame = source_frame(face.boundary_entity_ids, face.frame_id)
             findings.append(ReportFinding(
-                finding_id=f"geometry:face:{face.face_id}",
+                finding_id=f"geometry:face:{geometry.frame_id}:{face.face_id}",
                 kind=ReportKind.FACE_CANDIDATE,
                 check_id="shapely.polygon_candidate",
                 status="REVIEW_REQUIRED",
@@ -178,10 +188,10 @@ def build_analysis_report(
                 unit="source_units_squared",
             ))
 
-    if topology is not None:
+    for topology in all_topology:
         for i, issue in enumerate(topology.issues):
             findings.append(ReportFinding(
-                finding_id=f"topology:issue:{i}",
+                finding_id=f"topology:issue:{topology.frame_id}:{i}",
                 kind=ReportKind.TOPOLOGY_ISSUE,
                 check_id="networkx.topology",
                 status="REVIEW_REQUIRED",
