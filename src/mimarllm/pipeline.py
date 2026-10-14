@@ -437,6 +437,7 @@ def run_local_pipeline(
             drawing, rules=rule_results,
             geometries=geometries, topologies=topologies,
             max_entities=min(opts.max_import_entities, 20_000),
+            include_unlinked_sources=True,
         )
     except (ReportInputError, ValueError) as exc:
         raise PipelineInputError(
