@@ -315,3 +315,10 @@ def test_exceeded_shapely_segment_budget_is_explicit_partial_not_pass(local_dxf)
                for s in result.manifest.stages)
     assert result.report.legal_gate=="REGULATORY_LOCKED"
     assert all(f.status!="COMPLIANT" for f in result.report.findings)
+
+def test_calibration_cannot_mislabel_unverified_dimension_or_scale(local_dxf):
+    with pytest.raises(ValidationError):
+        CalibrationReference(
+            entity_id=_segment(local_dxf).entity_id,
+            known_length_metres=4,reviewer_id="Human",method="DIMENSION"
+        )
