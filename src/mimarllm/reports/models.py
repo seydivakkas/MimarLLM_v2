@@ -61,6 +61,7 @@ class ReportFinding(BaseModel):
     reason_code: str
     frame_id: str | None = None
     entity_ids: tuple[str, ...] = ()
+    evidence_ids: tuple[str, ...] = ()
     measurement_ids: tuple[str, ...] = ()
     technical_domain: RuleDomain | None = None
     observed_value: float | None = Field(default=None, allow_inf_nan=False)
