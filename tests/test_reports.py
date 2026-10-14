@@ -152,7 +152,7 @@ def test_pdf_background_not_invented_when_original_missing(pdf_drawing):
     drawing,_=pdf_drawing
     report=build_analysis_report(one_finding(drawing))
     html=render_report_html(report)
-    assert "orijinal PDF" in html
+    assert "Orijinal PDF dosyası sağlanmadı" in html
     assert "data:image/png;base64," not in html
     assert "Yalnız DrawingIR" not in html  # explicit missing original message
 
