@@ -280,7 +280,7 @@ def render_report_html(
             + svg + source_details + '</section>'
         )
     legal_html = _legal_sections(
-        report, legal_documents or [], legal_pdf_paths or [],
+        report, legal_documents or [], legal_pdf_paths or {},
         max_pages=max_pages,
     )
     html = (head + intro + '<h2>Bulgular</h2><div class="cols">'
