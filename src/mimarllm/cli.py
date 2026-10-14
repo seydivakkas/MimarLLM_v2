@@ -82,7 +82,7 @@ def _write_pipeline(
             writer.write(result.manifest.model_dump_json(indent=2))
             writer.write("\n")
         generated.append(manifest_path)
-    except (OSError, ValueError, ReportExportError):
+    except (OSError, ValueError, ReportExportError, KeyboardInterrupt):
         for path in generated:
             try:
                 path.unlink(missing_ok=True)
