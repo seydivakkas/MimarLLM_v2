@@ -19,6 +19,9 @@ dependencies = [
   "networkx>=3.2,<4",
 ]
 
+[project.scripts]
+mimarllm = "mimarllm.cli:main"
+
 [project.optional-dependencies]
 reports = ["reportlab>=4,<5"]
 dev = [
