@@ -168,3 +168,13 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Offline HTML:** Bulgu ↔ çizim entity bağlantısı, CAD handle/layout/nested block yolu; gerçek PDF DrawingIR kaynağı ve yerel PDF SHA eşleşirse orijinal sayfa arka planı. LegalAST ve özgün mevzuat PDF sağlanmışsa kaynak node metni, page, hash ve **sarı kaynak poligonu**; hukukî kaynak bağının gerekçesi. PDF/LegalAST sağlanmazsa hayalî vurgulama ya da URL oluşturulmaz.
 - **Dışa aktarım:** JSON yapılandırılmış kanıt; Markdown metinsel kaynak; HTML çift yönlü görsel; PDF isteğe bağlı `pip install -e ".[reports]"` ile ReportLab metin özeti (HTML ile aynı etkileşimde değildir).
 - **Kısmi kabul:** Genel paftanın tamamını render eden CAD motoru, kullanıcı dashboard'u, canlı analiz pipeline/CLI ve gerçek müşteri Windows kabulü henüz yok. F17/F18 `KISMI/MEVCUT_KOD`; teknik COMPLIANT yasaya uygun anlamına gelmez; F08–F12 `HUKUKI_HOLD`.
+
+
+## İşlem 018 — Tek dosya DXF/PDF bütünleşik analiz CLI
+
+- [İşlem 018](docs/islem_018.md) · [Pipeline + CLI v0.1 şartnamesi](docs/specs/pipeline-cli-v0.1.md).
+- **Kullanım:** `python -m mimarllm.cli analyze "C:\projeler\plan.dxf" --output-dir "C:\projeler\raporlar"` veya yüklenmiş console command `mimarllm analyze ...`. Çıktı klasörü önceden mevcut olmalı; mevcut raporun üstüne yazılmaz. Varsayılan `analysis.json` + `analysis.html` + `pipeline-manifest.json`; `--format md` ve `--format pdf` isteğe bağlı.
+- **Kod:** `src/mimarllm/pipeline.py` yerel DXF/PDF→DrawingIR→her frame'de Shapely→yalnız açıkça kullanıcı incelemesi sunulan alanlarda NetworkX→RuleEngine→kaynaklı İşlem 017 raporu; `src/mimarllm/cli.py` config/çalıştırma/manifest/çıkış-kodları. PDF OCR explicit kullanıcı ROI ve yerel CPU okuyucu yoksa **kapalı**.
+- **Ölçek ve semantik:** `$INSUNITS` fiziksel ölçek CONFIRMED yapmaz; `CalibrationReference` gerçek native çizgi ID + bilinen metre + kullanıcı etiketi ister. Çizgide olmaması/koordinat uyuşmazlığı ret; Script asla kendiliğinden oda/yangın kapısı/mimari emsal/kaçış rotası çıkarmaz. Yerel JSON rule threshold yalnız teknik kullanıcı senaryosu; gerçek kanun kuralı olarak değerlendirilmez.
+- **Aşama durumları:** `COMPLETE/REVIEW_REQUIRED/SKIPPED/ERROR`; her biri kaynak frame/reason koduyla manifestte. `PARTIAL_WITH_ERRORS` çıktı dosyaları üretilse de exit code `4`; normal ve review-gated çıktı exit `0`, kaynak/config hatası `2`, beklenmedik hata `3`, kullanıcı Ctrl-C `130`; basit export hatasında önceki başarılı raporlar geri alınır.
+- **Sınırlar:** CLI F16 `KISMI/MEVCUT_KOD` ve sentetik Windows/Linux CI kontrolü. F19 localhost dashboard, F20 Windows installer, gerçek müşteri Windows/kanun kabulü son aşamalar. F08–F12 `HUKUKI_HOLD`; RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE`.
