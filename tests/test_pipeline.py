@@ -301,7 +301,7 @@ def test_report_all_geometry_frames_without_cross_page_join(local_pdf):
 def test_malicious_config_extra_and_conflicting_rule_selection_rejected():
     with pytest.raises(ValidationError,match="extra"):
         PipelineConfig.model_validate({"network_api_key":"no"})
-    with pytest.raises(ValidationError,match="only allowed"):
+    with pytest.raises(ValidationError,match="Boundary evidence requires"):
         RuleRun(definition=_technical(),area=ReviewedArea(
             frame_id="f",source_entity_ids=("x",),
             boundary_role="INTERIOR_ROOM",reviewer_id="u",
