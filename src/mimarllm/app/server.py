@@ -294,9 +294,21 @@ def create_app(workspace: str | Path) -> FastAPI:
     @app.post("/api/projects/{project_id}/runs", status_code=201)
     async def analyze(project_id: str, request: Request):
         project = metadata(project_id)
-        raw = await request.body()
-        if len(raw) > 256_000:
-            raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+        declared = request.headers.get("content-length")
+        if declared:
+            try:
+                if int(declared) > 256_000:
+                    raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Bozuk JSON gövde uzunluğu.") from exc
+        parts = []
+        total = 0
+        async for chunk in request.stream():
+            total += len(chunk)
+            if total > 256_000:
+                raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+            parts.append(chunk)
+        raw = b"".join(parts)
         try:
             options = RunPayload.checked(raw)
         except DashboardError as exc:
