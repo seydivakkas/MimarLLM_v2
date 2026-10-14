@@ -119,6 +119,8 @@ class PipelineConfig(BaseModel):
     """Bounded offline orchestration config; no network, inferential semantics."""
     model_config = ConfigDict(extra="forbid", frozen=True)
     geometry_frame_ids: tuple[str, ...] = ()
+    # OCR is never implicit. Values are bounded source-PDF-point rectangles.
+    ocr_regions: dict[int, tuple[tuple[float, float, float, float], ...]] = Field(default_factory=dict)
     calibration: CalibrationReference | None = None
     topology: tuple[ReviewedTopology, ...] = ()
     rules: tuple[RuleRun, ...] = ()
@@ -130,6 +132,14 @@ class PipelineConfig(BaseModel):
     def limits(self):
         if len(self.rules) > 128 or len(self.topology) > 20:
             raise ValueError("Pipeline rule/topology configuration budget exceeded")
+        if (sum(len(v) for v in self.ocr_regions.values()) > 64
+                or any(page < 0 for page in self.ocr_regions)):
+            raise ValueError("OCR source rectangle budget or page index invalid")
+        from math import isfinite
+        if any(not all(isfinite(x) for x in rect)
+               or not (rect[0] < rect[2] and rect[1] < rect[3])
+               for regions in self.ocr_regions.values() for rect in regions):
+            raise ValueError("OCR regions require finite nonempty rectangles")
         if len(self.geometry_frame_ids) != len(set(self.geometry_frame_ids)):
             raise ValueError("Duplicate geometry frame selector")
         if len({t.frame_id for t in self.topology}) != len(self.topology):
@@ -242,8 +252,11 @@ def run_local_pipeline(
     suffix = file.suffix.lower()
     if suffix not in {".dxf", ".pdf"}:
         raise PipelineInputError("Only .dxf and .pdf drawings are supported")
-    if suffix == ".dxf" and (ocr_regions or ocr_reader is not None):
+    effective_ocr = ocr_regions if ocr_regions is not None else opts.ocr_regions
+    if suffix == ".dxf" and (effective_ocr or ocr_reader is not None):
         raise PipelineInputError("OCR is only applicable to PDF, never DXF")
+    if effective_ocr and ocr_reader is None:
+        raise PipelineInputError("OCR regions require explicit local CPU OCR reader")
     try:
         if suffix == ".dxf":
             imported = parse_dxf(file, max_entities=opts.max_import_entities)
@@ -251,7 +264,7 @@ def run_local_pipeline(
             import_codes = tuple(i.code for i in imported.issues)
         else:
             imported_pdf: PdfIrResult = parse_pdf_ir(
-                file, ocr_regions=ocr_regions, ocr_engine=ocr_reader,
+                file, ocr_regions=effective_ocr, ocr_engine=ocr_reader,
             )
             drawing = imported_pdf.drawing
             import_codes = tuple(i.code for i in imported_pdf.issues)
