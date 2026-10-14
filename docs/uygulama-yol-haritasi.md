@@ -128,3 +128,10 @@ F15 `KISMI/MEVCUT_KOD`. F08–F12 mevzuat paketleri hâlâ `HUKUKI_HOLD`; kural 
 `legal/review.py`, `review_viewer.py`, `review_ledger.py` ve `version_workflow.py` ile kaynak PDF'de sarı kanıt polygonu ve offline incelemeci karar JSON taslağı, gerçek node/table cell/amendment source seçimi, iki farklı orijinal PDF arasında beyanlı tarihsel karşılaştırma, hash-chain yerel inceleme günlüğü kodlandı.
 
 **Hukukî sürüm doğrulaması tamamlanmadı:** kaynak resmiyeti, yürürlükte konsolide hükümler, yerel uygulama geçiş/istisna kararları ve kurumsal onay bağımsız olarak bekleniyor. Kullanıcı `VISUALLY_MATCHED` seçimi yalnız metin/konum inceleme beyanıdır. F08–F12 HUKUKI_HOLD; F17 raporlama ve genel F18 CAD/PDF çizim görsel bulgu katmanı ayrı geliştirmedir.
+
+
+## İşlem 017 uygulama notu (2026-10-14)
+
+`reports/models.py`, `builder.py`, `visualizer.py`, `exporter.py` ile DrawingIR geometrik entity kanıtı, sentetik RuleEngine teknik sonuçları, Shapely yüzey/issue ve NetworkX issue raporun tek kaynak şemasında birleştiriliyor. Teknik bulgulardan source CAD handle/layout veya orijinal PDF page/frame'a, ayrıca bağımsız `RegulatoryEvidenceEvaluation` varsa LegalAST PDF node/quad'ına **çift yönlü çevrimdışı HTML anchor** akışı; JSON/Markdown/HTML ve isteğe bağlı PDF metin özeti. Yanlış source hash/frame/olmayan ID veya hukukî PDF mismatch yanlış kaynak göstermeden reddedilir.
+
+F17/F18 `KISMI/MEVCUT_KOD`; PDF özet HTML'nin görsel etkileşimiyle aynı değildir, CAD SVG yalnız rapordaki kaynak geometrinin vektör görünümüdür. F16 pipeline/CLI, F19 dashboard, tam Windows dağıtımı ve hukukî kaynak yürürlük kabulü ayrıca kalır. F08–F12 `HUKUKI_HOLD`. Sonraki paket için `docs/islem_018.md` önce açılmalı.
