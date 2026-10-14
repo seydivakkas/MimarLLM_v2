@@ -159,3 +159,12 @@ Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik 
 - **Sürüm kıyası:** `legal/version_workflow.py` ayrı base ve amendment PDF'lerini, tarih beyanı/ilişkiyle iki özgün kaynak olarak sunar. İlgili amendment'ın geçerli hukukî etki tarihi veya konsolide metni üretilmez.
 - **Kaynaklı kayıt:** `legal/review_ledger.py` HTML'den indirilen JSON taslak kararlarını kaynak `task_digest` ile eşleştirir, SHA-chain JSONL tarihçesine ekler. Bu imzalanmış belge veya kurum onayı değildir, kimliği doğrulamaz, haricî anchor olmadan geçmişin tümden değiştirilmesini önleyemez.
 - **Sınır:** Bu geliştirme yalnız **mevzuat PDF görsel kanıt alt modülü**. Genel mimari pafta hata işaretleme, raporlama, localhost UI ve tam Windows uygulaması henüz yapılmadı. `RuleEngine REGULATORY` ve F08–F12 `HUKUKI_HOLD` korunur.
+
+
+## İşlem 017 — Kaynaklı mimari analiz raporu ve çift yönlü geometri/kanun PDF bağı
+
+- [İşlem 017](docs/islem_017.md) · [Analiz raporu v0.1 teknik şartnamesi](docs/specs/analysis-reports-v0.1.md)
+- **Gerçek modül:** `src/mimarllm/reports/models.py` (kaynaklı bulgu/sözleşme), `builder.py` (DrawingIR, Shapely, NetworkX, RuleResult, opsiyonel RegulatoryEvidenceEvaluation bağı), `visualizer.py` (CAD/PDF source SVG), `exporter.py` (JSON/Markdown/HTML/PDF).
+- **Offline HTML:** Bulgu ↔ çizim entity bağlantısı, CAD handle/layout/nested block yolu; gerçek PDF DrawingIR kaynağı ve yerel PDF SHA eşleşirse orijinal sayfa arka planı. LegalAST ve özgün mevzuat PDF sağlanmışsa kaynak node metni, page, hash ve **sarı kaynak poligonu**; hukukî kaynak bağının gerekçesi. PDF/LegalAST sağlanmazsa hayalî vurgulama ya da URL oluşturulmaz.
+- **Dışa aktarım:** JSON yapılandırılmış kanıt; Markdown metinsel kaynak; HTML çift yönlü görsel; PDF isteğe bağlı `pip install -e ".[reports]"` ile ReportLab metin özeti (HTML ile aynı etkileşimde değildir).
+- **Kısmi kabul:** Genel paftanın tamamını render eden CAD motoru, kullanıcı dashboard'u, canlı analiz pipeline/CLI ve gerçek müşteri Windows kabulü henüz yok. F17/F18 `KISMI/MEVCUT_KOD`; teknik COMPLIANT yasaya uygun anlamına gelmez; F08–F12 `HUKUKI_HOLD`.
