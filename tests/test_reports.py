@@ -84,7 +84,10 @@ def legal_doc(tmp_path):
 
 
 def one_finding(drawing):
-    e=drawing.entities[0]
+    # Prefer a native line/polyline witness over a glyph/point observation.
+    e=next((candidate for candidate in drawing.entities
+            if candidate.geometry.kind.value in {"SEGMENT", "POLYLINE", "POLYGON"}),
+           drawing.entities[0])
     drawing.findings.append(Finding(
         finding_id="inspection-one",
         check_id="synthetic.source-check",
