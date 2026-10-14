@@ -171,8 +171,19 @@ def create_app(workspace: str | Path) -> FastAPI:
     def metadata(identifier: str) -> dict:
         project = project_path(identifier)
         stored = json.loads(_read_safely(project / "project.json", max_bytes=4096))
-        if stored.get("project_id") != identifier:
-            raise HTTPException(status_code=409, detail="Yerel proje metadata kimliği tutarsız.")
+        kind = stored.get("source_kind")
+        ext = {"DXF": "dxf", "PDF": "pdf"}.get(kind)
+        if (stored.get("project_id") != identifier
+                or ext is None
+                or stored.get("source_name") != "input." + ext
+                or not isinstance(stored.get("source_sha256"), str)
+                or not re.fullmatch(r"[0-9a-f]{64}", stored["source_sha256"])
+                or not isinstance(stored.get("size_bytes"), int)
+                or not 0 < stored["size_bytes"] <= _LIMITS[ext]):
+            raise HTTPException(
+                status_code=409,
+                detail="Yerel proje metadata/source kimliği tutarsız.",
+            )
         return stored
 
     def run_dir(project_id: str, run_id: str) -> Path:
