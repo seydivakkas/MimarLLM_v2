@@ -26,9 +26,10 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | islem_016 | Özgün PDF görsel vurgulu kaynak inceleme ve tarihsel sürüm kıyas iş akışı | F15 ve F18 mevzuat alt küme | 013–015 | Source SHA, sayfa, quad, imzasız reviewer; hukukî HOLD |
 | islem_017 | Rapor, çizim işaretleme + bulgudan belge sayfasına geçiş | F17/F18 | 014–016 | İki kaynak bbox doğrulama |
 | islem_018 | Yerel DXF/PDF → DrawingIR → Shapely/NetworkX/RuleEngine → rapor pipeline + CLI | F16 | 017 | Kaynak SHA/frame, user-confirmed physical scale, stage manifest; F19 ayrı |
-| islem_019 | Windows run.bat + PyInstaller onedir + offline wheelhouse | F20 | Gerçek CLI/dashboard | Yerel Windows paket smoke ve SBOM |
-| islem_020 | Yerel VLM + semantik etiket no-overwrite | F21/F22 | 009,010,018 | Gerçek 4070 8GB benchmark/CPU fallback |
-| islem_021 | Çapraz modül benchmark, gerçek çizim ve regresyon, paket kabulü | F23/F24 | Tüm gerekli paketler | PASS/HOLD matrisleri |
+| islem_019 | FastAPI localhost F19 Türkçe proje yükle/analiz et/kanıt gezgini | F19 | 018 | Yalnız 127.0.0.1, kaynak SHA, CSRF/Host/Origin, sentetik Linux/Windows CI |
+| islem_020 | Windows-first offline dashboard/CLI onedir, yerel başlatma, wheelhouse ve SBOM | F20 | 018/019 | PyInstaller smoke, paket lisansları, gerçek Windows kabul HOLD |
+| islem_021 | Yerel VLM aday semantiği, deterministik kaynak üzerine yazmaz | F21/F22 | 009/010/019 | GPU 8 GB VRAM benchmark, CPU fallback HOLD |
+| islem_022 | Çapraz modül gerçek çizim benchmark ve bağımsız Windows kabulü | F23/F24 | Tüm gerekli paketler | PASS/HOLD matrisleri |
 
 **Önemli:** Bu ilerideki `islem_007…021` adları yalnız **planlanan sıra**, dosyalar henüz oluşturulmamıştır. Bir işlemin kapsamı değişirse yeni karar kaydı güncellenir, geçmiş numaralar yeniden kullanılmaz. İş paketleri gerçek uygulama modülüne göre bölünebilir; otomatik olarak tamamlandı kabul edilmez.
 
@@ -142,3 +143,12 @@ F17/F18 `KISMI/MEVCUT_KOD`; PDF özet HTML'nin görsel etkileşimiyle aynı değ
 `src/mimarllm/pipeline.py` ve `cli.py` tek yerel .dxf/.pdf dosyasıyla çalışır, kesintisiz source SHA/frame korur. Fiziksel kalibrasyon yalnız native kaynak segmenti üzerinde insan kaynaklı referans; açık `ReviewedTopology` olmadan kapı/kaçış/oda semantiği oluşturulmaz. `RuleRun` yalnız kullanıcı tarafından seçilen `RuleDefinition` ve kaynak evidence'i değerlendirir, yasal RuleEngine kilidini kaldırmaz. `reports/builder.py` çok frame Geometries/Topologies ve kaynak bulgu olmasa da çizim gözlemi göstermeyi destekler. JSON/HTML/MD/isteğe bağlı PDF ve detaylı `pipeline-manifest.json`; hata `PARTIAL_WITH_ERRORS` exit 4 ve görsel kanıtın eksikliği belirtimi.
 
 **Açık sonraki sınır:** F16 `KISMI/MEVCUT_KOD`; F19 dashboard henüz oluşturulmadı ve eski islem_018 yol haritası satırından çıkarıldı (bu değişiklik yalnız **plan durumunun güncellenmesidir**, UI varmış gibi davranılmaz). F20 Windows installer, gerçek Windows 10/11 ve gerçek dosya kabulü, gerçek RG/kural yürürlük onayı ayrıca. `docs/islem_019.md` sonraki işlemin ilk GitHub değişikliği olarak açılmadan kod yazılmamalı.
+
+
+## İşlem 019 uygulama notu (2026-10-14)
+
+`app/server.py` FastAPI, `app/launch.py` localhost-only Uvicorn ve `app/static` bağımsız Türkçe CSS/JS ile çalışan **gerçek tek kullanıcılı tarayıcı UI çekirdeği** eklendi. Uygulama REST üzerinde yerel DXF/PDF yükler, ŞA+orijinal source ile `run_local_pipeline` ve `export_report` çağırır, aşama/reason kodları, kaynak native çizgi ID, kalibrasyonlu ikinci analiz ve HTML kaynak raporu sunar. Bir işlemde hata varsa `PARTIAL_WITH_ERRORS` saklanır; resmî yasa PASS yok.
+
+**Eski plan değişikliği (yeni uygulama değil):** İşlem 019 eskiden F20 Windows paketleme olarak listelenmişti. F19'un hiç kodlanmamış olması nedeniyle İşlem 019 bu F19 dashboard çekirdeğine ayrıldı; F20 Windows offline dağıtım İşlem 020'ye, daha sonraki VLM/benchmark satırları 021–022'ye kaydırıldı. İşlem 001–018 kayıtlarına müdahale edilmedi.
+
+**F19 KISMI/MEVCUT_KOD:** sentetik ASGI/GitHub-hosted Linux+Windows; gerçek Windows 10/11/Edge cihaz kullanıcısı, sızma testi ve üretim LAN sunucusu kabulü HOLD. **F08–F12 HUKUKI_HOLD**. Bir sonraki kod işleminde ilk GitHub yazımı `docs/islem_020.md` olmalıdır.
