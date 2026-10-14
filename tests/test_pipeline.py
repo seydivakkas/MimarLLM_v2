@@ -306,3 +306,12 @@ def test_malicious_config_extra_and_conflicting_rule_selection_rejected():
             frame_id="f",source_entity_ids=("x",),
             boundary_role="INTERIOR_ROOM",reviewer_id="u",
         ))
+
+def test_exceeded_shapely_segment_budget_is_explicit_partial_not_pass(local_dxf):
+    result=run_local_pipeline(local_dxf,PipelineConfig(max_segments_per_frame=1))
+    assert result.manifest.completion=="PARTIAL_WITH_ERRORS"
+    assert result.geometries==()
+    assert any(s.stage=="GEOMETRY" and s.status==StageStatus.ERROR
+               for s in result.manifest.stages)
+    assert result.report.legal_gate=="REGULATORY_LOCKED"
+    assert all(f.status!="COMPLIANT" for f in result.report.findings)
