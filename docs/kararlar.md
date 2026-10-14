@@ -272,3 +272,21 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-146 | Gerçek kanun yürürlük/Resmî Gazete doğrulaması, lokal Windows müşteri kabulü ve F19 GUI | HOLD |
 
 [İşlem 018](islem_018.md) · [Pipeline/CLI v0.1 şartnamesi](specs/pipeline-cli-v0.1.md).
+
+
+## İşlem 019 — Offline tarayıcı UI / sunucu güvenlik kararları (2026-10-14)
+
+| Karar | Uygulanan teknik sözleşme | Durum |
+| --- | --- | --- |
+| K-147 | FastAPI yalnız 127.0.0.1 Uvicorn; keyfi remote host parametresi ve forwarded proxy headers kapalı | KODLANDI |
+| K-148 | Host, peer loopback IP, isteğe bağlı Origin, POST CSRF token, CSP, nosniff ve no-store denetimi | KODLANDI |
+| K-149 | HTTP yolu yerel sunucu dosya yolu seçmez; yalnız 32 karakterli opaque UUID proje/run ID ve statik rapor allowlist | KODLANDI |
+| K-150 | DXF 25 MB, PDF 50 MB, JSON 256 KB; kaynak SHA yeniden doğrulanmadan analiz çalışmaz | KODLANDI |
+| K-151 | Şirket/LAN'a dışa açık API/çok kullanıcı/auth iddiası yok; localhost CSRF yerel kötü niyetli process'e mutlak koruma değildir | KESİN |
+| K-152 | Aynı anda tek analiz, tüm raporlar ayrı run dizini; incomplete/error sonuçların kullanıcıya gizlenmesi yasak | KODLANDI |
+| K-153 | Kullanıcı yalnız gerçek native LINE entity ID ve bilinen metreyle fiziksel ölçek istenir; CAD INSUNITS otomatik ölçek PASS değildir | KODLANDI |
+| K-154 | UI HTML source CSS/JS tamamen yerel; kaynak layer/rule metinleri textContent ile gösterilir, harici CDN yok | KODLANDI |
+| K-155 | Teknik PASS yalnız teknik senaryo, hukukî sürüm/Resmî Gazete/yürürlük doğrulaması ayrı HUKUKI_HOLD | KESİN |
+| K-156 | Gerçek Windows Edge görsel kullanıcı kabulü, dağıtım installer, SBOM, sızma testi ve gerçek kanun kabulü | HOLD |
+
+[İşlem 019](islem_019.md) · [F19 Dashboard şartnamesi](specs/dashboard-v0.1.md).
