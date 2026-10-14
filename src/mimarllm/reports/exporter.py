@@ -63,7 +63,9 @@ def _legal_sections(
     *,
     max_pages: int,
 ) -> str:
-    if not legal_pdf_paths and not legal_documents:
+    if not legal_pdf_paths and not legal_documents and not any(
+        finding.legal_evidence is not None for finding in report.findings
+    ):
         return ""
     docs = [LegalDocument.model_validate(d.model_dump()) for d in legal_documents]
     lookup = {d.document_sha256: d for d in docs}
