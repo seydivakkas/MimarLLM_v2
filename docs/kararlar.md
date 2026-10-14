@@ -254,3 +254,21 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-136 | F16 CLI, F19 GUI, hukukî resmiyet/konsolidasyon, gerçek Windows kullanıcı acceptance | HOLD |
 
 [İşlem 017](islem_017.md) · [Analiz raporu v0.1 şartnamesi](specs/analysis-reports-v0.1.md).
+
+
+## İşlem 018 — Bütünleşik pipeline + CLI sözleşme kararları (2026-10-14)
+
+| Karar | Mühendislik kuralı | Durum |
+| --- | --- | --- |
+| K-137 | Yalnız kaynak local .dxf/.pdf ve explicit local JSON, uzak/ücretli API yok; source SHA değişmeden pipeline boyunca korunur | KODLANDI |
+| K-138 | Çoklu PDF page/CAD layout ayrı coordinate frame; Shapely analizleri frame bazlı, rapor birleştirir ama odaları birleştirmez | KODLANDI |
+| K-139 | `$INSUNITS` otomatik onay değil; fiziksel `CalibrationReference` için native line entity, bilinen metre ve kullanıcı etiketi şart | KODLANDI |
+| K-140 | DIMENSION/GRAPHIC_SCALE doğrulama modülü olmadan o kaynak yöntemlerinin `CONFIRMED` etiketini üretmek yasak | KODLANDI |
+| K-141 | Kullanıcı `ReviewedTopology` beyanı yoksa `TOPOLOGY=SKIPPED`, yangın kaçış rotası veya gerçek kapı tahmini yok | KODLANDI |
+| K-142 | Alan ve teknik kural ancak gerçek source ID/yöntem/geometri ile, mevzuat otomatik hükmü olmadan değerlendirilir | KODLANDI |
+| K-143 | `COMPLETE/REVIEW_REQUIRED/SKIPPED/ERROR` manifesti; stage ERROR `PARTIAL_WITH_ERRORS` exit 4, kaynak parse/config exit 2, iptal 130 | KODLANDI |
+| K-144 | HTML raporda bulgu olmasa da kaynak vektörünü göster; asla bulgu veya hukukî uygunluk uydurma | KODLANDI |
+| K-145 | CLI yeni çıktı dosyası, mevcut dosya overwrite yok; ihracat hatası/iptalde sadece bu koşu dosyalarını temizle | KODLANDI |
+| K-146 | Gerçek kanun yürürlük/Resmî Gazete doğrulaması, lokal Windows müşteri kabulü ve F19 GUI | HOLD |
+
+[İşlem 018](islem_018.md) · [Pipeline/CLI v0.1 şartnamesi](specs/pipeline-cli-v0.1.md).
