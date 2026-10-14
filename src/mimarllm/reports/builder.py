@@ -42,6 +42,8 @@ def build_analysis_report(
     indexed = {e.entity_id: e for e in drawing.entities}
     measured = {m.evidence_id: m for m in drawing.measurements}
     checked_rules = [RuleResult.model_validate(r.model_dump()) for r in rules]
+    if len({(r.rule_id, r.rule_version) for r in checked_rules}) != len(checked_rules):
+        raise ReportInputError('Duplicate RuleResult source and version')
     evaluations = [
         RegulatoryEvidenceEvaluation.model_validate(e.model_dump())
         for e in regulatory_evaluations
