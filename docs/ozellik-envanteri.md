@@ -26,7 +26,7 @@
 | F16 | Analiz hattı + CLI | `src/mimarllm/pipeline.py`, `src/mimarllm/cli.py`, `reports/builder.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Sentetik DXF -> geometrik bulgu -> rapor; hata/iptal | (9) / eski 010 |
 | F17 | JSON/Markdown/HTML/PDF rapor | `reports/models.py`, `reports/builder.py`, `reports/exporter.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
 | F18 | SVG/HTML koordinatlı işaretleme | `reports/visualizer.py` + `reports/exporter.py` + `legal/review_viewer.py` | **KISMI / MEVCUT_KOD — DrawingIR ve mevzuat kaynakları** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
-| F19 | Tek kullanıcılı localhost dashboard | `app/server.py`, `app/static/` | PLANLANDI | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
+| F19 | Tek kullanıcılı localhost dashboard | `src/mimarllm/app/server.py`, `app/launch.py`, `app/static/` | **KISMI / MEVCUT_KOD — sentetik Linux/Windows CI** | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
 | F20 | Windows `run.bat`, `build_exe.bat`, `mimar.spec` | Root / `scripts/` | PLANLANDI | Sonraki gerçek CLI/dashboard entrypoint ile offline onedir | Sohbet / eski 013 |
 | F21 | Yerel Qwen-VL ile aday sınıflandırma | `vision/vlm.py`, `vision/prompts.py` | PLANLANDI | GGUF + mmproj/Windows ölçümü; 8 GB peak VRAM | (17) / eski 018 |
 | F22 | VLM adayını etiketleme, no-overwrite | `vision/semantic.py` | PLANLANDI | Native/certified kanıt ezilmez; belirsiz REVIEW | (18) / eski 019 |
@@ -139,3 +139,12 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **Teknik kontrol güvenlik:** `$INSUNITS`/layer/ODA yazısı fiziksel ölçek ve net alan hükmü değildir. Kullanıcının bilinen metre referansı, kaynak native SEGMENT+inceleme beyanı olmadan teknik metre karşılaştırması `INSUFFICIENT_EVIDENCE`. Geçiş/kapı kaynağı seçilmezse NetworkX `SKIPPED`; topo hop ile gerçek yangın tahliye rotası veya hukukî uygunluk üretilmez. RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE` kaldı. OCR yalnız kullanıcı ROI + açıkça kurulmuş yerel CPU motorla.
 
 **Açık:** F16 otomatik analiz destekli tek tuş GUI, Windows kurulum/paket acceptance, gerçek mevzuat sürüm/hukukî onay, gerçek mimari plan alanları/uzman sınaması; F19 localhost dashboard ve F20 dağıtım planlı. **F08–F12 HUKUKI_HOLD**. [İşlem 018](islem_018.md) · [Şartname](specs/pipeline-cli-v0.1.md).
+
+
+## İşlem 019 güncellemesi — İlk kullanıcı arayüzü (F19)
+
+**Kodlanan F19 KISMI/MEVCUT_KOD:** `src/mimarllm/app/server.py` ile yalnız 127.0.0.1 Uvicorn'da yerel DXF/PDF ikili upload, SHA-256 metadatası, rastgele proje/run klasörü, aynı anda tek bounded analiz, aynı DrawingIR kaynak kimliğinden `analysis.json`, `analysis.html`, `drawingir.json`, `pipeline-manifest.json` ve opsiyonel MD/PDF; `app/static` içinde Türkçe mobil uyumlu gerçek proje/analiz/rapor ekranı ve kullanıcı referans çizgisiyle ikinci analiz. `pyproject.toml` dashboard extra+entrypoint, `tests/test_dashboard.py` gerçek ASGI TestClient testleri.
+
+**Güven kapıları:** İstemci localhost-only, Host/Origin/CSRF, dosya uzantı/MB/JSON boyutu ve rastgele kaynak klasörü, allowlist dosya okuma, SHA kaynak/rapor bağları, CSP/HTML escaping, hiç dış CDN/API yok. Bu korumalar **yerel bilgisayarın diğer yetkili process'leri için tam kimlik yetkilendirmesi değildir**; gerçek sızma testi/Windows Edge kullanıcı kabulü açık. `PARTIAL_WITH_ERRORS` uygunluk sonucu gösterilmez, `RuleEngine.REGULATORY=INSUFFICIENT_EVIDENCE`.
+
+**Açık:** F20 gerçek Windows onedir/wheelhouse/installer paketleme, SBOM, test kullanıcı dosyaları, kurum resmî RG yetki/yürürlük kanıtı ve F08–F12 HUKUKI_HOLD. [İşlem 019](islem_019.md) · [Şartname](specs/dashboard-v0.1.md).
