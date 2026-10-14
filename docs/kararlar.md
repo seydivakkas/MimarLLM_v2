@@ -237,3 +237,20 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-127 | Gerçek RG külliyatı, resmî belge imzası/yürürlük zinciri, bağımsız uzman ve son müşteri Windows testi | HOLD |
 
 [İşlem 016](islem_016.md) · [Görsel kanıt inceleme şartnamesi](specs/legal-review-v0.1.md).
+
+
+## İşlem 017 — Raporlama ve çift yönlü kanıt kararları (2026-10-14)
+
+| Karar | Mühendislik uygulaması | Durum |
+| --- | --- | --- |
+| K-128 | DrawingIR/RuleResult raporu kaynak SHA/entity/frame ve ölçüm IDs ile oluşturulur | KODLANDI |
+| K-129 | CAD layout/frame ve PDF page farklı koordinat sistemleri; kaynak CAD Y-up SVG dönüşümü fiziksel ölçek anlamına gelmez | KODLANDI |
+| K-130 | Teknik COMPLIANT/NON_COMPLIANT yalnız RuleDomain.TECHNICAL; mevzuat REGULATORY sonucu kilitli | KODLANDI |
+| K-131 | Bulgu→SVG kaynak entity, kaynak→bulgu; mevzuat kaynak adayı varsa legal PDF→bulgu HTML anchor | KODLANDI |
+| K-132 | Gerçek orijinal PDF SHA ve LegalAST kaynak node/quad uyuşması yoksa sarı hukukî PDF görseli üretilemez | KODLANDI |
+| K-133 | F17 JSON/Markdown/HTML/ReportLab PDF; PDF sadece özet, HTML interaktif kaynak bağlantılı | KODLANDI / KISMI |
+| K-134 | Shapely yüzeyi yalnız UNCLASSIFIED_FACE, topology hop sayısı gerçek kaçış mesafesi sayılmaz | KESİN |
+| K-135 | SVG DrawingIR CAD source geometri gösterimi, tam DXF/DWG plot veya paftanın tasarım görseli değildir | KESİN |
+| K-136 | F16 CLI, F19 GUI, hukukî resmiyet/konsolidasyon, gerçek Windows kullanıcı acceptance | HOLD |
+
+[İşlem 017](islem_017.md) · [Analiz raporu v0.1 şartnamesi](specs/analysis-reports-v0.1.md).
