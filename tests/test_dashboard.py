@@ -257,3 +257,27 @@ def test_launcher_uses_loopback_and_disables_proxy_headers(tmp_path,monkeypatch)
     assert calls[0]["host"]=="127.0.0.1"
     assert calls[0]["proxy_headers"] is False
     assert calls[0]["port"]==9001
+
+
+def test_oversized_analysis_json_rejected_before_parse(cli,dxf):
+    http,csrf,_=cli
+    pid=upload(http,csrf,dxf).json()["project_id"]
+    oversized=b"x"*256001
+    result=http.post(f"/api/projects/{pid}/runs",content=oversized,headers={
+        "X-Mimar-CSRF":csrf,
+        "Content-Type":"application/json",
+    })
+    assert result.status_code==413
+    assert not http.get(f"/api/projects/{pid}").json()["runs"]
+
+
+def test_run_summary_rejects_mismatched_source_sha(cli,dxf):
+    http,csrf,workspace=cli
+    pid=upload(http,csrf,dxf).json()["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    stored=workspace/"projects"/pid/"runs"/rid/"analysis.json"
+    report=json.loads(stored.read_text("utf-8"))
+    report["drawing_sha256"]="f"*64
+    stored.write_text(json.dumps(report),encoding="utf-8")
+    resp=http.get(f"/api/projects/{pid}/runs/{rid}")
+    assert resp.status_code==409
