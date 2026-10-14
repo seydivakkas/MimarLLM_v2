@@ -44,7 +44,7 @@ def _write_pipeline(
     output: Path,
     config: PipelineConfig,
     formats: Sequence[str],
-) -> tuple[list[Path], str]:
+) -> tuple[list[Path], str, str]:
     """Preflight output collisions and rollback only artifacts created this run."""
     if not output.exists() or not output.is_dir():
         raise CliError("Choose an existing local output directory")
@@ -89,7 +89,7 @@ def _write_pipeline(
             except OSError:
                 pass
         raise
-    return generated, result.manifest.source_sha256
+    return generated, result.manifest.source_sha256, result.manifest.completion
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -117,7 +117,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         cfg = _load_config(args.config)
         source = Path(args.drawing).expanduser()
         output = args.output_dir.expanduser()
-        files, digest = _write_pipeline(
+        files, digest, completion = _write_pipeline(
             source, output, cfg, args.formats or ["json", "html"],
         )
     except (CliError, PipelineInputError, ReportExportError,
@@ -132,11 +132,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 3
-    print("MIMARLLM_COMPLETED_WITH_REVIEW_GATES: " + digest)
+    print("MIMARLLM_" + completion + ": " + digest)
     for path in files:
         print("OUTPUT: " + str(path))
     print("REGULATORY_LOCKED: all legal compliance and legal effectivity remain unverified")
-    return 0
+    return 4 if completion == "PARTIAL_WITH_ERRORS" else 0
 
 
 if __name__ == "__main__":
