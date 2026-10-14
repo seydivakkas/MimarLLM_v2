@@ -188,3 +188,33 @@ def test_cli_partial_still_writes_held_manifest_and_returns_exit_4(dxf,tmp_path,
     assert manifest["completion"]=="PARTIAL_WITH_ERRORS"
     assert any(s["status"]=="ERROR" for s in manifest["stages"])
     assert "MIMARLLM_PARTIAL_WITH_ERRORS" in capsys.readouterr().out
+
+def test_cli_export_failure_rolls_back_this_runs_files(dxf,tmp_path,monkeypatch,capsys):
+    import mimarllm.cli as cli_module
+    from mimarllm.reports.exporter import ReportExportError
+    out=tmp_path/"rolled-back"
+    out.mkdir()
+    original=cli_module.export_report
+    def raise_during_second_output(report, path, **kwargs):
+        if str(path).endswith(".html"):
+            raise ReportExportError("Synthetic SVG export failure")
+        return original(report,path,**kwargs)
+    monkeypatch.setattr(cli_module,"export_report",raise_during_second_output)
+    assert main(["analyze",str(dxf),"--output-dir",str(out)])==2
+    assert list(out.iterdir())==[]
+    assert "Traceback" not in capsys.readouterr().err
+
+
+def test_cli_ctrl_c_during_export_rolls_back_and_uses_130(dxf,tmp_path,monkeypatch,capsys):
+    import mimarllm.cli as cli_module
+    out=tmp_path/"cancelled"
+    out.mkdir()
+    original=cli_module.export_report
+    def interrupt_at_html(report,path,**kwargs):
+        if str(path).endswith(".html"):
+            raise KeyboardInterrupt
+        return original(report,path,**kwargs)
+    monkeypatch.setattr(cli_module,"export_report",interrupt_at_html)
+    assert main(["analyze",str(dxf),"--output-dir",str(out)])==130
+    assert not list(out.iterdir())
+    assert "MIMARLLM_CANCELLED" in capsys.readouterr().err
