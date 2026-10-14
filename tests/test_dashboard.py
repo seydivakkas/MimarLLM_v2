@@ -281,3 +281,15 @@ def test_run_summary_rejects_mismatched_source_sha(cli,dxf):
     stored.write_text(json.dumps(report),encoding="utf-8")
     resp=http.get(f"/api/projects/{pid}/runs/{rid}")
     assert resp.status_code==409
+
+
+def test_tampered_project_metadata_cannot_redirect_source_path(cli,dxf):
+    http,csrf,workspace=cli
+    pid=upload(http,csrf,dxf).json()["project_id"]
+    stored=workspace/"projects"/pid/"project.json"
+    meta=json.loads(stored.read_text("utf-8"))
+    meta["source_name"]="../../not_a_drawing.pdf"
+    stored.write_text(json.dumps(meta),encoding="utf-8")
+    assert http.get(f"/api/projects/{pid}").status_code==409
+    assert run(http,csrf,pid).status_code==409
+    assert not http.get("/api/projects").json()["projects"]
