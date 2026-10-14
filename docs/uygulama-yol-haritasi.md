@@ -25,7 +25,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | islem_015 | Yerel özgün PDF SHA ve polygon denetimi + hukuki değişiklik/proje applicability bağlayıcısı | F15 | 012/013/014 | Source consistency + RuleEngine REGULATORY HOLD |
 | islem_016 | Özgün PDF görsel vurgulu kaynak inceleme ve tarihsel sürüm kıyas iş akışı | F15 ve F18 mevzuat alt küme | 013–015 | Source SHA, sayfa, quad, imzasız reviewer; hukukî HOLD |
 | islem_017 | Rapor, çizim işaretleme + bulgudan belge sayfasına geçiş | F17/F18 | 014–016 | İki kaynak bbox doğrulama |
-| islem_018 | Pipeline + CLI + offline yerel FastAPI dashboard | F16/F19 | 017 | Sentetik çizim/rapor, localhost güvenliği |
+| islem_018 | Yerel DXF/PDF → DrawingIR → Shapely/NetworkX/RuleEngine → rapor pipeline + CLI | F16 | 017 | Kaynak SHA/frame, user-confirmed physical scale, stage manifest; F19 ayrı |
 | islem_019 | Windows run.bat + PyInstaller onedir + offline wheelhouse | F20 | Gerçek CLI/dashboard | Yerel Windows paket smoke ve SBOM |
 | islem_020 | Yerel VLM + semantik etiket no-overwrite | F21/F22 | 009,010,018 | Gerçek 4070 8GB benchmark/CPU fallback |
 | islem_021 | Çapraz modül benchmark, gerçek çizim ve regresyon, paket kabulü | F23/F24 | Tüm gerekli paketler | PASS/HOLD matrisleri |
@@ -135,3 +135,10 @@ F15 `KISMI/MEVCUT_KOD`. F08–F12 mevzuat paketleri hâlâ `HUKUKI_HOLD`; kural 
 `reports/models.py`, `builder.py`, `visualizer.py`, `exporter.py` ile DrawingIR geometrik entity kanıtı, sentetik RuleEngine teknik sonuçları, Shapely yüzey/issue ve NetworkX issue raporun tek kaynak şemasında birleştiriliyor. Teknik bulgulardan source CAD handle/layout veya orijinal PDF page/frame'a, ayrıca bağımsız `RegulatoryEvidenceEvaluation` varsa LegalAST PDF node/quad'ına **çift yönlü çevrimdışı HTML anchor** akışı; JSON/Markdown/HTML ve isteğe bağlı PDF metin özeti. Yanlış source hash/frame/olmayan ID veya hukukî PDF mismatch yanlış kaynak göstermeden reddedilir.
 
 F17/F18 `KISMI/MEVCUT_KOD`; PDF özet HTML'nin görsel etkileşimiyle aynı değildir, CAD SVG yalnız rapordaki kaynak geometrinin vektör görünümüdür. F16 pipeline/CLI, F19 dashboard, tam Windows dağıtımı ve hukukî kaynak yürürlük kabulü ayrıca kalır. F08–F12 `HUKUKI_HOLD`. Sonraki paket için `docs/islem_018.md` önce açılmalı.
+
+
+## İşlem 018 uygulama notu (2026-10-14)
+
+`src/mimarllm/pipeline.py` ve `cli.py` tek yerel .dxf/.pdf dosyasıyla çalışır, kesintisiz source SHA/frame korur. Fiziksel kalibrasyon yalnız native kaynak segmenti üzerinde insan kaynaklı referans; açık `ReviewedTopology` olmadan kapı/kaçış/oda semantiği oluşturulmaz. `RuleRun` yalnız kullanıcı tarafından seçilen `RuleDefinition` ve kaynak evidence'i değerlendirir, yasal RuleEngine kilidini kaldırmaz. `reports/builder.py` çok frame Geometries/Topologies ve kaynak bulgu olmasa da çizim gözlemi göstermeyi destekler. JSON/HTML/MD/isteğe bağlı PDF ve detaylı `pipeline-manifest.json`; hata `PARTIAL_WITH_ERRORS` exit 4 ve görsel kanıtın eksikliği belirtimi.
+
+**Açık sonraki sınır:** F16 `KISMI/MEVCUT_KOD`; F19 dashboard henüz oluşturulmadı ve eski islem_018 yol haritası satırından çıkarıldı (bu değişiklik yalnız **plan durumunun güncellenmesidir**, UI varmış gibi davranılmaz). F20 Windows installer, gerçek Windows 10/11 ve gerçek dosya kabulü, gerçek RG/kural yürürlük onayı ayrıca. `docs/islem_019.md` sonraki işlemin ilk GitHub değişikliği olarak açılmadan kod yazılmamalı.
