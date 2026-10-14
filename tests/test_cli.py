@@ -88,7 +88,7 @@ def test_cli_existing_report_rejected_and_untouched(dxf,tmp_path,capsys):
     assert (out/"analysis.json").read_text("utf-8")=="IMPORTANT"
     assert not (out/"analysis.html").exists()
     assert not (out/"pipeline-manifest.json").exists()
-    assert "overwrite" in capsys.readouterr().err
+    assert "overwritten" in capsys.readouterr().err
 
 
 def test_cli_invalid_json_and_unknown_config_field_rejected(dxf,tmp_path,capsys):
