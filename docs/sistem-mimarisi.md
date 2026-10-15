@@ -1,3 +1,5 @@
+> **GÜNCEL ÜST MİMARİ — İşlem 020, 2026-10-15:** [MimarLLM V2 × ARCH-CORE Local master mimari](master-mimari-arch-core-local.md), [riskler](risk-ve-dogrulama-matrisi.md), [güncel yol haritası](uygulama-yol-haritasi.md). Aşağıdaki İşlem 003 “TASARIM/uygulama yok”, “persona kesin kapsam dışı” ve “test yok” ifadeleri **2026-10-12 tarihli tasarım kaydının tarihsel hâlidir**. Bugün gerçek `src/mimarllm/` altında DrawingIR/DXF/PDF/Shapely/NetworkX/RuleEngine/LegalAST/RAG/rapor/CLI/localhost dashboard kısmen uygulanmıştır (İşlem 019 son sentetik Linux/Windows CI 295 PASS). Pedagojik ARCH-CORE 2.5D/VLM/jüri/rubrik bileşenleri yalnız **opsiyonel ileri-sürüm planıdır**, mevzuat kilidi `HUKUKI_HOLD` korunur.
+
 > **GÜNCEL PDF KARARI (islem_005):** PDF native character/shape `pdfplumber`, ROI raster `pypdfium2`, OCR `RapidOCR CPU`. Kaynak PDF point koordinatları korunur. [ADR-002](adr/ADR-002-PDF-Engine-License.md).
 > **GÜNCEL OCR KANALI:** `DXF text / pdfplumber native PDF -> kalite kapısı -> eksik ROI'de pypdfium2 + RapidOCR CPU -> source polygon -> DrawingIR`. Büyük model alternatifleri ve bulut OCR yok.
 # MimarLLM V2 — Sistem Mimarisi v0.3
