@@ -301,6 +301,10 @@ def propose_repair_overlay(
                 gap = dist(pi, pj)
                 if 1e-12 < gap <= max_gap_source_units:
                     pending.append((gap, i, end_i, j, end_j))
+                    if len(pending) > max_candidates * 32:
+                        raise RepairInputError(
+                            "Ambiguous endpoint candidate safety budget exceeded"
+                        )
 
     # An endpoint already touching ANY other original segment is not free.
     # This avoids snapping extra bridges onto already connected corners.
