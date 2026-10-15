@@ -27,7 +27,7 @@
 | F17 | JSON/Markdown/HTML/PDF rapor | `reports/models.py`, `reports/builder.py`, `reports/exporter.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
 | F18 | SVG/HTML koordinatlı işaretleme | `reports/visualizer.py` + `reports/exporter.py` + `legal/review_viewer.py` | **KISMI / MEVCUT_KOD — DrawingIR ve mevzuat kaynakları** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
 | F19 | Tek kullanıcılı localhost dashboard | `src/mimarllm/app/server.py`, `app/launch.py`, `app/static/` | **KISMI / MEVCUT_KOD — sentetik Linux/Windows CI** | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
-| F20 | Windows `run.bat`, `build_exe.bat`, `mimar.spec` | Root / `scripts/windows/` | **PLANLANDI — islem_021'e taşındı** | Sonraki gerçek CLI/dashboard entrypoint ile offline onedir | Sohbet / eski 013 |
+| F20 | Windows offline wheelhouse/onedir/launcher/SBOM adayı | `run.bat`, `install_offline.bat`, `build_exe.bat`, `mimar.spec`, `scripts/windows/` | **KISMI / MEVCUT_KOD — kaynak + Linux/Windows sentetik CI; gerçek EXE HOLD** | Tam offline Windows 10/11 onedir build + exe self-check + Edge gerçek kabul; dependency NOTICE lisans denetimi ayrı | Sohbet / eski 013 |
 | F21 | Yerel GGUF/VLM ile semantik aday | `vision/local_vlm.py`, `vision/grammar.py` (PLAN) | **AR-GE / PLAN — model doğrulanmadı** | GGUF + mmproj/Windows ölçümü; 8 GB peak VRAM | (17) / eski 018 |
 | F22 | VLM adayını etiketleme, no-overwrite | `vision/semantic.py` (PLAN) | **PLAN — native evidence korunur** | Native/certified kanıt ezilmez; belirsiz REVIEW | (18) / eski 019 |
 | F23 | Çapraz modül benchmark, QA ve CI | `benchmarks/` (PLAN), `tests/`, `.github/workflows/` (MEVCUT sentetik) | **KISMI — sentetik CI mevcut, gerçek benchmark PLAN** | Windows gerçek ölçüm, sentetik baseline, CPU/GPU peak | (19) / eski 020 |
@@ -179,3 +179,12 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 - Bulut sağlayıcı, çoklu Docker DB ve farklı Python codebase mimarisi **plan dışı**. ARCH-CORE özellikleri birinci sınıf ayrı repo/ikinci \`DrawingIR\` değil, mevcut `src/mimarllm/` modülleri olarak tasarlanır.
 
 **Tam kaynak:** [020 master mimari](master-mimari-arch-core-local.md) · [risk matrisi](risk-ve-dogrulama-matrisi.md) · [yeni işlem sırası](uygulama-yol-haritasi.md).
+
+
+## İşlem 021 — F20 Windows çevrimdışı dağıtım kaynak uygulaması
+
+**F20 KISMI/MEVCUT_KOD:** `run.bat`, `install_offline.bat`, `build_exe.bat`; kaynak `mimar.spec` Win32 PyInstaller onedir, `scripts/windows/launch_dashboard.py` gerçek F19 FastAPI giriş ve kullanıcı workspace; `build_wheelhouse.ps1` explicit internet kullanan *ayrı hazırlama* ve `package_manifest.py` SHA doğrulanmış wheel/onedir snapshot + kurulmuş package declared license listesi (`SBOM taslağı`). `--self-check` frozen adayının statik UI/paket importunu sunucu açmadan denetlemek için uygulandı. Ana sistem `src/mimarllm` modüler monolit ve CPU-only RapidOCR politikası korunur.
+
+**HOLD:** Kaynak kod ve sentetik CI bir Windows .exe binary'sinin gerçekten üretildiği, fiziksel olarak ağsız temiz PC'de çalıştığı veya ticari lisans/VC++/PDFium/GEOS/ONNX Runtime yeniden dağıtım hakkının onaylandığı anlamına gelmez. `wheelhouse-manifest.json` SHA kaydı imzasızdır; birlikte yeniden yazılan dosyalara karşı köken ispatı sayılmaz. Gerçek F20 dağıtım/Windows-Edge kabulü final. F08–F12 `HUKUKI_HOLD`.
+
+[İşlem 021](islem_021.md) · [Windows onedir sözleşmesi](specs/windows-offline-package-v0.1.md).
