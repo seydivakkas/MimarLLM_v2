@@ -156,9 +156,9 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 
 | Kimlik | Yeni hedef | Kanonik hedef dosya | Gerçek durum | Emniyet/başarı kapısı | Planlanan işlem |
 | --- | --- | --- | --- | --- | --- |
-| F25 | Kirli CAD için ray/snap/virtual gap bridge *aday katmanı* | `geometry/repair.py` | **PLAN** | orijinal entity/handle ve source polygon değişmez; önerilen köprü PASS değil | 022 |
-| F26 | Dimension/door histogramı, birim hipotezi | `core/calibration_candidates.py` | **PLAN** | `INFERRED` ≠ `CONFIRMED`; yanlış fiziksel metreye hukuki sonuç yok | 022 |
-| F27 | Layer0, HATCH/ARC duvar/kolon/kapı heuristik adayı | `geometry/heuristics.py` | **PLAN** | güven/provenance/false-positive, sınıf otomatik kesinleştirilmez | 022 |
+| F25 | Kirli CAD için ray/snap/virtual gap bridge *aday katmanı* | `geometry/repair.py`, `geometry/repair_viewer.py` | **KISMI / MEVCUT_KOD — sentetik CAD** | orijinal entity/handle ve source polygon değişmez; önerilen köprü PASS değil | 022 |
+| F26 | Dimension/door histogramı, birim hipotezi | `geometry/repair.py` (yalnız `UnitHypothesis`), `core/calibration_candidates.py` (plan) | **KISMI — header birim ipucu var, dimension/door histogramı yok** | `INFERRED` ≠ `CONFIRMED`; yanlış fiziksel metreye hukuki sonuç yok | 022 |
+| F27 | Layer0, HATCH/ARC duvar/kolon/kapı heuristik adayı | `geometry/repair.py` (yalnız Layer0), `geometry/heuristics.py` (plan) | **KISMI — Layer0 gözlem adayı; ARC/HATCH veya sınıf kesinleştirme yok** | güven/provenance/false-positive, sınıf otomatik kesinleştirilmez | 022 |
 | F28 | A0/A1 tiled/ROI OCR ve sayfa quad geri dönüşümü | `ocr/tiled_regions.py` | **PLAN** | kaynak PDF page/rotation/crop ve bounded memory | 023 |
 | F29 | Mimari jargon/eş anlam sorgu genişletmesi | `rag/synonyms.py` + lisanslı yerel sözlük | **PLAN** | FTS5 baseline'a karşı Recall@k; madde–fıkra karışma yok | 024 |
 | F30 | Gömülü SQLite WAL analiz geçmişi/cache/retention | `storage/workspace.py` | **PLAN** | kaynak SHA ve proje izolasyonu, özel veri Git'e yok | 024 |
@@ -188,3 +188,10 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 **HOLD:** Kaynak kod ve sentetik CI bir Windows .exe binary'sinin gerçekten üretildiği, fiziksel olarak ağsız temiz PC'de çalıştığı veya ticari lisans/VC++/PDFium/GEOS/ONNX Runtime yeniden dağıtım hakkının onaylandığı anlamına gelmez. `wheelhouse-manifest.json` SHA kaydı imzasızdır; birlikte yeniden yazılan dosyalara karşı köken ispatı sayılmaz. Gerçek F20 dağıtım/Windows-Edge kabulü final. F08–F12 `HUKUKI_HOLD`.
 
 [İşlem 021](islem_021.md) · [Windows onedir sözleşmesi](specs/windows-offline-package-v0.1.md).
+
+
+## İşlem 022 — F25 kaynak koruyan overlay, F26/F27 yalnız kısmi aday
+
+`geometry/repair.py`: orijinal `DrawingIR` CAD çizgi/segmente eşlenen kaynak SHA, `frame_id`, CAD `handle`, nested `block_path` ve entity ID taşıyan `RepairOverlay` üretir. Küçük hat boşluklarının sanal kapatılması, endpoint snap, duplicate veya overlapping segment **adayları**; her biri `REVIEW_REQUIRED` ve `VIRTUAL_CANDIDATE`. `geometry/repair_viewer.py` SVG'de orijinal lacivert/sanal öneri turuncu kesikli gösterir. Bu çıktılar ŞİMDİLİK ne mevcut DrawingIR'yi değiştirir ne RuleEngine/NetworkX/alan ölçümüne gönderilir.
+
+`UnitHypothesis` sadece header/önceki `CalibrationState` bilgisidir (`INFERRED` ≠ `CONFIRMED`); gerçek DIMENSION/door histogramı tasarlanmadı. `Layer0SemanticCandidate` Layer 0 CAD gözlemini yalnız incelemeye sunar; HATCH/ARC heuristikler veya doğrulanmış wall/door/room semantiği **henüz yok**. Gerçek farklı CAD dosyaları ve Windows görsel kabulü açık. F08–F12 `HUKUKI_HOLD`. [İşlem 022](islem_022.md) · [Teknik şartname](specs/source-preserving-repair-v0.1.md).
