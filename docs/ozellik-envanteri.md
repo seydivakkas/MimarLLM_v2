@@ -1,6 +1,6 @@
-# MimarLLM V2 — Kapsam ve Gerçekleşme Envanteri v0.1
+# MimarLLM V2 × ARCH-CORE Local — Gerçekleşme ve Gelecek Özellik Envanteri v1.0
 
-- **Kayıt:** [islem_006.md](islem_006.md) · **Tarih:** 2026-10-13
+- **İlk kayıt:** [islem_006.md](islem_006.md) · **Güncel yeniden baz:** [islem_020.md](islem_020.md), 2026-10-15. **Master mimari:** [master-mimari-arch-core-local.md](master-mimari-arch-core-local.md)
 - **Tanım:** Yüklenen taslak ve kod örneklerinin **tamamı hedef özelliklerdir**, doğrudan uygulanmış commit sayılmaz.
 - **Durumlar:** `MEVCUT_KOD` = GitHub'da kod mevcut ama kabul zorunlu; `KISMI` = başlangıç var, hedef işlev eksik; `PLANLANDI` = kaynak/ürün henüz yok; `HUKUKI_HOLD` = mevzuat sürümü, dayanak ve uygulanabilirlik doğrulanana kadar etkinleştirilemez.
 
@@ -8,10 +8,10 @@
 
 | Kimlik | Gerekli işlev | Hedef kod / bileşen | Mevcut durum | Kabul için somut kanıt | Kullanıcı taslağı |
 | --- | --- | --- | --- | --- | --- |
-| F01 | Birim, ölçek, CAD/DXF veri modeli `DrawingIR` | `core/ir.py`, `core/units.py` | PLANLANDI; PDF gözlem modelleri mevcut | Birim bilinmiyorsa kalibrasyonsuz gerçek ölçüm yok | Genel kapsam |
+| F01 | Birim, ölçek, CAD/DXF veri modeli `DrawingIR` | `core/ir.py`, `core/units.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Birim bilinmiyorsa kalibrasyonsuz gerçek ölçüm yok | Genel kapsam |
 | F02 | DXF ayrıştırma, block/nested INSERT ve layer sinyali | `importers/dxf.py`, `importers/layers.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrolü** | Katman/handle/transform ve bozulan bloklarda güvenli hata | (2) / eski 003 |
-| F03 | PDF native vector + ROI + source provenance | `importers/pdf.py` | **MEVCUT_KOD, kabul bekler** | PDF char/line/curve/rect; dönüş/limit/görsel bbox ölçümü | İlk PDF kararları |
-| F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py`, `ocr/layout.py` | **KISMI** (adapter) | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
+| F03 | PDF native vector + ROI + source provenance | `importers/pdf.py`, `importers/pdf_ir.py` | **KISMI / MEVCUT_KOD — sentetik CI** | PDF char/line/curve/rect; dönüş/limit/görsel bbox ölçümü | İlk PDF kararları |
+| F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py` (adapter MEVCUT), `ocr/tiled_regions.py` (PLAN) | **KISMI / MEVCUT_KOD — CPU adapter, layout/tiled OCR planlı** | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
 | F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrollü** | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
 | F06 | Mekânsal topoloji, kapı bağlantısı, geçiş grafı | `geometry/topology.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Unreachable ve articulation; dış kapı/balkon ayrımı | (4) / eski 005 |
 | F07 | Deterministik rule engine + altı durum ve kanıt | `rules/base.py`, `rules/engine.py` | **KISMI / MEVCUT_KOD — sentetik CI** | PASS/FAIL/REVIEW/INSUFFICIENT/NA/ERROR; hesap izi | (5) / eski 006 |
@@ -27,10 +27,10 @@
 | F17 | JSON/Markdown/HTML/PDF rapor | `reports/models.py`, `reports/builder.py`, `reports/exporter.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Ölçüm ve kaynak iki yönlü izlenebilir; sahte hüküm yok | (8) / eski 009 |
 | F18 | SVG/HTML koordinatlı işaretleme | `reports/visualizer.py` + `reports/exporter.py` + `legal/review_viewer.py` | **KISMI / MEVCUT_KOD — DrawingIR ve mevzuat kaynakları** | Offline, X/Y dönüşümü, hata pinine tıklayınca kaynak | (10) / eski 011 |
 | F19 | Tek kullanıcılı localhost dashboard | `src/mimarllm/app/server.py`, `app/launch.py`, `app/static/` | **KISMI / MEVCUT_KOD — sentetik Linux/Windows CI** | Sadece 127.0.0.1; izinli dosya; CDN yok, upload sınırı | (11) / eski 012 |
-| F20 | Windows `run.bat`, `build_exe.bat`, `mimar.spec` | Root / `scripts/` | PLANLANDI | Sonraki gerçek CLI/dashboard entrypoint ile offline onedir | Sohbet / eski 013 |
-| F21 | Yerel Qwen-VL ile aday sınıflandırma | `vision/vlm.py`, `vision/prompts.py` | PLANLANDI | GGUF + mmproj/Windows ölçümü; 8 GB peak VRAM | (17) / eski 018 |
-| F22 | VLM adayını etiketleme, no-overwrite | `vision/semantic.py` | PLANLANDI | Native/certified kanıt ezilmez; belirsiz REVIEW | (18) / eski 019 |
-| F23 | Çapraz modül benchmark, QA ve CI | `scripts/benchmark_audit.py`, `tests/`, `.github/workflows/` | PLANLANDI | Windows gerçek ölçüm, sentetik baseline, CPU/GPU peak | (19) / eski 020 |
+| F20 | Windows `run.bat`, `build_exe.bat`, `mimar.spec` | Root / `scripts/windows/` | **PLANLANDI — islem_021'e taşındı** | Sonraki gerçek CLI/dashboard entrypoint ile offline onedir | Sohbet / eski 013 |
+| F21 | Yerel GGUF/VLM ile semantik aday | `vision/local_vlm.py`, `vision/grammar.py` (PLAN) | **AR-GE / PLAN — model doğrulanmadı** | GGUF + mmproj/Windows ölçümü; 8 GB peak VRAM | (17) / eski 018 |
+| F22 | VLM adayını etiketleme, no-overwrite | `vision/semantic.py` (PLAN) | **PLAN — native evidence korunur** | Native/certified kanıt ezilmez; belirsiz REVIEW | (18) / eski 019 |
+| F23 | Çapraz modül benchmark, QA ve CI | `benchmarks/` (PLAN), `tests/`, `.github/workflows/` (MEVCUT sentetik) | **KISMI — sentetik CI mevcut, gerçek benchmark PLAN** | Windows gerçek ölçüm, sentetik baseline, CPU/GPU peak | (19) / eski 020 |
 | F24 | Dürüst README, kurulum ve işletim kılavuzu | `README.md`, `docs/` | KISMI | Gerçek özellik durumu, bağımlılık/kurulum ve lisans gerçeği | (20) |
 
 **Eksik olarak bırakılmayacak iki denetim:** yapısal kaynak RAG'de *taranan özgün mevzuat sayfası ve satır/blok/quad* gösterimi; çizimde *ölçümün gerçek source entity/geometriye dönmesi*. Her ikisi de hukuken ve teknik olarak sahici kanıt için gereklidir.
@@ -148,3 +148,34 @@ Her yeni `docs/islem_NNN.md` dosyasında Fxx kimlikleri korunur. Kod + sentetik 
 **Güven kapıları:** İstemci localhost-only, Host/Origin/CSRF, dosya uzantı/MB/JSON boyutu ve rastgele kaynak klasörü, allowlist dosya okuma, SHA kaynak/rapor bağları, CSP/HTML escaping, hiç dış CDN/API yok. Bu korumalar **yerel bilgisayarın diğer yetkili process'leri için tam kimlik yetkilendirmesi değildir**; gerçek sızma testi/Windows Edge kullanıcı kabulü açık. `PARTIAL_WITH_ERRORS` uygunluk sonucu gösterilmez, `RuleEngine.REGULATORY=INSUFFICIENT_EVIDENCE`.
 
 **Açık:** F20 gerçek Windows onedir/wheelhouse/installer paketleme, SBOM, test kullanıcı dosyaları, kurum resmî RG yetki/yürürlük kanıtı ve F08–F12 HUKUKI_HOLD. [İşlem 019](islem_019.md) · [Şartname](specs/dashboard-v0.1.md).
+
+
+## İşlem 020 — Yeni ARCH-CORE Local özellik ID'leri (F25–F37)
+
+Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan modül/kabul sözleşmesidir**; sıfırdan yazılan dosya olarak GitHub'da henüz bulunmaz.
+
+| Kimlik | Yeni hedef | Kanonik hedef dosya | Gerçek durum | Emniyet/başarı kapısı | Planlanan işlem |
+| --- | --- | --- | --- | --- | --- |
+| F25 | Kirli CAD için ray/snap/virtual gap bridge *aday katmanı* | `geometry/repair.py` | **PLAN** | orijinal entity/handle ve source polygon değişmez; önerilen köprü PASS değil | 022 |
+| F26 | Dimension/door histogramı, birim hipotezi | `core/calibration_candidates.py` | **PLAN** | `INFERRED` ≠ `CONFIRMED`; yanlış fiziksel metreye hukuki sonuç yok | 022 |
+| F27 | Layer0, HATCH/ARC duvar/kolon/kapı heuristik adayı | `geometry/heuristics.py` | **PLAN** | güven/provenance/false-positive, sınıf otomatik kesinleştirilmez | 022 |
+| F28 | A0/A1 tiled/ROI OCR ve sayfa quad geri dönüşümü | `ocr/tiled_regions.py` | **PLAN** | kaynak PDF page/rotation/crop ve bounded memory | 023 |
+| F29 | Mimari jargon/eş anlam sorgu genişletmesi | `rag/synonyms.py` + lisanslı yerel sözlük | **PLAN** | FTS5 baseline'a karşı Recall@k; madde–fıkra karışma yok | 024 |
+| F30 | Gömülü SQLite WAL analiz geçmişi/cache/retention | `storage/workspace.py` | **PLAN** | kaynak SHA ve proje izolasyonu, özel veri Git'e yok | 024 |
+| F31 | Kaynaklı canlı stage/progress SSE, task budget ve UI genişlemesi | `app/jobs.py` + `app/static/*` | **PLAN** | loopback, request bounds, iş iptali, fallback polling | 025 |
+| F32 | 2.5D kütle extrude, Three.js sahne ve kaynak-pin | `geometry/massing.py` + `app/static/scene3d.js` | **PLAN** | onaylı polygon, açık yükseklik, kaynak coordinates; yürürlük/yangın 3D tahmini yok | 026 |
+| F33 | Yerel GGUF, multimodal mmproj, gramer, VRAM ön denetimi | `vision/local_vlm.py`, `vision/grammar.py` | **AR-GE/PLAN** | 8 GB Windows gerçek ölçüm, model lisansı, schema/output QA | 027 |
+| F34 | 8 boyutlu deterministik pedagojik rubrik | `rubric/ontology.py`, `rubric/grading.py` | **PLAN** | uzman kriterleri ve ağırlıkları; model sayısal notu belirleyemez | 028 |
+| F35 | Sıralı jüri karakter/persona/21D ton kritiği | `jury/{schema,personas,runner}.py` | **PLAN** | aynı model çok perspektif = gerçek uzman konsensüsü değildir | 029 |
+| F36 | Öğrenci trend/geri bildirim/izinli geçmiş | `analytics/{trend,feedback}.py` | **PLAN** | consent, anonimlik, örneklem ve istatistik belirsizliği | 030 |
+| F37 | 2209-A benchmark ve gerçek Windows/GPU/uzman kabul | `benchmarks/` | **PLAN** | kappa/ICC, SUS, CER, Recall, IoU, FPS, VRAM p95 ölçülerek raporlanır | 031 |
+
+### Kaynak metinlerde var ama ürün olarak onaylanmamış iddialar
+
+- `polygon %94+`, `Recall@10 %90`, `300ms`, `60 FPS`, `0 VRAM OOM`, `5 persona 15–25s`: **kanıtlanmış gerçek değer değil**, deneysel hedef/adayı. Bu sayılar README'de gerçekleşmiş gibi sunulamaz.
+- `tr_imar/tr_yangin/tr_otopark/tr_siginak/tr_bep/TS` sayısal eşikleri **kaynak PDF yayın sürümü + değişiklik/istisna + proje konum/tarih + bağımsız hukukî onay** olmadan çalışır REGULATORY kontrol olamaz. **F08–F12 HUKUKI_HOLD**.
+- `10 jüri`, `15 mimar`, `21 boyut ton`, `8 boyut rubrik` akademik ürün hedefleridir; gerçek bağımsız jüriler, onaylı not algoritması veya pedagojik geçerlilik **şimdi mevcut değildir**.
+- "100% permissive dependencies" genişletilmiş pakette transitif/native/model/telif onayı tamamlanmadan söylenmez.
+- Bulut sağlayıcı, çoklu Docker DB ve farklı Python codebase mimarisi **plan dışı**. ARCH-CORE özellikleri birinci sınıf ayrı repo/ikinci \`DrawingIR\` değil, mevcut `src/mimarllm/` modülleri olarak tasarlanır.
+
+**Tam kaynak:** [020 master mimari](master-mimari-arch-core-local.md) · [risk matrisi](risk-ve-dogrulama-matrisi.md) · [yeni işlem sırası](uygulama-yol-haritasi.md).
