@@ -49,6 +49,11 @@ data/private/
 *.db-wal
 *.db-shm
 
+# Offline Windows distribution caches and unsigned inventory
+wheelhouse/
+wheelhouse-manifest.json
+MimarLLM_V2.manifest.json
+
 # Locally downloaded model weights and caches
 models/
 model_cache/
