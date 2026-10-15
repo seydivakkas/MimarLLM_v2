@@ -8,60 +8,66 @@
 
 Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU geometri/topoloji/kural, yerel RAG (SQLite FTS5 ve CPU embeddings); yerel VLM yalnız semantik aday ve GPU bütçesi içinde. PDF/OCR: `pdfplumber + pypdfium2 + RapidOCR(onnxruntime CPU)`. Teknik ve hukukî kanıt ayrı doğrulanır.
 
-## 2. Paket ve kayıt sırası
+## 2. Güncel işlem takvimi — 2026-10-15 yeniden baz çizimi
 
-| GitHub işlem kaydı | Geliştirme hedefi | Özellik ID | Bağımlılık | Çalışma kabulü |
-| --- | --- | --- | --- | --- |
-| islem_001–005 | Başlangıç, kapsam, RAG tasarım, OCR/PDF ilk gerçek kod | F03/F04 (kısmi) | — | Tarihsel kayıt korunur |
-| **islem_006** | Bu kapsam/öncelik/uygunluk konsolidasyonu | F01–F24 | Önceki 001–005 | Dürüst feature envanteri |
-| **islem_007** | DrawingIR v0.1 + birim/kalibrasyon/source mapping | F01 | Mevcut modeller | 2 koordinat sisteminde girdi doğruluğu |
-| islem_008 | DXF + layer/blok/nested INSERT | F02 | 007 | CAD handle/transforms geri izlenir |
-| islem_009 | PDF native/ROI/rotasyon + OCR layout entegrasyonu | F03/F04 | 007/008 | Kaynak poligonları / CPU OCR doğrulama |
-| islem_010 | Geometri oda, iç duvar ve net/brüt alan | F05 | 007/008 | Sentetik iki oda + scale unknown |
-| islem_011 | Mekânsal topoloji/erişilebilirlik | F06 | 010 | Gerçek kapı/geçit grafı; dışa çıkış sınıfı |
-| islem_012 | Kural motoru + durumlar + güvenilir kural kaydı | F07 | 010/011 | Kaynak eksikliğinde hukukî PASS yok |
-| islem_013 | Yerel mevzuat ETL + LegalAST + PDF span/source index | F13 | 009 | Özgün kaynak ve değişiklik zinciri |
-| islem_014 | FTS5/dense/RRF + source spans ile RAG sonuçları | F14 | 012/013 | PDF SHA/page/quad ve BM25/RRF; semantic benchmark HOLD |
-| islem_015 | Yerel özgün PDF SHA ve polygon denetimi + hukuki değişiklik/proje applicability bağlayıcısı | F15 | 012/013/014 | Source consistency + RuleEngine REGULATORY HOLD |
-| islem_016 | Özgün PDF görsel vurgulu kaynak inceleme ve tarihsel sürüm kıyas iş akışı | F15 ve F18 mevzuat alt küme | 013–015 | Source SHA, sayfa, quad, imzasız reviewer; hukukî HOLD |
-| islem_017 | Rapor, çizim işaretleme + bulgudan belge sayfasına geçiş | F17/F18 | 014–016 | İki kaynak bbox doğrulama |
-| islem_018 | Yerel DXF/PDF → DrawingIR → Shapely/NetworkX/RuleEngine → rapor pipeline + CLI | F16 | 017 | Kaynak SHA/frame, user-confirmed physical scale, stage manifest; F19 ayrı |
-| islem_019 | FastAPI localhost F19 Türkçe proje yükle/analiz et/kanıt gezgini | F19 | 018 | Yalnız 127.0.0.1, kaynak SHA, CSRF/Host/Origin, sentetik Linux/Windows CI |
-| islem_020 | Windows-first offline dashboard/CLI onedir, yerel başlatma, wheelhouse ve SBOM | F20 | 018/019 | PyInstaller smoke, paket lisansları, gerçek Windows kabul HOLD |
-| islem_021 | Yerel VLM aday semantiği, deterministik kaynak üzerine yazmaz | F21/F22 | 009/010/019 | GPU 8 GB VRAM benchmark, CPU fallback HOLD |
-| islem_022 | Çapraz modül gerçek çizim benchmark ve bağımsız Windows kabulü | F23/F24 | Tüm gerekli paketler | PASS/HOLD matrisleri |
+**Kanonik kapsam:** [ARCH-CORE Local master mimari](master-mimari-arch-core-local.md). **Risk/kalite:** [B planları](risk-ve-dogrulama-matrisi.md). **Durumlar:** MEVCUT KOD / KISMI / PLAN / HUKUKI_HOLD / AR-GE, “tüm sistem tamam” anlamına gelmez. Gerçek işlem numarası yeni GitHub kaydı açıldığı zaman geçerlidir.
 
-**Önemli:** Bu ilerideki `islem_007…021` adları yalnız **planlanan sıra**, dosyalar henüz oluşturulmamıştır. Bir işlemin kapsamı değişirse yeni karar kaydı güncellenir, geçmiş numaralar yeniden kullanılmaz. İş paketleri gerçek uygulama modülüne göre bölünebilir; otomatik olarak tamamlandı kabul edilmez.
+| GitHub kayıt | İşlev / modül | Durum / bağımlılık | Kesin kabul sınırlaması |
+| --- | --- | --- | --- |
+| `islem_001–006` | ilk kapsam, offline mimari, PDF/OCR kararları | TARİHSEL / KAPALI | özgün kayıtlar değişmez |
+| `islem_007–009` | DrawingIR + birimler + DXF/PDF/OCR source bağlantısı | KODLANDI/KISMI | native handle, page, quad, SHA; gerçek saha HOLD |
+| `islem_010–012` | Shapely, NetworkX, RuleEngine | KODLANDI/KISMI | unclassified face, reviewed passage; hukukî PASS yok |
+| `islem_013–016` | LegalAST, FTS5+RRF, hukukî source/version HOLD, PDF review | KODLANDI/KISMI | resmî yürürlük ve etkili sürüm HOLD |
+| `islem_017–019` | kaynaklı HTML/JSON/MD/PDF, CLI pipeline, localhost dashboard | KODLANDI/KISMI | İşlem 019 CI Linux/Windows 295 PASS; gerçek kullanıcı cihazı HOLD |
+| **`islem_020`** | **Bu yeniden mimari ve ARCH-CORE Local geliştirme planı** | **DOKÜMAN KARARI** | Kod/jüri/3D/modeller eklenmiş sayılmaz |
+| `islem_021` | Windows-first offline wheelhouse/onedir, başlatıcı, SBOM | PLAN, 019/020 | paketi gerçek Windows'ta açma/kullanıcı kabulü en sonda |
+| `islem_022` | Kirli CAD kaynak-koruyan repair-overlay; unit hypothesis; Layer0 heuristik | PLAN, 007–011 | önerilen geometri/orijinal entity ayrılır; SI onayı yok |
+| `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet, source transforms | PLAN, 009/022 | memory budget, PDF source quad; OCR accuracy test finalde |
+| `islem_024` | Mimari synonym FTS5 sorgu genişletmesi + gömülü workspace cache | PLAN, 013–015/019 | RAG sıralaması kanunî onay değil; SQLite kaynak izolasyonu |
+| `islem_025` | Dashboard 2D edit/katman kanıtı, bounded job queue + SSE/polling | PLAN, 019/024 | olaylar kaynak SHA/frame/runcase ile bağlı, localhost-only |
+| `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | PLAN, 022/025 | organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
+| `islem_027` | Yerel GGUF/MMProj VLM, VRAM profiler, structured response/no-overwrite | AR-GE, 023/025 | model Windows/8GB ölçümü, GPU fallback gerçek QA |
+| `islem_028` | Sekiz boyutlu rubrik ontolojisi/weight/supervisor, score-in-code | PLAN, 017/027 bağımsız GPU modu | uzman onaylı kriter yoksa otomatik gerçek not yok |
+| `islem_029` | Sıralı pedagojik jüri/persona/ton (isteğe bağlı) | PLAN, 027/028 | çok metinsel persona = bağımsız uzman oyu değildir |
+| `islem_030` | Öğrenci analitiği, trend, izinli geçmiş ve radar rapor (isteğe bağlı) | PLAN, 028/029 | onam, küçük örneklem belirsizliği, kimlik/gizlilik |
+| `islem_031` | Özellikler bittikten sonra bağımsız benchmark, gerçek Windows/GPU, kullanıcı/uzman ve 2209-A değerlendirme | PLAN, gerekli tüm iş paketleri | kappa/Recall/FPS/süre hedefleri ölçülmedikçe başarım vaadi yok |
+| ayrı hukukî kapı | Gerçek kaynaktan madde/fıkra, değişiklik/yürürlük konsolidasyonu, projeye uygulanabilirlik ve uzman onayı | **F08–F12 HUKUKI_HOLD** | onaysız kural threshold ve "uygunluk sertifikası" yok |
 
-## 3. Öncelik ve ilk çalışan ürün
+**İşlem 020 sadece plan ve doküman revizyonudur.** Önceki planın `islem_020` Windows paketleme hedefi, kullanıcı tarafından sağlanan yeni kapsam nedeniyle `islem_021`'e; önceki `islem_021` VLM odağı `islem_027`'ye; eski `islem_022` benchmark hedefi son kabul `islem_031`'e taşındı. Bu yer değiştirme **geçmiş işlem dosyası yeniden numaralandırması değildir**.
+
+## 3. Mühendislik paketlerine göre teslim sırası
+
+**Çekirdek P0 (kısmi çalışan):** Kaynak-bağlı DXF/PDF ve raporlar, CLI, tek kullanıcı localhost ekran. **P1:** paketleme ve kirli CAD/kalibrasyon/OCR kalitesi. **P2:** RAG terminoloji ve yerel kalıcı veri + kaynaklı UI. **P3 (isteğe bağlı):** kanıtlı 2.5D önizleme. **P4 (AR-GE):** yerel VLM strict schema; **P5 (eğitim genişlemesi):** rubrik/jüri/analitik. **P6:** gerçek benchmark/saha/Windows/GPU bilimsel son kabul.
 
 ```text
-DrawingIR -> DXF -> Geometri -> Topoloji -> kural çerçevesi
-  -> minimal geometrik bulgu + koordinatlı JSON/HTML
-  -> mevzuat LegalAST + kaynak bbox
-  -> FTS5/dense retrieval -> hukuken onaylı rule bindings
-  -> beş mevzuat ailesi (onaylı alt kapsam)
-  -> web UI / rapor / offline Windows paket
-  -> opsiyonel VLM -> gerçek donanım benchmark
+Mevcut deterministik V2 [MEVCUT KOD / KISMI]
+    |
+    v
+Windows dağıtım + kirli CAD, ölçek, PDF kalite kapıları [PLAN]
+    |
+    v
+Kaynaklı gözlem/RAG terminoloji + local UI [PLAN]
+    |
+    +----> 2.5D, yerel VLM semantik aday [PLAN / AR-GE]
+                 |
+                 +----> rubrik, pedagojik jüri, eğitim analitiği [PLAN]
+    |
+    v
+Gerçek cihaz + resmî kaynak + eğitim uzmanı + 2209-A kabul [BAĞIMSIZ]
 ```
 
-Mevzuat kural modülü hukukî doğrulama beklese bile geometri ve çizim kalite kontrolü ilk kullanılabilir ürünü oluşturmalı. Aynı anda hem AI hem hukukî danışman hem tam proje sertifikasyonu hedeflenmez.
+## 4. Değişmeyen fail-closed sözleşmeler
 
-## 4. Mühendislik düzeltmeleri ve kabul
+- DXF `$INSUNITS`/dimension/door histogramı **INFERRED**; orijinal CAD/PDF koordinatları yerinde, SI yalnız açık doğrulanmış referansla.
+- Virtual door bridging ve toleranslı snap **repair overlay**; orijinal çizimde sessiz değişiklik ve kendiliğinden certified room/net-brut alan yok.
+- Reviewed NetworkX geçidi yangın **yürüme mesafesi** değildir. Kat/çıkış/yol engelleri, bina profili ve hükmün doğru sürümü olmadan mevzuat iddiası yok.
+- VLM/persona daima çekirdek teknik ve hukukî kanıt üzerinde **yorum/adayı**; kesin sayı/alan/kapı/medeni norm hükmü üretemez.
+- Model/MMProj/lisans/VRAM/CUDA gerçek Windows ölçümü olmadan Qwen/başka model default seçim ya da performans garantisi yok.
+- Gerçek müşteri, uzman, mevzuat onayı ve Windows kabul **son aşamada**; sentetik CI her modülde sürer, güvenlik/hukukî HOLD hiçbir anda kalkmaz.
 
-- Net alan: gerçekten iç yüz sınırı çıkarılmalı; CAD duvar çizgileri otomatik net sınır değildir.
-- Egress: oda merkezleri arasındaki Öklid uzaklığı doğrudan kaçış mesafesi sayılmaz; yürünebilir serbest alan, alternatif çıkış, çıkmaz kol, kat ve erişim geometrisi gerekir.
-- Yanlış oda sınırı: polygonize sliver/outer yüz false-positive analizi; kalibrasyonsuz alan `INSUFFICIENT_EVIDENCE`.
-- Yangın: sürümlü Ek-5/B, kullanım/kişi yükü, sprinkler ve proje tarihine göre eşik seçimi.
-- Mevzuat: exact source identity + tarihler + mahal / yapı profili, istisnalar; RAG yalnız candidate.
-- VLM: `mmproj` / quantization / context/lisans/VRAM ve Windows GPU ölçülmeden varsayılan model yok.
-- Windows: bağımlılık kuran `run.bat` için ilk kurulumda internet/yerel wheelhouse gereksinimi dürüstçe gösterilecek; tamamen offline dağıtım için wheelhouse veya onedir paket.
-- Test statüleri: yerel sentetik sonuç, CI, gerçek Windows kabul ve bağımsız mevzuat incelemesi **ayrı**.
+## 5. Tarihsel geliştirme notları (İşlem 007–019)
 
-## 5. Sıradaki somut başlangıç
-
-**İşlem 007:** `DrawingIR`, kalibrasyon ve kural/kanıt sözleşmelerinin kodu ve sentetik fixture testleri. Ürün baştan sona “varmış gibi” gösterilmeden bu temel kullanılarak DXF katmanına geçilecek.
-
+Aşağıdaki notlar tarihsel olarak bırakılmıştır; içlerindeki “bir sonraki işlem henüz yapılmadı”, “ilk çalışan modül yok” gibi geçmiş zamanlı ifadeler **bugünkü durum değildir**. Güncel kod gerçeği, İşlem 019 kapanış kaydı, bu 020 master ve yukarıdaki yeniden baz çizimidir.
 
 ## İşlem 007 yürütme notu (2026-10-13)
 
