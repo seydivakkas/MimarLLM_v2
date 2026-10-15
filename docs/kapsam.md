@@ -1,4 +1,20 @@
-# MimarLLM V2 — Ürün Kapsamı v0.2
+# MimarLLM V2 — Ürün Kapsamı v0.3 (İşlem 020 Yeniden Baz)
+
+> **Güncel üst karar (2026-10-15):** [MimarLLM V2 × ARCH-CORE Local Master Mimari](master-mimari-arch-core-local.md). İşlem 002–003'teki ilk ürünün teknik analiz çekirdeği **korunur**; aşağıdaki tarihsel “Pedagojik jüri/LMS kesin kapsam dışı” kararı **ilk çekirdek sürüm** için hâlâ geçerlidir. Kullanıcının üç ARCH-CORE taslak belgesi üzerinden **gelecekteki opsiyonel Eğitim/3D ürün eklentisi** yeniden planlandı, henüz kodlanmış/bağlayıcı bir müşteri taahhüdü değildir.
+
+## 2026-10-15 revize edilmiş ürün sınırı
+
+**Birincil ürün — Engineering Core (mevcut kısmi uygulama):** `src/mimarllm/core`, `importers`, `geometry`, `rules`, `legal`, `rag`, `reports`, `pipeline.py`, `cli.py` ve `app` çalışır kaynaklı çekirdek. İşlem 019 son sentetik CI Ubuntu/Windows 295 PASS; gerçek müşteri cihazı, gerçek mimari pafta doğruluğu, tarihsel mevzuat geçerliliği ayrı HOLD.
+
+**İleri ürün — ARCH-CORE Studio/Education (plan adayı):** Yanında 2.5D sahne, istemli yerel GPU VLM semantik aday, 8B rubrik, seri pedagojik yorum personeleri ve isteğe bağlı öğrenci analitiği; ilk çekirdeğin import/RuleEngine doğruluk ve hukukî kapılarını değiştirmez, müşteriye zorunlu bağımlılık yüklemez. LMS/çok kullanıcılı sınıf portalı, ayrı teacher/student auth, sınıf yönetimi **yine ürün çekirdeği kapsamında değildir**; gerekiyorsa sonradan bağımsız onam, güvenlik ve kaynak planı gerektirir.
+
+**Kaldırılmayan yasaklar:** Hiç ücretli/uzak LLM API, ikinci paralel Python platformu, tüm DXF/PDF koordinatlarını sessiz SI'ye çevirme, VLM metre/alan hesaplatma, sanal kapı köprüsünü gerçek geçit sayma, kaynaksız resmî hukukî PASS, model-kişilik çıktısını insan mimarın gerçek görüşü gibi sunma yoktur.
+
+**Ürün ve bilimsel iddia ayrımı:** Deneysel hedefler (model 3 GB, 300 ms, 60 FPS, kappa, Recall) sonuç değildir. Eğitim dışı mimari analiz ana değer önerisi korunur; bilimsel çalışma metodolojisi ayrıca [risk doğrulama](risk-ve-dogrulama-matrisi.md) ile ölçülecek.
+
+---
+
+
 - **Kapsam kararı:** **KESİN**, 2026-10-12, [İşlem 002](islem_002.md).
 - **Durum:** Yazılım uygulaması başlamadı; kapsam ve teknik tasarım oluşturuldu.
 ## Ürün tanımı
