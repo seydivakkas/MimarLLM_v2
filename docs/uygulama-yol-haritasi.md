@@ -165,3 +165,10 @@ F17/F18 `KISMI/MEVCUT_KOD`; PDF özet HTML'nin görsel etkileşimiyle aynı değ
 F20 için kaynak dosyaları: `run.bat` (hazır yerel ortam), `install_offline.bat` (hash verified wheel cache; `--no-index`), `build_exe.bat`, `mimar.spec` (gerçek F19 dashboard için Windows PyInstaller onedir tarifi), `scripts/windows/build_wheelhouse.ps1` (yalnız bilerek `-AllowNetwork` verilen network hazırlama), `launch_dashboard.py` (LOCALAPPDATA workspace ve `--self-check`), `package_manifest.py` (SHA256 / local distribution metadata / lisans HOLD envanteri). Gerçek exe/temiz Windows kurulum/dağıtım lisans bağımsız kabul **yapılmadı**. Kodun CI'da statik/manifest sözleşmeleri test edilmiş olması Windows binary smoke PASS değildir.
 
 **Sonraki GitHub geliştirme:** `docs/islem_022.md` önce oluşturulmalı; kirli CAD geometrisi *onarım adayı* ve orijinal DrawingIR CAD handle/source frame değişmezliği. Bir sonraki paket üretilmeden önce 021 kayıt kapanışı, CI kanıtı ve kaynak dosya doğrulaması tamamlanacak. ARCH-CORE GPU/2.5D/jüri henüz PLAN/AR-GE.
+
+
+## İşlem 022 uygulama notu (2026-10-16)
+
+`src/mimarllm/geometry/repair.py` ile orijinal `DrawingIR` kaynak SHA/frame/CAD handle/blok yolu üzerinde salt-okunur kısa boşluk sanal köprü, uç snap, duplicate/overlap çizgi `RepairCandidate` katmanı geliştirildi. `geometry/repair_viewer.py` kaynak çizgiyi lacivert, önerileri turuncu kesikli SVG gösterir. Geometri önerisi `RuleEngine`, `TopologyResult`, gerçek `assess_area` veya tek gerçek DrawingIR kaynağına yazılmaz. Belirsiz komşu uç ve bütçe aşımı reddedilir; kapı boşluğu otomatik kapanmaz.
+
+**F25 KISMI/MEVCUT_KOD**, **F26 KISMI** (mevcut header fiziksel birim ipucu, gerçek dimension/door histogramı yok), **F27 KISMI** (Layer0 kaynak adayı, ARC/HATCH semantiği yok). F08–F12 HUKUKI_HOLD ve kullanıcı Windows onedir/Edge gerçek kabulü ayrıca. **Sıradaki kod paketi `islem_023`** A0/A1 tile/ROI OCR; önce `docs/islem_023.md` yeni ilk GitHub yazımı olarak açılacak.
