@@ -1,104 +1,89 @@
-# MimarLLM V2 — Sade Tek Paket Dizin Mimarisi
+# MimarLLM V2 — Güncel Dosya Haritası ve Gelecek Modül Sözleşmeleri
 
-**İşlem:** [islem_006](islem_006.md) · **Durum:** PLANLANAN DİZİN; aşağıdaki modüllerin çoğu henüz oluşturulmadı.
+**Revizyon:** İşlem 020, 2026-10-15 · **Tek gerçek paket:** `src/mimarllm`. [Master mimari](master-mimari-arch-core-local.md) · [Yeni sıra](uygulama-yol-haritasi.md) · [Özellik envanteri](ozellik-envanteri.md).
+
+**Not:** Bu belge önceki İşlem 006'da çıkarılan yalnız plan niteliğindeki ağacı **yeniden baz çizer**. O eski belgede “PLAN” etiketli birden çok dosya (DXF, RuleEngine, LegalAST, RAG, CLI, dashboard vb.) artık GitHub'da **kısmen gerçek kod** olduğundan eski görünüme güvenilmemelidir. Hiçbir İşlem 001–019 tarihsel kayıt dosyası değiştirilmez.
 
 ```text
 MimarLLM_v2/
-├── README.md
-├── pyproject.toml                  # Tek Python bağımlılık kaynağı
-├── .gitignore
-├── run.bat                         # Plan: geliştirici/yerel wheelhouse başlangıç
-├── build_exe.bat                   # Plan: Windows PyInstaller
-├── mimar.spec                      # Plan: onedir standalone
+├── README.md                                 [MEVCUT]
+├── pyproject.toml                            [MEVCUT, tek Python bağımlılık kaynağı]
+├── .github/workflows/core-contracts.yml     [MEVCUT, sentetik Linux/Windows CI]
 ├── docs/
-│   ├── islem_001.md ... islem_006.md    # Mevcut, sıralı gerçek kayıtlar
-│   ├── ozellik-envanteri.md
-│   ├── uygulama-yol-haritasi.md
-│   ├── mevzuat-dogrulama-protokolu.md
-│   ├── planlanan-dosya-yapisi.md
-│   ├── windows-dagitim-plani.md
-│   ├── adr/
-│   │   ├── ADR-002-PDF-Engine-License.md
-│   │   └── ADR-003-Kapsam-Kanit-ve-Kabul-Kapilari.md
-│   └── specs/                       # Henüz yok: alt şemalar
-├── src/
-│   └── mimarllm/                    # TEK mevcut paket adı
-│       ├── __init__.py
-│       ├── core/
-│       │   ├── models.py            # MEVCUT: PDF source observation
-│       │   ├── ir.py                # PLAN: CAD DrawingIR
-│       │   └── units.py             # PLAN: SI kalibrasyon
-│       ├── importers/
-│       │   ├── pdf.py               # MEVCUT: pdfplumber+pypdfium2
-│       │   ├── dxf.py               # PLAN: ezdxf
-│       │   └── layers.py            # PLAN: lexicon/regex aday
-│       ├── ocr/
-│       │   ├── rapid_engine.py      # MEVCUT: CPU RapidOCR adapter
-│       │   ├── text_extractor.py    # PLAN: ROI kalite kapısı
-│       │   ├── layout.py            # PLAN: mahal/kot/antet
-│       │   └── box_utils.py         # PLAN: transform/quad
-│       ├── geometry/
-│       │   ├── spatial.py           # PLAN: room polygon, net/brut
-│       │   ├── walls.py             # PLAN: double-wall ve openings
-│       │   └── topology.py          # PLAN: NetworkX access/egress
-│       ├── regulations/
-│       │   ├── extraction.py        # PLAN: OFFLINE PDF/HTML ETL
-│       │   ├── parser.py            # PLAN: LegalAST
-│       │   ├── store.py             # PLAN: FTS5, indexed versions
-│       │   ├── retrieval.py         # PLAN: dense CPU + RRF
-│       │   ├── versions.py          # PLAN: amendments and validity
-│       │   └── citations.py         # PLAN: original page and quad
-│       ├── rules/
-│       │   ├── base.py              # PLAN: rule contracts
-│       │   ├── engine.py            # PLAN: deterministic checks
-│       │   ├── evidence.py          # PLAN: verified legal binding
-│       │   └── registry/
-│       │       ├── tr_imar.py       # PLAN/HUKUKİ HOLD
-│       │       ├── tr_yangin.py     # PLAN/HUKUKİ HOLD
-│       │       ├── tr_otopark.py    # PLAN/HUKUKİ HOLD
-│       │       ├── tr_siginak.py    # PLAN/HUKUKİ HOLD
-│       │       └── tr_bep.py        # PLAN/HUKUKİ HOLD
-│       ├── evidence/
-│       │   └── findings.py          # PLAN: geometry+legal source chain
-│       ├── reports/
-│       │   ├── exporter.py         # PLAN: JSON/Markdown/HTML/PDF
-│       │   └── visualizer.py       # PLAN: SVG + original PDF highlight
-│       ├── vision/
-│       │   ├── vlm.py              # PLAN: local GGUF/ROI inference
-│       │   ├── semantic.py         # PLAN: non-overwriting predictions
-│       │   └── prompts.py          # PLAN: strict output schema
-│       ├── app/
-│       │   ├── server.py           # PLAN: localhost FastAPI
-│       │   └── static/             # PLAN: no-CDN UI
-│       ├── pipeline.py             # PLAN: staged analysis
-│       └── cli.py                  # PLAN: Python -m mimarllm.cli
-├── scripts/
-│   └── benchmark_audit.py          # PLAN
-└── tests/
-    ├── test_pdf_contract.py         # MEVCUT, sonuç bağımsız teyide muhtaç
-    ├── test_dxf_parser.py           # PLAN
-    ├── test_geometry.py             # PLAN
-    ├── test_topology.py             # PLAN
-    ├── test_rules.py                # PLAN
-    ├── test_rag.py                  # PLAN
-    ├── test_pipeline.py             # PLAN
-    └── fixtures/                    # PLAN: tamamen sentetik/lisanslı
+│   ├── islem_001.md ... islem_020.md         [MEVCUT işlem kayıtları, 020 revizyon]
+│   ├── master-mimari-arch-core-local.md      [YENİ DOKÜMAN]
+│   ├── risk-ve-dogrulama-matrisi.md          [YENİ DOKÜMAN]
+│   ├── ozellik-envanteri.md                  [MEVCUT, 020 revizyon]
+│   ├── uygulama-yol-haritasi.md              [MEVCUT, 020 revizyon]
+│   ├── specs/ ; adr/                         [MEVCUT kaynak/karar belgeleri]
+│   └── planlanan-dosya-yapisi.md             [BU DOSYA]
+├── src/mimarllm/                             [MEVCUT TEK KOD KÖKÜ]
+│   ├── core/
+│   │   ├── ir.py ; units.py                  [MEVCUT]
+│   │   └── calibration_candidates.py         [PLAN: kaynaklı birim hipotezi]
+│   ├── importers/
+│   │   ├── dxf.py ; pdf.py ; pdf_ir.py       [MEVCUT]
+│   │   └── layers.py                        [MEVCUT, layer adından aday]
+│   ├── ocr/
+│   │   ├── rapid_engine.py                  [MEVCUT, CPU OCR adapter]
+│   │   └── tiled_regions.py                 [PLAN: A0/A1 bölgesel tile]
+│   ├── geometry/
+│   │   ├── spatial.py ; walls.py            [MEVCUT, geometri/duvar adayı]
+│   │   ├── topology.py                      [MEVCUT, NetworkX reviewed geçit]
+│   │   ├── repair.py                        [PLAN: virtual gap bridge/snap katmanı]
+│   │   ├── heuristics.py                    [PLAN: Layer0 wall/door candidate]
+│   │   └── massing.py                       [PLAN: kaynak-bağlı 2.5D]
+│   ├── legal/
+│   │   ├── models.py ; extractor.py         [MEVCUT]
+│   │   ├── parser.py ; changes.py ; etl.py [MEVCUT]
+│   │   ├── verification.py ; versions.py    [MEVCUT]
+│   │   ├── applicability.py ; review.py     [MEVCUT]
+│   │   ├── review_viewer.py                [MEVCUT]
+│   │   └── review_ledger.py ; version_workflow.py [MEVCUT]
+│   ├── rag/
+│   │   ├── models.py ; store.py             [MEVCUT, SQLite FTS5]
+│   │   ├── indexer.py ; retriever.py        [MEVCUT, lexical/RRF]
+│   │   ├── embeddings.py                    [MEVCUT, opsiyonel local CPU]
+│   │   └── synonyms.py                     [PLAN: mimari jargon dictionary]
+│   ├── rules/
+│   │   ├── base.py ; engine.py ; evidence.py [MEVCUT, REGULATORY kilitli]
+│   │   └── registry/                        [PLAN / HUKUKI_HOLD: resmî teyitli aileler]
+│   ├── reports/                              [MEVCUT]
+│   │   ├── models.py ; builder.py           [MEVCUT]
+│   │   └── exporter.py ; visualizer.py      [MEVCUT]
+│   ├── pipeline.py ; cli.py                  [MEVCUT]
+│   ├── app/
+│   │   ├── server.py ; launch.py            [MEVCUT, 127.0.0.1]
+│   │   ├── static/index.html                [MEVCUT]
+│   │   ├── static/dashboard.css             [MEVCUT]
+│   │   ├── static/dashboard.js              [MEVCUT]
+│   │   ├── jobs.py                          [PLAN: bounded worker, SSE]
+│   │   └── static/scene3d.js                [PLAN: yerel lisanslı Three.js]
+│   ├── storage/workspace.py                 [PLAN: SQLite WAL source cache/history]
+│   ├── vision/{local_vlm,grammar,semantic}.py [PLAN / AR-GE]
+│   ├── rubric/{ontology,grading}.py         [PLAN, puan kodda]
+│   ├── jury/{schema,personas,runner}.py      [PLAN, sıralı eğitim yorumu]
+│   └── analytics/{trend,feedback}.py        [PLAN, kullanıcı izni]
+├── tests/                                   [MEVCUT, 16 test modülü]
+├── scripts/windows/                         [PLAN, paketleme/wheelhouse/SBOM]
+├── benchmarks/                              [PLAN, gerçek QA/research]
+└── local_data/                              [GIT DIŞI: ham çizimler, modeller, PDF'ler, DB]
 ```
 
-**Gerçek dosya ağacına yeni boş python modülleri oluşturulmayacak.** Her modül ilk kez geliştirildiğinde kendi işlem kaydı ile commit edilir. `src/mimar/` ikinci bir package olarak açılmaz; `src/mimarllm/` sabittir.
+## Açılmaması gereken ikinci kökler
 
-### Git dışı veriler
+- `ARCH-CORE/backend/`, `src/mimar_core/`, `src/arch_jury/`, `src/server/` **aynı işin ikinci Python implementasyonu değildir**: bunların işlevleri yukarıdaki tek `src/mimarllm/` altına aktarılır.
+- React/Next.js 16 veya ayrı Node server, yerel v0.1 dashboard'a zorunlu eklenmez. İleride UI ihtiyaçları ciddi büyürse tek paket içine statik build ve offline dağıtım ile, ayrı ürün kararıyla düşünülebilir.
+- Yeni `legal_rag/`, ikinci `rules/engine`, yeni `src/mimar/schema/drawing_ir` açılmayacak. Çalışan `rag/`, `legal/` ve `core/ir.py` sözleşmeleri korunacak.
+- `models/` içindeki GGUF/MMProj/ONNX, özel projeler, standartlar, SQLite veri ve müşteri/öğrenci kayıtları **public GitHub'a alınmayacak**. Yalnız nasıl temin edileceği lisans ve SHA manifestleriyle tarif edilebilir.
 
-```text
-local_data/
-  projects/              # gerçek müşteri çizimleri
-  regulations/raw/       # özgün ve lisanslı mevzuat PDF/HTML
-  regulations/parsed/    # structural AST
-  regulations/index/     # local FTS5/dense
-  models/                # GGUF / ONNX weights
-  runs/                  # local metrics/temp
-```
+## Planlanan bağımlılık sırası
 
-PDF/original document dosyaları public depoya otomatik kopyalanmaz. Hiçbir fonksiyon internet API'ye bağımlı olmaz.
+1. İşlem 021: Windows offline installer/onedir/wheelhouse/SBOM.
+2. İşlem 022–024: Kirli CAD, Layer0/kalibrasyon adayı, A0 tiled OCR, jargon RAG ve local source cache.
+3. İşlem 025–026: Dashboard gerçek evidence UX, bounded SSE/poll, onaylı 2.5D geometry.
+4. İşlem 027: Opsiyonel yerel VLM/GGUF/GBNF benchmark; kesin ölçüm/kaynak değiştirme **yasak**.
+5. İşlem 028–030: Rubrik/jüri/persona/öğrenci analitiği genişlemesi **opsiyonel, pedagojik geçerlilik HOLD**.
+6. İşlem 031: Gerçek Windows/i7/8GB GPU benchmark, gerçek çizim verileri, eğitim uzmanı, UX, resmî hukuki kayıt/istisna incelemesi son kabul.
 
-**Önemli:** Aşağıdaki `run.bat` ve `.spec` dosyaları bir tasarım hedefidir. Gerçek CLI/app oluşturulmadan paketleme tamamlandı ve hazır masaüstü uygulaması iddiası yoktur.
+Dosyalar **yalnız implementasyon aşamasında** oluşturulmalı; sırf ağaçta var görünmeleri için boş modül açılmamalı. Takvime eklenmiş mevzuat eşikleri hukukî onaydan önce asla etkinleştirilmemelidir.
