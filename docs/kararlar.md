@@ -333,3 +333,20 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-181 | `F20` kısmi kaynak ve sentetik CI kabulü; gerçek Windows exe, installer/MSI, cihaz/Edge ve lisans kabulü final | HOLD |
 
 [İşlem 021](islem_021.md) · [Windows offline paket v0.1](specs/windows-offline-package-v0.1.md).
+
+
+## İşlem 022 — Onarım adayı, Layer0 ve SI ipucu güvenlik kararları (2026-10-16)
+
+| Karar | Sözleşme | Durum |
+| --- | --- | --- |
+| K-182 | `RepairOverlay` `DrawingIR` entity/geometry/handle/block_path/source SHA'yı hiçbir zaman değiştirmez | KODLANDI |
+| K-183 | Sanal köprü/snap, çakışan/duplicate çizgiler yalnız `REVIEW_REQUIRED` ve `VIRTUAL_CANDIDATE`; otomatik oda/net alan yok | KODLANDI |
+| K-184 | Her onarım adayı iki orijinal kaynak entity ve CAD SourceReference taşır, farklı PDF/frame/katman birleştirilmez | KODLANDI |
+| K-185 | Kasıtlı kapı açıklığı olabilecek boşlukta sadece turuncu kesikli overlay; NetworkX/RuleEngine kanıtı olmaz | KODLANDI |
+| K-186 | Çoklu makul endpoint eşleşmesinde seçme yerine `AMBIGUOUS_ENDPOINT_MATCH`; kaynak segment/aday bütçesi fail closed | KODLANDI |
+| K-187 | `$INSUNITS` fiziksel metreye otomatik `CONFIRMED` dönüşmez; gerçek DIMENSION/door histogramı ayrı paket | KISMI |
+| K-188 | Layer0 tek başına WALL/DOOR/COLUMN sınıfını vermez; gerçek ARC/HATCH incelemesi ayrı | KISMI |
+| K-189 | Onarım SVG yalnız kullanıcı için kaynak-vs-sanal aday görünümü; asıl CAD plot/Windows kullanıcı görsel kabulü henüz yok | KISMI |
+| K-190 | Gerçek saha CAD, fiziksel ölçüm, onaylı Resmî Gazete kaynak zinciri ve ticari Windows yeniden dağıtım kabulü | HOLD |
+
+[İşlem 022](islem_022.md) · [Onarım overlay v0.1](specs/source-preserving-repair-v0.1.md).
