@@ -1,6 +1,6 @@
 # MimarLLM V2 × ARCH-CORE Local — Birleştirilmiş Master Mimari v1.0
 
-**Durum:** 2026-10-15 güncel mühendislik planı; yeni özelliklerin çoğu PLAN. **Kayıt:** [İşlem 020](islem_020.md). **Rota:** [güncel yol haritası](uygulama-yol-haritasi.md). **Risk:** [risk ve doğrulama](risk-ve-dogrulama-matrisi.md).
+**Durum:** 2026-10-15 güncel mühendislik planı; yeni özelliklerin çoğu PLAN. **Kayıt:** [İşlem 020](islem_020.md). **Karar:** [ADR-004](adr/ADR-004-ARCH-CORE-Local-Kapsam-Genislemesi.md). **Rota:** [güncel yol haritası](uygulama-yol-haritasi.md). **Risk:** [risk ve doğrulama](risk-ve-dogrulama-matrisi.md). **2209-A:** [araştırma iş paketleri](tubitak-2209a-is-paketleri.md).
 
 Bu belge, kullanıcının üç metnindeki (ARCH-CORE yerel birleşim, yedi teknik darboğaz, önerilen dizin mimarisi) hedefleri **İşlem 001–019 sonunda gerçek GitHub ağacındaki kodla** karşılaştırır. Metinlerdeki tahminî benchmark süreleri ve önerilen dosyalar uygulanmış kod sayılmaz.
 
