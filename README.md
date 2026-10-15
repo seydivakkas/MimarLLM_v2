@@ -1,189 +1,76 @@
-# MimarLLM V2
+# MimarLLM V2 — Offline Mimari Analiz Çekirdeği
 
-**Amaç:** Tek Windows bilgisayarında çalışan, mimari DXF/PDF paftalarını ölçüm, geometri, topoloji ve mevzuat kaynağı açısından denetlemeye yönelik yerel yazılım.
+**ARCH-CORE Local gelecek planı:** Aynı `src/mimarllm/` modüler monoliti üstüne kaynaklı 2.5D, yerel VLM, pedagojik rubrik ve sıralı jüri yorumlarının isteğe bağlı eklenmesi. **Bu ileri-sürüm özellikleri henüz gerçek kodda yoktur.** [Birleştirilmiş master mimari](docs/master-mimari-arch-core-local.md) · [Güncel gelişim sırası](docs/uygulama-yol-haritasi.md).
 
-**Donanım:** Intel i7 14. nesil, 32 GB RAM, RTX 4070 8 GB VRAM. Yapay zekâ çıkarımı yerel, harici AI API'si yok.
+**Çalışma ilkesi:** Windows-first, tek bilgisayar, internet/harici ücretli AI API/token gerektirmeyen runtime. Hedef i7 14. nesil, 32 GB RAM, RTX 4070 8 GB. **Gerçek Windows 10/11/Edge kullanıcı kabulü, tamamen offline installer ve gerçek hukukî uygunluk onayı henüz tamamlanmadı.**
 
-## Kesin PDF / OCR teknolojileri
+## Şu anda GitHub'da bulunan gerçek yetenekler
 
-| İş | Yerel bileşen |
+| Bileşen | Mevcut Python kodu | Statü |
+| --- | --- | --- |
+| DXF/PDF kaynaklı içe aktarma | `src/mimarllm/importers/dxf.py`, `pdf.py`, `pdf_ir.py` | KISMI / sentetik CI |
+| Orijinal koordinat, CAD handle, kaynak SHA, birim ve kalibrasyon | `src/mimarllm/core/ir.py`, `units.py` | KISMI / sentetik CI |
+| Shapely kesişim, kapalı yüz ve duvar adayı | `src/mimarllm/geometry/spatial.py`, `walls.py` | KISMI / gerçek oda semantiği REVIEW |
+| NetworkX mekan/geçiş çizgesi | `src/mimarllm/geometry/topology.py` | KISMI / sadece kaynaklı insan incelemesi |
+| Teknik RuleEngine | `src/mimarllm/rules/engine.py`, `base.py` | KISMI / teknik örnekler; hukuki PASS yok |
+| LegalAST, PDF kaynak ve inceleme kaydı | `src/mimarllm/legal/` | KISMI / özgün yerel PDF SHA/page/quad; hukukî geçerlilik HOLD |
+| SQLite FTS5 BM25 / opsiyonel local CPU dense / RRF | `src/mimarllm/rag/` | KISMI / gerçek RG corpus kalite kabulü bekliyor |
+| Kaynaklı SVG/HTML/JSON/Markdown/PDF özet | `src/mimarllm/reports/` | KISMI / PDF özet HTML ile aynı görsellikte değil |
+| Bütünleşik analiz CLI | `src/mimarllm/pipeline.py`, `cli.py` | KISMI / aşama manifesti, teknik hata ve kullanıcı referansı |
+| Tek kullanıcılı localhost Türkçe dashboard | `src/mimarllm/app/server.py`, `launch.py`, `static/` | KISMI / kaynaklı upload, analiz, rapor, kalibrasyon |
+
+**Son kapanmış kod paketi:** [İşlem 019](docs/islem_019.md), GitHub-hosted **Ubuntu 295 PASS, Windows 295 PASS** sentetik test raporu: [CI 38557404737](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38557404737). Bu bir gerçek müşteri cihazında kabul testi, kusursuz otomatik CAD çizim semantiği veya hukukî sertifika değildir.
+
+### PDF ve OCR kesin mimarisi
+
+| İşlev | Seçilen yerel teknoloji |
 | --- | --- |
-| PDF native karakter/çizgi/dikdörtgen/eğri gözlemleri | **pdfplumber** |
-| PDF raster sayfa veya ROI üretimi | **pypdfium2** |
-| Taranmış/eksik metinleri OCR | **RapidOCR + ONNX Runtime CPU** |
+| PDF native metin/vektör | `pdfplumber` |
+| PDF sayfa ve ROI görseli | `pypdfium2` |
+| Taranmış/eksik ROI aday metni | `RapidOCR + onnxruntime CPU` |
+| PDF/DXF kaynak koordinatları | `DrawingIR`, gerçek PDF SHA/page/quad, CAD handle/layout |
 
-**Önce vektör, sonra OCR.** Tamamen seçilebilir PDF metni bile kontur haline gelmiş ölçü, SHX karakter veya taranmış bölge içeriyor olabilir; OCR yalnız gereken bölgeye uygulanır. PDF kaynak koordinatları/sha256 korunur.
+OCR varsayılan otomatik tam sayfa tarama değildir. Çizim yalnız vektör metin içeriyorsa bile SHX/raster bölge ayrı değerlendirilebilir; kaynak ROI ve yeniden kalibrasyon olmadan koordinat/ölçüm kesinliği ilan edilmez. Geniş A0/A1 tiled OCR **yeni geliştirme hedefidir**, uygulanmış kabul değildir.
 
-### Mimari sınırlar
+## Yerel çalıştırma — geliştirici kurulumu
 
-- **Deterministik karar:** OCR ve yerel VLM yalnız aday üretir; fiziksel alan/ölçü ve mevzuat uygunluk kararı doğrulanmış geometrik girdilerden gelir.
-- **Mevzuat RAG:** Yapısal madde/fıkra/bent, tarih, istisna, tablo-hücre ve özgün kaynak sayfası/alanı. Yerel hazırlık ETL; çevrim dışı çalışma.
-- **Kanıt ekranı:** Hata bulunduğu çizim koordinatı ↔ özgün mevzuat sayfası/bounding polygon.
-- **Tek kullanıcılı modüler monolit:** LMS/öğrenci portalı, jüri karakterleri, çoklu AI agent ve dış API çağrısı yok.
-- **Lisans:** Seçilen motorlar izinli ana lisanslara sahip; transitif binary/model/dağıtım lisanslarının son kabulü henüz yapılmadı.
-- **Public depo:** Özel müşteri çizimleri, mevzuat tam metinleri, model ağırlıkları, sırlar ve yerel indeksler Git'e alınmaz.
+**Python 3.11+** ve desteklenen bağımlılıklar gerekir. Aşağıdaki `pip` adımı kurulum aşamasında paketleri çevrimiçi indiriyor olabilir; paket ve wheelhouse önceden yerel diskte tutulmadıkça henüz “tam offline installer” değildir. Uygulamanın tasarlanan çalışma yolu harici AI API kullanmaz.
 
-## Mevcut uygulama durumu (İşlem 005)
+```powershell
+# Kaynak deposu klonlandıktan sonra (Windows PowerShell)
+py -3.11 -m venv .venv
+.venv\Scripts\python.exe -m pip install -e ".[dashboard,reports]"
 
-İlk kod: `src/mimarllm/core/models.py` kaynak aday sözleşmesi, `src/mimarllm/importers/pdf.py` native gözlem/ROI raster, `src/mimarllm/ocr/rapid_engine.py` CPU OCR adaptörü. `pyproject.toml` ve sentetik PDF testleri eklendi.
+# Tek kullanıcı local dashboard; yalnız 127.0.0.1
+.venv\Scripts\python.exe -m mimarllm.app.launch --workspace "C:\MimarLLM\workspace" --port 8765
 
-**Henüz yapılmadı:** DrawingIR'nin tüm CAD nesneleri, DXF parser, OCR gerçek model benchmark'ı, mevzuat indeksleme, hukukî doğrulama, Windows kurulum/benchmark, UI ve offline paket kabulü.
+# Aynı ortamda CLI örneği (output klasörü önceden var olmalı)
+.venv\Scripts\python.exe -m mimarllm.cli analyze "C:\projeler\plan.dxf" --output-dir "C:\projeler\raporlar"
+```
 
-## Belgeler
+Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve `pipeline-manifest.json` örneği, [pipeline kullanım şartnamesinde](docs/specs/pipeline-cli-v0.1.md). Belgeler ve kalibrasyon yalnız kullanıcının yerel kaynak verisi üzerinden çalışır; var olan raporların üzerine yazılmaz.
 
-- [İşlem kayıtları 001–005](docs/islem_005.md)
-- [ADR-002: PDF motoru ve lisans kararı](docs/adr/ADR-002-PDF-Engine-License.md)
-- [Teknik PDF/OCR sözleşmesi](docs/ocr-mimari-pafta.md)
-- [OCR kaynak yönetimi](docs/ocr-ve-bellek.md)
-- [Lisans envanteri](docs/pdf-lisans.md)
-- [Mevzuat RAG](docs/mevzuat-rag.md)
-- [Sistem mimarisi](docs/sistem-mimarisi.md)
-- [Modül ve iş planı](docs/modul-plani.md)
-- [Teknik gereksinimler](docs/teknik-gereksinimler.md)
-- [Kapsam](docs/kapsam.md)
-- [Kararlar](docs/kararlar.md)
+**Geçerlilik sınırı:** `$INSUNITS` bilinmesi `CONFIRMED` ölçek değildir. Gerçek kaynak native çizgi, bilinen metre ve açık inceleme gerekiyor. Oda-yüzeyi adayı ≠ güvenilir net alan; reviewed passage hop ≠ yangın kaçış mesafesi. RAG benzerliği ≠ hukukî doğruluk. `RuleDomain.REGULATORY` değerleri `INSUFFICIENT_EVIDENCE` ve `HUKUKI_HOLD` çerçevesindedir.
 
-Her yeni AI destekli istek **önce** `docs/islem_NNN.md` dosyasına işlenir. Yapılmayan işin durumunu PASS gösterme.
+## ARCH-CORE Local — gelecek modüller (PLAN, henüz kod yok)
 
+- **CAD güvenilirlik iyileştirmesi:** Açık/mükerrer çizgi için kaynak-koruyan onarım önerisi, Layer 0 duvar/kapı/kolon tahmini, birim hipotezi. Sanal çizgi veya histogram sonucu kesin kaynak/ölçü yerine geçmeyecek.
+- **A0/A1 OCR ve mimari dil:** Bounded tiled OCR, kaynak PDF point dönüşümü; Türkçe mimari jargon eşanlamları ve lisanslı mevzuat FTS5 query expansion.
+- **Yerel veri ve stüdyo görünümü:** SQLite WAL analiz geçmişi, sınırlandırılmış arka plan işçisi/SSE, 2D source overlay ve **onaylı 2.5D** Three.js görüntüsü.
+- **Yerel AI ve eğitim:** GPU modeli/MMProj/Windows VRAM ölçülünce opsiyonel GGUF, structured JSON ve no-overwrite semantik aday; 8 boyutlu score-in-code rubrik ve tek modelden sıralı pedagojik yorum/perspektifler; izinli öğrenci analitiği. **Gerçek mimar/öğretim üyesinin değerlendirmesi olarak sunulmaz.**
+- **TÜBİTAK 2209-A bilimsel hedefleri:** Geometri IoU/recall, OCR CER/WER, RAG Recall@10, GPU VRAM/latency, uzman karşılaştırması κ/ICC ve kullanıcı SUS. Bu ölçütler **henüz elde edilmiş sonuç değil, deney taslağıdır**.
 
-## Güncel tam kapsam ve gerçek ilerleme (İşlem 006, 2026-10-13)
+**Yapılmayacaklar:** Bulut tabanlı OpenAI/Gemini/Claude API; mikroservis için zorunlu Qdrant/Neo4j/PostgreSQL/Redis/vLLM; ikinci `src/mimar_core` veya ayrı `ARCH-CORE/backend`; gizli ölçü tahminiyle mevzuat PASS; gerçek mevzuat/TS/kitap metninin telif hakkı olmadan yeniden dağıtımı.
 
-Kullanıcının sağladığı mimari ve kod taslakları V2'nin **hedef özellik envanterine** işlendi: DXF/ölçek, duvar-oda geometri ve net/brüt alan, spatial topology/kaçış, beş mevzuat ailesi, hiyerarşik RAG+FTS5+yerel embedding, kural–özgün kaynak bağlama, yerel RapidOCR ve VLM, rapor/SVG, offline localhost paneli, run.bat / PyInstaller onedir ve Windows benchmark.
+## Aktif dokümantasyon ve işlem kanıtı
 
-**Hedef kapsam ≠ tamamlanmış uygulama.** Mevcut kod PDF/ROI ve OCR adaptörünün başlangıç düzeyindedir. Resmî mevzuata ilişkin eşikler `HUKUKI_HOLD`; kaynak, madde/fıkra, yürürlük ve proje bağlamı doğrulanmadan kesin kural yok. Yerel Windows, OCR model, VLM ve paketleme sonuçları henüz PASS değildir.
+- [İşlem 020 — yeniden yapılandırma ve doğrulama kaydı](docs/islem_020.md)
+- [Master sistem mimarisi](docs/master-mimari-arch-core-local.md)
+- [F01–F37 kapsam/uygulama envanteri](docs/ozellik-envanteri.md)
+- [İşlem 020–031 geliştirme sırası](docs/uygulama-yol-haritasi.md)
+- [Yedi risk + alternatif plan + bilimsel test matrisi](docs/risk-ve-dogrulama-matrisi.md)
+- [Güncel dosya düzeni — mevcut vs plan](docs/planlanan-dosya-yapisi.md)
+- [Kapsam ve hukukî/güvenlik kapıları](docs/kapsam.md)
+- [İşlem 019 localhost dashboard API/tehdit modeli](docs/specs/dashboard-v0.1.md)
 
-- [İşlem 006 — Kapsam birleştirme günlüğü](docs/islem_006.md)
-- [24 maddelik özellik ve durum envanteri](docs/ozellik-envanteri.md)
-- [İşlem 007–021 için bağımlılığa dayalı yol haritası](docs/uygulama-yol-haritasi.md)
-- [Türkiye mevzuatı doğrulama ve özgün PDF kanıt protokolü](docs/mevzuat-dogrulama-protokolu.md)
-- [Sade dizin tasarımı](docs/planlanan-dosya-yapisi.md)
-- [Windows tek tık kurulum ve standalone paketleme kabul planı](docs/windows-dagitim-plani.md)
-- [ADR-003 — Kanıt temelli mimari karar](docs/adr/ADR-003-Kapsam-Kanit-ve-Kabul-Kapilari.md)
-
-**Bir sonraki geliştirme kaydı:** `docs/islem_007.md` (DrawingIR + birimler + doğrulanmış kaynak dönüşümleri). Önce bu kaydı oluştur, sonra kaynak kodu ekle.
-
-## İşlem 007 — DrawingIR çekirdek sözleşmeleri
-
-- [İşlem 007 ve gerçek kabul durumu](docs/islem_007.md)
-- [DrawingIR v0.1 teknik şartnamesi](docs/specs/drawingir-v0.1.md)
-- Kodlanan: `core/units.py` (CAD INSUNITS/reference confirmation, SI ölçek), `core/ir.py` (Pydantic DrawingIR, SourceReference, CoordinateFrame, Transform2D, GeometryPrimitive, DrawingEntity, MeasurementEvidence, Finding).
-- Güvenlik: `UNKNOWN/INFERRED/CONFLICT` durumunda fiziksel ölçüm yasak; kaynak SHA/entity/frame eşleşmesi; onaylı ölçümün fiziksel değeri kalibrasyonla kontrol edilir. Hukukî uyum sertifikasyonu yasak.
-- GitHub Actions sentetik sözleşme testi: [Core contracts](https://github.com/seydivakkas/MimarLLM_v2/actions/workflows/core-contracts.yml).
-- Henüz yok: `ezdxf` DXF parser, duvar/oda topolojisi, gerçek mimari pafta kabulü, Windows/i7/4070 deneyleri. Sıradaki kayıt `islem_008`.
-
-
-## İşlem 008 — Gerçek DXF ayrıştırıcısı (CPU)
-
-`ezdxf` ile gerçek yerel DXF dosyasını açıp `DrawingIR` nesnelerine aktaran ilk motor geliştirildi. Kod: [dxf.py](src/mimarllm/importers/dxf.py) ve [layers.py](src/mimarllm/importers/layers.py).
-
-**Gözlem düzeyi:** LINE, LWPOLYLINE (bulge dahil), ARC, CIRCLE, TEXT, MTEXT, DIMENSION, INSERT ve iç içe INSERT/MINSERT. Orijinal CAD handle, blok örnekleme yolu, layout/frame ve kaynak SHA-256 korunur. Curve/arc geometrileri açıkça yaklaştırılmış poligondur; DIMENSION etiketi otomatik metrik kalibrasyon değildir. `$INSUNITS` yalnız `INFERRED`.
-
-**Kabul:** [islem_008.md](docs/islem_008.md), [DXF teknik şartnamesi](docs/specs/dxf-import-v0.1.md), [GitHub Actions](https://github.com/seydivakkas/MimarLLM_v2/actions/workflows/core-contracts.yml). CI sentetik/geometri sözleşme testini doğrular; Windows gerçek mimari pafta, DWG/XREF çözümleme, DXF geometri semantiği ve mevzuat uygunluğu **HOLD**.
-
-**Sıradaki paket:** islem_009 PDF native/ROI/OCR koordinat entegrasyonu.
-
-
-## İşlem 009 — PDF/OCR → DrawingIR kaynak bütünleştirmesi
-
-- [İşlem kaydı](docs/islem_009.md) · [Teknik şartname](docs/specs/pdf-ocr-drawingir-v0.1.md)
-- **Kod:** `src/mimarllm/importers/pdf_ir.py` PDF native metin, gerçek line/rect, yaklaşık Bezier curve ve açık ROI'den gelen RapidOCR dörtgenini `DrawingIR` ile aynı kaynak PDF SHA-256/page koordinatına bağlar.
-- **Sayfa rotasyonu:** 0° native ROI; 90°/180°/270° bellek sınırı dahilinde tam sayfa render + ROI crop ile tutarlı koordinat. Non-default CropBox + OCR ROI açıkça reddedilir (güvenli fallback).
-- **Offline:** RapidOCR yalnız açıkça sağlanan yerel CPU engine ile çağrılır. Otomatik model indirme veya bulut OCR tetiklenmez. Native PDF/OCR karakterinin gerçek geometrik ölçü veya hukukî `PASS` olduğu iddia edilmez.
-- **Sınırlar:** Native glyph polygon'u eksenlere paralel bbox'dır, gerçek rotated quad değildir; OCR quad tespit alanıdır. SHX/kalite kapısı ve Türkçe/OCR modelin gerçek doğruluğu hâlâ açık. `max_pixels`, hash ve sınırlı ROI kontrolleri uygulanır.
-- **Sonraki işlem:** `islem_010` — Shapely temel oda/duvar çizgi geometri ve net/brüt alan; kaynak/ölçek bilgisi belirsizse sahte fiziksel alan yok.
-
-
-## İşlem 010 — Shapely geometri, yüzey ve duvar aralığı adayları
-
-- [İşlem 010](docs/islem_010.md) · [Shapely teknik şartnamesi](docs/specs/geometry-v0.1.md)
-- **Kod:** `src/mimarllm/geometry/spatial.py`, `walls.py`; `DrawingIR` üzerinden source-hash/frame/entity ID korunarak polygonization (noding, intersections), kapalı yüzey adayları, açık/çakışan çizgi diagnostikleri ve paralel çizgiler arası duvar aralığı **adayları** üretilir.
-- **Net/brüt ayrımı:** `assess_area` ancak ayrı seçilip gözden geçirilmiş **iç oda sınırı** (`INTERIOR_ROOM`) veya **bina dış zarfı footprint'i** (`EXTERIOR_ENVELOPE`) tek ve çelişkisiz kapalı yüzeyse, ayrıca aynı coordinate frame için `CONFIRMED` metre dönüşümü varsa fiziksel m² hesaplar. `EXTERIOR_FOOTPRINT_M2` tüm katların yasal brüt alanı değildir.
-- **Güven:** Otomatik çizgi kapanması, snap, çizgi katmanı veya paralel boşluk kesin oda/duvar kanıtı sayılmaz. Desteklenmeyen/eksik/çakışan kaynak seçimi `REVIEW_REQUIRED`, ölçek onaysızsa `INSUFFICIENT_EVIDENCE`. Her yüzey baştan `UNCLASSIFIED_FACE`; mevzuat/yangın `PASS` yok.
-- **Kapsamı açık:** Gerçek katmanlardan duvar iç-dış yüzü çıkarma, açılmış kapı/pencere hatları, oda-topoloji geçiş grafı, hakiki saha çizimleri ve yerel RTX 4070 Windows kabulü henüz yapılmadı. GitHub-hosted Windows sentetik CI ayrı kanıttır.
-- **Sıradaki işlem:** `docs/islem_011.md` — gerçek kapı/açık geçiş/oda ilişki kanıtı ile NetworkX spatial adjacency graph; yangın yürüme ağı ayrıca.
-
-
-## İşlem 011 — İncelenmiş mekânsal geçiş topolojisi (NetworkX)
-
-- [İşlem 011 uygulama ve CI](docs/islem_011.md) · [Topoloji v0.1 sözleşmesi](docs/specs/topology-v0.1.md)
-- **Kodlandı:** `src/mimarllm/geometry/topology.py`; `SpaceReview` ile `ROOM/CORRIDOR/BALCONY/STAIR/LANDING` yüzey incelemeleri, `PassageReview` ile `DOOR/ARCHWAY/OPEN_PASSAGE/EXTERIOR_DOOR` geçiş beyanları, kaynak `DrawingIR` ile **yeniden doğrulanmış** Shapely yüzey sınırı ve native kapı marker referansı, NetworkX `MultiGraph`.
-- **İşlevler:** Bağlı bileşenler, en az *geçiş sayısına* göre olası bağlantı yolları, articulation node/bridge edge analizi, dış düğüme doğrulanmış ilişki ve kanıtı bulunmayan mekânlar, kaynak SHA/face/marker ID.
-- **Yanlış PASS yok:** Katman adları, OCR metni, oda merkezleri veya duvarda kesintisiz çizgi **otomatik kapı oluşturmaz**. Reviewer kimliği yalnız istemci beyanıdır; kapıların gerçekten geçilebilir olduğu bu modülde bağımsız doğrulanmaz. Sonuçlar yangın kaçış mesafesi, mevzuat veya metre cinsinden yürüyüş mesafesi değildir.
-- **Açık:** CAD'den otomatik kapı açıklığı ve net geçiş doğrulaması, kapı yönü, katlar arası merdiven/3B yapı, büyük plan performansı, gerçek i7/4070 Windows saha testi.
-- **Sıradaki:** islem_012 kural motoru çerçevesi; herhangi bir hukukî hüküm aktif olmadan önce sürümlü özgün kaynak dayanağı gerekir.
-
-
-## İşlem 012 — Deterministik teknik RuleEngine v0.1
-
-- [İşlem 012 geliştirme kaydı](docs/islem_012.md) · [RuleEngine v0.1 teknik şartnamesi](docs/specs/rule-engine-v0.1.md)
-- **Uygulandı:** `src/mimarllm/rules/base.py` (sürüm/kimlik, metrik ve kanıt şemaları, 6 durum, `LegalSourceLocator`) ile `src/mimarllm/rules/engine.py` (`RuleEngine`).
-- **Teknik metrikler:** DrawingIR'den yeniden ölçülen native `SEGMENT_LENGTH_M`; aynı dosyadan yeniden hesaplanan gözden geçirilmiş `REVIEWED_INTERIOR_AREA_M2` ve `REVIEWED_FOOTPRINT_M2`; Shapely/NetworkX'ten yeniden kurulan `REVIEWED_TOPOLOGY_PATH`.
-- **Karar türleri:** `COMPLIANT`, `NON_COMPLIANT`, `INSUFFICIENT_EVIDENCE`, `REVIEW_REQUIRED`, `NOT_APPLICABLE`, `ERROR`. `COMPLIANT` burada **yalnız senaryoya ait teknik eşik/bağlantı** anlamına gelir, yapının mevzuata uygunluğu değildir.
-- **Hukukî HOLD:** `REGULATORY` tanımı yasal madde/fıkra ve PDF kimliğini aday metadata olarak tutabilir; fakat resmî source/version/yürürlük/applicability/istisna zinciri ve bağımsız onay hattı bulunmadığından **REGULATORY hiçbir zaman COMPLIANT/NON_COMPLIANT/NOT_APPLICABLE üretmez**. Kullanıcı kaynak onay bayrağıyla motoru açamaz. `legal_compliance_certified=True` açıkça reddedilir.
-- **Sınırlamalar:** Kural paketleri `tr_imar.py`, `tr_yangin.py` vb. oluşturulmadı; yazılım gerçek mimari hesaplar veya hukuka uygunluk sertifikası sunmuyor. Gerçek Windows i7/4070, resmî mevzuat ve saha testleri ayrı tutulur.
-- **Sonraki iş:** `islem_013` resmî mevzuat kaynak PDF'lerini maddeler/fıkralar, değişiklikler ve konum kanıtıyla çevrimdışı LegalAST'ye dönüştürme.
-
-
-## İşlem 013 — Yerel PDF → LegalAST
-
-- [İşlem 013](docs/islem_013.md) · [LegalAST v0.1 sözleşmesi](docs/specs/legalast-v0.1.md)
-- **Gerçek kod:** `src/mimarllm/legal/models.py`, `extractor.py`, `parser.py`, `changes.py`, `etl.py`. Orijinal PDF sayfası/bbox ve hash'ine bağlı metin, bölüm/madde/fıkra/bent/geçici madde, vektör tablo hücreleri ve değişiklik/yürürlük/ilga ifade adayları.
-- **OCR:** RapidOCR CPU yalnız açıkça seçilmiş sayfalarda, mevcut yerel OCR reader üzerinden. Belgenin basılı sayfa numarası, resmî başlığı, yürürlük tarihi ve hukukî geçerliliği otomatik varsayılmaz.
-- **Dürüst statü:** F13 `MEVCUT_KOD/KISMI`, sentetik Linux+Windows CI doğrulaması. Gerçek Resmî Gazete belgeleri arşivlenmedi/konsolide edilmedi; hukukî uzman onayı/iki sütun/OCR doğrulaması ayrı. F08–F12 REGULATORY hâlâ `INSUFFICIENT_EVIDENCE`.
-- **Sıradaki:** islem_014 LegalAST kaynak geri izli SQLite FTS5 + yerel dense/hybrid retrieval.
-
-
-## İşlem 014 — Yerel hibrit mevzuat RAG (SQLite FTS5 + yerel dense + RRF)
-
-- [İşlem 014](docs/islem_014.md) · [RAG v0.1 teknik şartnamesi](docs/specs/rag-v0.1.md)
-- **Kod:** `src/mimarllm/rag/{models,store,embeddings,retriever,indexer}.py`. `LegalDocument` düğüm/fıkra ve tablo hücresi kayıtları SQLite FTS5/BM25 ile aranabilir; kullanıcı bir yerel embedding modelini **açıkça** sağlarsa aynı SQLite üzerinde normalize cosine ve Reciprocal Rank Fusion (RRF) kullanılır.
-- **Kaynak izi:** Sonuçlarda `document_sha256`, `regulation_id`, `node_id`, `article/paragraph/item`, `table_id/row/column`, gerçek `LegalSourceSpan.page_index` ve PDF `polygon` ile özgün metin vardır. Yerel PDF hash'i erişilebilir değilse görüntü varmış gibi davranılmaz.
-- **Donanım/offline:** SQLite Python stdlib, `LocalSentenceTransformer` yalnız önceden hazır bir **yerel klasör**, CPU, `local_files_only=True`, `trust_remote_code=False`; sentence-transformers temel paket zorunluluğu yapılmadı. Embedding yoksa `LEXICAL_ONLY` çalışır. ANN/FAISS/haricî API henüz yok.
-- **Kanıt ve karar ayrımı:** Bütün sonuçlar `UNREVIEWED` / `legal_compliance_certified=False` ve `RETRIEVAL_CANDIDATE_NOT_LEGAL_ADVICE`. RRF skorundan hukukî `COMPLIANT` üretilemez, RuleEngine `REGULATORY` kilidi değişmedi.
-- **Sınırlar:** Sentetik CI'da dense pipeline **fake embedder** ile test edildi; gerçek çokdilli model Türkçe ölçüm ve tüm yıl/sürüm mevzuat corpus performansı hâlâ HOLD. 
-
-
-## İşlem 015 — Kaynak doğrulama, sürüm/uygulanabilirlik kanıtı, RuleEngine bağlayıcısı
-
-- [İşlem 015](docs/islem_015.md) · [Legal binding v0.1 teknik şartnamesi](docs/specs/legal-binding-v0.1.md).
-- **Kod:** `src/mimarllm/legal/verification.py` (yerel PDF SHA, sayfa ve polygon sınır denetimi), `legal/versions.py` (orijinal ve amendment PDF/source-node kimlikli insan beyanı, tarih çakışma uyarıları), `legal/applicability.py` (konum/ruhsat/kullanım/istisna eksiklikleri) ve `src/mimarllm/rules/evidence.py` (RuleDefinition→LegalAST node→isteğe bağlı RAG hit→yerel PDF ve proje bağlantısı).
-- **Önemli ayrım:** Yerel PDF'yi hash ile eşleştirmek belgeyi resmî yayımlanmış yapmaz; değişiklik ilişkileri henüz hukukî konsolide sürüm değildir. Girdi `reviewer_id` bağımsız hukukçu denetimi/kimlik doğrulaması değildir. Eksik amending özgün PDF kendi `HOLD_AMENDMENT_CHAIN` uyarısını üretir.
-- **Hukukî kilit:** RAG skoru veya tüm kullanıcı alanlarının dolu olması `APPROVED_FOR_CHECK` üretmez. `evaluate_regulatory_with_evidence` belge/versiyon/proje kanıtı eksiklerini ve değişmeyen `RuleEngine.REGULATORY: INSUFFICIENT_EVIDENCE` sonucunu birlikte döndürür. F08–F12 HUKUKI_HOLD devam eder.
-- **Sonraki mühendislik sınırı:** özgün Resmî Gazete yetkili kaynağının doğrulanması, madde/fıkra bazında gerçekte yürürlükte sürümlerin bağımsız konsolidasyonu ve imzalı uzman onay akışı ayrı geliştirme/bağımsız hukukî kabul ister.
-
-
-## İşlem 016 — Offline mevzuat PDF kaynak incelemesi
-
-- [İşlem 016](docs/islem_016.md) · [Görsel review v0.1 şartnamesi](docs/specs/legal-review-v0.1.md).
-- **Uygulandı:** `legal/review.py` LegalAST node, fıkra, tablo hücresi ve değişiklik kaynağı seçimi; `legal/review_viewer.py` ile özgün yerel PDF sayfa görüntüsü üzerine gerçek source page/quad koordinatında **sarı SVG vurgu** ve kullanıcı inceleme seçimli internet gerektirmeyen HTML.
-- **Sürüm kıyası:** `legal/version_workflow.py` ayrı base ve amendment PDF'lerini, tarih beyanı/ilişkiyle iki özgün kaynak olarak sunar. İlgili amendment'ın geçerli hukukî etki tarihi veya konsolide metni üretilmez.
-- **Kaynaklı kayıt:** `legal/review_ledger.py` HTML'den indirilen JSON taslak kararlarını kaynak `task_digest` ile eşleştirir, SHA-chain JSONL tarihçesine ekler. Bu imzalanmış belge veya kurum onayı değildir, kimliği doğrulamaz, haricî anchor olmadan geçmişin tümden değiştirilmesini önleyemez.
-- **Sınır:** Bu geliştirme yalnız **mevzuat PDF görsel kanıt alt modülü**. Genel mimari pafta hata işaretleme, raporlama, localhost UI ve tam Windows uygulaması henüz yapılmadı. `RuleEngine REGULATORY` ve F08–F12 `HUKUKI_HOLD` korunur.
-
-
-## İşlem 017 — Kaynaklı mimari analiz raporu ve çift yönlü geometri/kanun PDF bağı
-
-- [İşlem 017](docs/islem_017.md) · [Analiz raporu v0.1 teknik şartnamesi](docs/specs/analysis-reports-v0.1.md)
-- **Gerçek modül:** `src/mimarllm/reports/models.py` (kaynaklı bulgu/sözleşme), `builder.py` (DrawingIR, Shapely, NetworkX, RuleResult, opsiyonel RegulatoryEvidenceEvaluation bağı), `visualizer.py` (CAD/PDF source SVG), `exporter.py` (JSON/Markdown/HTML/PDF).
-- **Offline HTML:** Bulgu ↔ çizim entity bağlantısı, CAD handle/layout/nested block yolu; gerçek PDF DrawingIR kaynağı ve yerel PDF SHA eşleşirse orijinal sayfa arka planı. LegalAST ve özgün mevzuat PDF sağlanmışsa kaynak node metni, page, hash ve **sarı kaynak poligonu**; hukukî kaynak bağının gerekçesi. PDF/LegalAST sağlanmazsa hayalî vurgulama ya da URL oluşturulmaz.
-- **Dışa aktarım:** JSON yapılandırılmış kanıt; Markdown metinsel kaynak; HTML çift yönlü görsel; PDF isteğe bağlı `pip install -e ".[reports]"` ile ReportLab metin özeti (HTML ile aynı etkileşimde değildir).
-- **Kısmi kabul:** Genel paftanın tamamını render eden CAD motoru, kullanıcı dashboard'u, canlı analiz pipeline/CLI ve gerçek müşteri Windows kabulü henüz yok. F17/F18 `KISMI/MEVCUT_KOD`; teknik COMPLIANT yasaya uygun anlamına gelmez; F08–F12 `HUKUKI_HOLD`.
-
-
-## İşlem 018 — Tek dosya DXF/PDF bütünleşik analiz CLI
-
-- [İşlem 018](docs/islem_018.md) · [Pipeline + CLI v0.1 şartnamesi](docs/specs/pipeline-cli-v0.1.md).
-- **Kullanım:** `python -m mimarllm.cli analyze "C:\projeler\plan.dxf" --output-dir "C:\projeler\raporlar"` veya yüklenmiş console command `mimarllm analyze ...`. Çıktı klasörü önceden mevcut olmalı; mevcut raporun üstüne yazılmaz. Varsayılan `analysis.json` + `analysis.html` + `pipeline-manifest.json`; `--format md` ve `--format pdf` isteğe bağlı.
-- **Kod:** `src/mimarllm/pipeline.py` yerel DXF/PDF→DrawingIR→her frame'de Shapely→yalnız açıkça kullanıcı incelemesi sunulan alanlarda NetworkX→RuleEngine→kaynaklı İşlem 017 raporu; `src/mimarllm/cli.py` config/çalıştırma/manifest/çıkış-kodları. PDF OCR explicit kullanıcı ROI ve yerel CPU okuyucu yoksa **kapalı**.
-- **Ölçek ve semantik:** `$INSUNITS` fiziksel ölçek CONFIRMED yapmaz; `CalibrationReference` gerçek native çizgi ID + bilinen metre + kullanıcı etiketi ister. Çizgide olmaması/koordinat uyuşmazlığı ret; Script asla kendiliğinden oda/yangın kapısı/mimari emsal/kaçış rotası çıkarmaz. Yerel JSON rule threshold yalnız teknik kullanıcı senaryosu; gerçek kanun kuralı olarak değerlendirilmez.
-- **Aşama durumları:** `COMPLETE/REVIEW_REQUIRED/SKIPPED/ERROR`; her biri kaynak frame/reason koduyla manifestte. `PARTIAL_WITH_ERRORS` çıktı dosyaları üretilse de exit code `4`; normal ve review-gated çıktı exit `0`, kaynak/config hatası `2`, beklenmedik hata `3`, kullanıcı Ctrl-C `130`; basit export hatasında önceki başarılı raporlar geri alınır.
-- **Sınırlar:** CLI F16 `KISMI/MEVCUT_KOD` ve sentetik Windows/Linux CI kontrolü. F19 localhost dashboard, F20 Windows installer, gerçek müşteri Windows/kanun kabulü son aşamalar. F08–F12 `HUKUKI_HOLD`; RuleEngine REGULATORY `INSUFFICIENT_EVIDENCE`.
-
-
-## İşlem 019 — İlk çalışan çevrimdışı localhost mimari analiz arayüzü
-
-- [İşlem 019](docs/islem_019.md) · [F19 Dashboard teknik şartnamesi](docs/specs/dashboard-v0.1.md).
-- **Kullanım (yerel Windows Python 3.11+):** önceden temin edilmiş bağımlılıklarla `python -m pip install -e ".[dashboard]"`, ardından `python -m mimarllm.app.launch --workspace "C:\MimarLLM\workspace" --port 8765`. Tarayıcıdan `http://127.0.0.1:8765` açılır. Alternatif `mimarllm-dashboard` konsol komutu. Kod hiçbir bulut hesabı, API key, CDN veya haricî metin/görsel modeli istemez.
-- **Arayüz:** `app/static/index.html`, `dashboard.css` ve `dashboard.js` tamamen yerel Türkçe proje ekranlarıdır: kaynak DXF/PDF yükleme, projeler listesi, ilk Shapely/NetworkX/RuleEngine akışı, stage manifest, kaynak native LINE seçimi + kullanıcı doğrulanmış metre referansı ile ikinci analiz, gelişmiş `PipelineConfig` JSON ve HTML/JSON/Markdown/isteğe bağlı PDF çıktıları.
-- **Sunucu:** `app/server.py` sabit loopback/Host/Origin/peer IP ve CSRF, boyutu sınırlı binary yükleme, kullanıcı HTTP path'inden bağımsız rastgele proje/run ID, kaynak SHA kontrolü, JSON request limit, bir anda tek analiz kilidi, dosya/rapor allowlist, CSP/X-Frame-Options/nosniff/no-store. Her analiz ayrı klasöre kaydedilir; önceki raporların üzerine yazılmaz. \`PARTIAL_WITH_ERRORS\` doğrudan kullanıcıya gösterilir.
-- **Gerçek sınır:** F19 `KISMI/MEVCUT_KOD`. Bu çalışan tek kullanıcı localhost prototipidir; gerçek Windows Edge kullanıcı kabulü, güvenlik sızma testi, üretim LAN erişimi, installer ve eksiksiz CAD semantik analizi yapılmadı. Hukukî kaynak/RuleEngine F08–F12 `HUKUKI_HOLD` ve \`REGULATORY_LOCKED\` korunur. F20 Windows offline onedir dağıtımı sonraki paket.
+**Lisans ve veri gizliliği:** Public depoda özel müşteri/öğrenci çizimi, model ağırlığı, tam lisanslı TS standardı, gerçek mevzuat korpus kopyası veya yerel SQLite arşivi yayımlanmaz. Gelecekteki wheelhouse/installer/native kütüphane/GGUF model lisansları SBOM ve yeniden dağıtım kontrolüne tabidir. Tüm bağımlılıkların “%100 permissif” olduğu şu an sertifikalanmadı.
