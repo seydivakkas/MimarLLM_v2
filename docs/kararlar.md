@@ -290,3 +290,28 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-156 | Gerçek Windows Edge görsel kullanıcı kabulü, dağıtım installer, SBOM, sızma testi ve gerçek kanun kabulü | HOLD |
 
 [İşlem 019](islem_019.md) · [F19 Dashboard şartnamesi](specs/dashboard-v0.1.md).
+
+
+## İşlem 020 — ARCH-CORE Local master kapsam ve mühendislik kararı (2026-10-15)
+
+**Kayıt:** [İşlem 020](islem_020.md) · [ADR-004](adr/ADR-004-ARCH-CORE-Local-Kapsam-Genislemesi.md) · [Master Mimari](master-mimari-arch-core-local.md).
+
+| Karar | Mühendislik kuralı | Durum |
+| --- | --- | --- |
+| K-157 | Tek gerçek Python package `src/mimarllm/` korunur; ARCH-CORE/backend, ikinci DrawingIR veya bulut-API microservice açılmaz | **KESİN / DOKÜMAN KARARI** |
+| K-158 | İlk teknik analiz Engineering Core mevcut ürün; ARCH-CORE Studio/Education yalnız **opsiyonel ileri-sürüm ek paket** | **KESİN MİMARİ / İLERİ SÜRÜM PLAN** |
+| K-159 | Kaynak CAD/PDF koordinat ve SHA kanıtı, türetilmiş SI, repair-overlay, 2.5D/VLM/persona yanında değişmez | **KESİN / MEVCUT ÇEKİRDEĞİN KORUNMASI** |
+| K-160 | Unit histogramı/door median/Dimension aday birimi `INFERRED`; kullanıcı kaynak segmenti + gerçek metre olmadan `CONFIRMED` değil | **KESİN / YENİ ALGORİTMA PLAN** |
+| K-161 | Açık poligon/snap/virtual door bridge orijinal geometriyi düzeltilmiş gibi sunmaz; review alt katmanı `CANDIDATE` | **KESİN / GELİŞTİRME PLAN** |
+| K-162 | Layer0 heuristiği/HATCH/ARC tek başına doğrulanmış duvar/kapı/kolon veya mevzuat ölçümü değildir | **KESİN / PLAN** |
+| K-163 | A0 tiled OCR gerçek PDF SHA/page/quad geri dönüşümü ve bellek bütçesiyle; vektör PDF eksik ROI hâlâ OCR gerektirebilir | **KESİN / PLAN** |
+| K-164 | RAG synonym ve statik legal madde identity arama iyileştirir, hükmün yürürlük/onayını otomatik kanıtlamaz | **KESİN / PLAN** |
+| K-165 | 2.5D extrude ancak incelenmiş polygon + explicit height; gerçek 3D strüktür/yangın/çatı kanıtı değildir | **KESİN / PLAN** |
+| K-166 | Yerel GGUF/mmproj/VRAM/structured output lisans ve donanım kabulü olmadan sabit performans/kararlı model iddiası yok | **AR-GE / PLAN** |
+| K-167 | Rubrik score-in-code; persona çıktısı eğitsel öneridir, 10 ayrı bağımsız gerçek uzman oyu veya otomatik resmî akademik not değil | **KESİN / EĞİTİM PLAN** |
+| K-168 | 2209-A κ/ICC, Recall, SUS, IoU, OCR CER, GPU VRAM, 60FPS vb iddialar **hipotez/ölçüm hedefidir**, test PASS değil | **KESİN / BİLİMSEL SON KABUL PLAN** |
+| K-169 | İşlem 020 yalnız plan revizyonu; Windows paketleme 021, kırık CAD/OCR/ RAG/UI/3D/VLM/jüri 022–030, gerçek kabul 031 | **KESİN YENİ YOL HARİTASI** |
+| K-170 | F08–F12 resmî mevzuat sürüm/yerel istisna/uzman doğrulama tamamlanmadan `REGULATORY_LOCKED` kalır; model/Jüri bu kilidi açamaz | **HUKUKI_HOLD** |
+| K-171 | Windows offline dağıtım ve 3D/LLM/model transitive ve TS belge hakları SBOM/yeniden dağıtım incelemesine tabidir | **LİSANS KABULÜ HOLD** |
+
+**Güvenlik notu:** İşlem 020 diğer İşlem 001–019 karar ve tarihsel kayıtlarını silmez veya geriye dönük kod değiştirmez; gerçek kaynak modüllerine dokunmadan gelecek modüllerin giriş/çıkış sözleşmeleri ve önceki planın eksikleri yeniden tarif edildi.
