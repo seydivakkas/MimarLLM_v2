@@ -200,4 +200,46 @@ def test_nested_insert_block_path_kept(tmp_path):
                 if c.kind==RepairKind.VIRTUAL_GAP_BRIDGE)
     assert all(ref.cad_handle and ref.block_path for ref in bridge.source_references)
     assert bridge.source_sha256==d.source_sha256
-    assert d.entities[0].source.block_path==bridge.source_references[0].block_path
+    original_by_id={entity.entity_id:entity.source for entity in d.entities}
+    for eid,source in zip(bridge.source_entity_ids,bridge.source_references):
+        assert original_by_id[eid] == source
+        assert source.block_path
+
+
+def test_repair_svg_overlay_uses_true_original_and_dashed_virtual_source(tmp_path):
+    from mimarllm.geometry.repair_viewer import render_repair_overlay_svg
+    d=dxf_lines(tmp_path,[((0,0),(1,0)),((1.08,0),(2,0))])
+    overlay=propose_repair_overlay(d,d.frames[0].frame_id)
+    svg=render_repair_overlay_svg(d,overlay)
+    assert svg.startswith("<svg ")
+    assert "VIRTUAL CANDIDATE - NOT ACCEPTED" in svg
+    assert 'stroke-dasharray="5,4"' in svg
+    assert "ORIGINAL CAD" in svg
+    assert d.entities[0].source.cad_handle in svg
+    assert overlay.candidates[0].candidate_id not in d.model_dump_json()
+
+
+def test_repair_svg_rejects_alien_hash_or_wrong_cad_source_ref(tmp_path):
+    from mimarllm.geometry.repair_viewer import render_repair_overlay_svg
+    d=dxf_lines(tmp_path,[((0,0),(1,0)),((1.08,0),(2,0))])
+    overlay=propose_repair_overlay(d,d.frames[0].frame_id)
+    forged=overlay.model_copy(update={"source_sha256":"1"*64})
+    with pytest.raises(RepairInputError,match="SHA"):
+        render_repair_overlay_svg(d,forged)
+    changed_source=overlay.candidates[0].source_references[0].model_copy(
+        update={"cad_handle":"FAKE"}
+    )
+    changed_candidate=overlay.candidates[0].model_copy(update={
+        "source_references":(changed_source,overlay.candidates[0].source_references[1])
+    })
+    forged=overlay.model_copy(update={"candidates":(changed_candidate,)})
+    with pytest.raises(RepairInputError,match="handle"):
+        render_repair_overlay_svg(d,forged)
+
+
+def test_repair_svg_vertex_limit_fails_closed(tmp_path):
+    from mimarllm.geometry.repair_viewer import render_repair_overlay_svg
+    d=dxf_lines(tmp_path,[((0,0),(1,0)),((1.08,0),(2,0))])
+    overlay=propose_repair_overlay(d,d.frames[0].frame_id)
+    with pytest.raises(RepairInputError,match="vertex render budget"):
+        render_repair_overlay_svg(d,overlay,max_vertices=2)
