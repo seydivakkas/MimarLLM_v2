@@ -1,7 +1,7 @@
 # MimarLLM V2 × ARCH-CORE Local — Gerçekleşme ve Gelecek Özellik Envanteri v1.0
 
 - **İlk kayıt:** [islem_006.md](islem_006.md) · **Güncel yeniden baz:** [islem_020.md](islem_020.md), 2026-10-15. **Master mimari:** [master-mimari-arch-core-local.md](master-mimari-arch-core-local.md)
-- **Tanım:** Yüklenen taslak ve kod örneklerinin **tamamı hedef özelliklerdir**, doğrudan uygulanmış commit sayılmaz.
+- **Tanım:** Önceki taslaklarda yer alan yeni öneriler kendiliğinden kodlanmış sayılmaz; buna karşılık İşlem 007–019 boyunca gerçekte eklenen dosyalar ve sentetik CI'lar tablodaki **MEVCUT_KOD/KISMI** olarak gösterilir. 020 yalnız mimari/dokümantasyon yeniden yapılanmasıdır.
 - **Durumlar:** `MEVCUT_KOD` = GitHub'da kod mevcut ama kabul zorunlu; `KISMI` = başlangıç var, hedef işlev eksik; `PLANLANDI` = kaynak/ürün henüz yok; `HUKUKI_HOLD` = mevzuat sürümü, dayanak ve uygulanabilirlik doğrulanana kadar etkinleştirilemez.
 
 ## Fonksiyonel özellik ve geliştirme takip matrisi
