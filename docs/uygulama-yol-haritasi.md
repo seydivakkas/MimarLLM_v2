@@ -1,8 +1,8 @@
 # MimarLLM V2 — Bağımlılığa Dayalı Uygulama Yol Haritası
 
-- **Kayıt:** [islem_006](islem_006.md)
-- **Referans:** [Özellik envanteri](ozellik-envanteri.md)
-- **Durum:** PLAN / teknik yol haritası; yüklenen taslaklardaki `islem_002…020` yeni GitHub kayıt numarası değildir.
+- **Tarihsel kök:** [İşlem 006](islem_006.md) · **Güncel yeniden baz:** [İşlem 020](islem_020.md), 2026-10-15.
+- **Referans:** [özellik envanteri](ozellik-envanteri.md), [master mimari](master-mimari-arch-core-local.md), [2209-A iş paketleri](tubitak-2209a-is-paketleri.md).
+- **Durum:** Güncel plan 020–031; yalnız 001–019 kaynak kodu kısmi mevcut. Planlanan ileri işlem numaralarının GitHub kayıt dosyası oluşturulmuş sayılmaz.
 
 ## 1. Sabit mimari kararlar
 
