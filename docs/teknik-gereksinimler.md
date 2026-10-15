@@ -1,3 +1,5 @@
+> **Güncel karar (İşlem 020 / 2026-10-15):** Bu, İşlem 002'nin tarihsel gereksinim kaydıdır. Envanterde artık DXF/PDF, DrawingIR, Shapely/NetworkX, RuleEngine, RAG, CLI ve localhost dashboard için kısmi gerçek kod vardır. Eğitim/jüri `ilk çekirdek` kapsamı dışında kalır; ARCH-CORE 3D/jüri/rubrik/analitik yalnız [ileriki sürüm master planında](master-mimari-arch-core-local.md) yer alır. Bu tarihsel belge “uygulama yok” veya bağlayıcı performans kabulü olarak kullanılmamalı; [güncel durum matrisi](ozellik-envanteri.md) referans alınmalıdır.
+
 # MimarLLM V2 — Teknik Gereksinimler v0.1
 - **Bağlı işlem:** [islem_002.md](islem_002.md)
 - **Tarih:** 2026-10-12
