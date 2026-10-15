@@ -40,7 +40,7 @@ if errorlevel 1 (
   echo MIMARLLM_ERROR: Local wheel dependency resolution failed; no network fallback. 1>&2
   exit /b 2
 )
-"%PY%" -c "import fastapi, uvicorn, shapely, pypdfium2, onnxruntime, rapidocr, mimarllm.app.server"
+"%PY%" "scripts\windows\launch_dashboard.py" --self-check
 if errorlevel 1 (
   echo MIMARLLM_ERROR: Runtime import smoke failed. 1>&2
   exit /b 2
