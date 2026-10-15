@@ -1,3 +1,5 @@
+> **İşlem 020 güncellik notu (2026-10-15):** Bu belge İşlem 002 tarihsel modül planıdır. Buradaki “uygulama yok”, planlanan dosya listeleri ve jüri/LMS kapsam dışı ifadeleri **ilk V2 çekirdeğinin ilk kararlarıdır**. Güncel gerçek kod F01–F19 için [özellik envanteri](ozellik-envanteri.md); yeni 2.5D, VLM, rubrik, jüri, öğrenci analitiği **opsiyonel ileri-sürüm hedefleri** için [Master Mimari](master-mimari-arch-core-local.md); yenilenmiş [İşlem 020–031 yol haritası](uygulama-yol-haritasi.md) esas alınır. İşlem 001–019 değişiklik günlükleri değiştirilmez.
+
 # MimarLLM V2 — Aşamalı Modül ve İş Paketleri Planı v0.1
 - **Bağlı işlem:** [islem_002.md](islem_002.md)
 - **Bağlı gereksinimler:** [teknik-gereksinimler.md](teknik-gereksinimler.md)
