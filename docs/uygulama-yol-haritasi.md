@@ -2,7 +2,7 @@
 
 - **Tarihsel kök:** [İşlem 006](islem_006.md) · **Güncel yeniden baz:** [İşlem 020](islem_020.md), 2026-10-15.
 - **Referans:** [özellik envanteri](ozellik-envanteri.md), [master mimari](master-mimari-arch-core-local.md), [2209-A iş paketleri](tubitak-2209a-is-paketleri.md).
-- **Durum:** Güncel plan 020–031; yalnız 001–019 kaynak kodu kısmi mevcut. Planlanan ileri işlem numaralarının GitHub kayıt dosyası oluşturulmuş sayılmaz.
+- **Durum:** 001–019 çekirdek/UI kodu kısmi mevcut; 020 yalnız master mimari/dokümantasyon; **021 Windows dağıtım betikleri + sentetik CI kısmi mevcut, gerçek onedir Windows cihaz kabulü HOLD**. 022–031 gelecek plan numaralarıdır.
 
 ## 1. Sabit mimari kararlar
 
@@ -20,7 +20,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_013–016` | LegalAST, FTS5+RRF, hukukî source/version HOLD, PDF review | KODLANDI/KISMI | resmî yürürlük ve etkili sürüm HOLD |
 | `islem_017–019` | kaynaklı HTML/JSON/MD/PDF, CLI pipeline, localhost dashboard | KODLANDI/KISMI | İşlem 019 CI Linux/Windows 295 PASS; gerçek kullanıcı cihazı HOLD |
 | **`islem_020`** | **Bu yeniden mimari ve ARCH-CORE Local geliştirme planı** | **DOKÜMAN KARARI** | Kod/jüri/3D/modeller eklenmiş sayılmaz |
-| `islem_021` | Windows-first offline wheelhouse/onedir, başlatıcı, SBOM | PLAN, 019/020 | paketi gerçek Windows'ta açma/kullanıcı kabulü en sonda |
+| `islem_021` | Windows-first offline wheelhouse/onedir, başlatıcı, SBOM | KISMI / KODLANDI — kaynak betikleri; actual Windows exe HOLD | `run.bat`, `install_offline.bat`, `mimar.spec`, SHA/metadata manifest, sentetik Linux/Windows CI; gerçek PC ve ticari dağıtım doğrulaması en sonda |
 | `islem_022` | Kirli CAD kaynak-koruyan repair-overlay; unit hypothesis; Layer0 heuristik | PLAN, 007–011 | önerilen geometri/orijinal entity ayrılır; SI onayı yok |
 | `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet, source transforms | PLAN, 009/022 | memory budget, PDF source quad; OCR accuracy test finalde |
 | `islem_024` | Mimari synonym FTS5 sorgu genişletmesi + gömülü workspace cache | PLAN, 013–015/019 | RAG sıralaması kanunî onay değil; SQLite kaynak izolasyonu |
@@ -158,3 +158,10 @@ F17/F18 `KISMI/MEVCUT_KOD`; PDF özet HTML'nin görsel etkileşimiyle aynı değ
 **Eski plan değişikliği (yeni uygulama değil):** İşlem 019 eskiden F20 Windows paketleme olarak listelenmişti. F19'un hiç kodlanmamış olması nedeniyle İşlem 019 bu F19 dashboard çekirdeğine ayrıldı; F20 Windows offline dağıtım İşlem 020'ye, daha sonraki VLM/benchmark satırları 021–022'ye kaydırıldı. İşlem 001–018 kayıtlarına müdahale edilmedi.
 
 **F19 KISMI/MEVCUT_KOD:** sentetik ASGI/GitHub-hosted Linux+Windows; gerçek Windows 10/11/Edge cihaz kullanıcısı, sızma testi ve üretim LAN sunucusu kabulü HOLD. **F08–F12 HUKUKI_HOLD**. Bir sonraki kod işleminde ilk GitHub yazımı `docs/islem_020.md` olmalıdır.
+
+
+## İşlem 021 uygulama notu (2026-10-15)
+
+F20 için kaynak dosyaları: `run.bat` (hazır yerel ortam), `install_offline.bat` (hash verified wheel cache; `--no-index`), `build_exe.bat`, `mimar.spec` (gerçek F19 dashboard için Windows PyInstaller onedir tarifi), `scripts/windows/build_wheelhouse.ps1` (yalnız bilerek `-AllowNetwork` verilen network hazırlama), `launch_dashboard.py` (LOCALAPPDATA workspace ve `--self-check`), `package_manifest.py` (SHA256 / local distribution metadata / lisans HOLD envanteri). Gerçek exe/temiz Windows kurulum/dağıtım lisans bağımsız kabul **yapılmadı**. Kodun CI'da statik/manifest sözleşmeleri test edilmiş olması Windows binary smoke PASS değildir.
+
+**Sonraki GitHub geliştirme:** `docs/islem_022.md` önce oluşturulmalı; kirli CAD geometrisi *onarım adayı* ve orijinal DrawingIR CAD handle/source frame değişmezliği. Bir sonraki paket üretilmeden önce 021 kayıt kapanışı, CI kanıtı ve kaynak dosya doğrulaması tamamlanacak. ARCH-CORE GPU/2.5D/jüri henüz PLAN/AR-GE.
