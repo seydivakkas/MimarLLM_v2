@@ -76,3 +76,11 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 - [İşlem 019 localhost dashboard API/tehdit modeli](docs/specs/dashboard-v0.1.md)
 
 **Lisans ve veri gizliliği:** Public depoda özel müşteri/öğrenci çizimi, model ağırlığı, tam lisanslı TS standardı, gerçek mevzuat korpus kopyası veya yerel SQLite arşivi yayımlanmaz. Gelecekteki wheelhouse/installer/native kütüphane/GGUF model lisansları SBOM ve yeniden dağıtım kontrolüne tabidir. Tüm bağımlılıkların “%100 permissif” olduğu şu an sertifikalanmadı.
+
+
+## İşlem 021 — Windows çevrimdışı dağıtım kaynakları (aday, üretim kabulü değil)
+
+- [İşlem 021](docs/islem_021.md) · [Windows offline paketleme şartnamesi](docs/specs/windows-offline-package-v0.1.md) · [Betik yönergeleri](scripts/windows/README.md).
+- **Kodlandı:** `run.bat` (mevcut yerel Python ortamıyla başlat), `install_offline.bat` (SHA doğrulanmış tekerlek cache'i ve `pip --no-index` ile bilinçli kurulum), `build_exe.bat`, `mimar.spec` (Win32/PyInstaller `onedir` tarifi, `upx=False`), `scripts/windows/launch_dashboard.py` (gerçek FastAPI/127.0.0.1 ve kullanıcı `LOCALAPPDATA` workspace), `scripts/windows/package_manifest.py` (wheel/distribution SHA256, beyan lisans metadata), `build_wheelhouse.ps1` (yalnız açık `-AllowNetwork` hazırlama).
+- **Kullanım:** Windows'ta önce bilinçli hazırlık ve hash kontrolü; `install_offline.bat` → `run.bat`. Kurulu PyInstaller ortamından `build_exe.bat` olası `dist/MimarLLM_V2/MimarLLM_V2.exe` için `--self-check` (statik UI ve dependency import) talep eder. SHA manifest elektronik imza veya ticari lisans onayı değildir.
+- **Durum:** F20 `KISMI/MEVCUT_KOD` — paketleme **kaynak kodu ve sentetik CI sözleşmesi** mevcut. **Gerçek exe derlemesi, offline temiz Windows kurulum, installer/MSI, DLL bağımlılık/NOTICE-lisans hakları ve yerel kullanıcı Edge tıklama testleri henüz doğrulanmadı.** İşlem 020'de planlanan ARCH-CORE GPU/VLM/2.5D/jüri kodu yok. F08–F12 `HUKUKI_HOLD`.
