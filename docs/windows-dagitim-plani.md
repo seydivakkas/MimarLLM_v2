@@ -1,3 +1,5 @@
+> **İşlem 021 güncellemesi (2026-10-15):** Bu belgenin aşağıdaki “henüz run.bat yok”, “uygulama yok” gibi cümleleri **tarihsel 006/020 plan kaydıdır**. İşlem 021'de gerçek `run.bat`, `install_offline.bat`, `build_exe.bat`, `mimar.spec`, offline wheelhouse/SHA/SBOM taslak ve mevcut localhost dashboard için entrypoint kaynakları yazıldı. **Gerçek Windows .exe build veya offline temiz PC kabulü henüz yapılmadı**, ticari lisans onayı HOLD. Güncel uygulanmış sözleşme: [Windows paketleme v0.1](specs/windows-offline-package-v0.1.md) · [İşlem 021](islem_021.md).
+
 > **İşlem 020 sıra revizyonu (2026-10-15):** Önceden İşlem 020 olarak planlanan Windows offline onedir/wheelhouse/SBOM iş paketi, 020'nin master ARCH-CORE Local yeniden yapılandırmasına ayrılması nedeniyle **İşlem 021** olarak yeniden planlandı. Bu not **installer'ın yapıldığı anlamına gelmez**. Ayrıntı: [güncel yol haritası](uygulama-yol-haritasi.md).
 
 # MimarLLM V2 — Windows Tek Tık ve PyInstaller Dağıtım Planı
