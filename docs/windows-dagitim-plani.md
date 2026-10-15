@@ -1,3 +1,5 @@
+> **İşlem 020 sıra revizyonu (2026-10-15):** Önceden İşlem 020 olarak planlanan Windows offline onedir/wheelhouse/SBOM iş paketi, 020'nin master ARCH-CORE Local yeniden yapılandırmasına ayrılması nedeniyle **İşlem 021** olarak yeniden planlandı. Bu not **installer'ın yapıldığı anlamına gelmez**. Ayrıntı: [güncel yol haritası](uygulama-yol-haritasi.md).
+
 # MimarLLM V2 — Windows Tek Tık ve PyInstaller Dağıtım Planı
 
 **İşlem:** [islem_006.md](islem_006.md) · **Durum:** PLAN; henüz `run.bat`, `build_exe.bat`, `mimar.spec` veya web GUI yok.
