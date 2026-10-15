@@ -214,3 +214,26 @@ def test_static_ui_assets_really_exist_and_are_local():
             continue
         raw = file.read_text("utf-8")
         assert not re.search(r"https?://(?:cdn\.|fonts\.googleapis\.com)",raw)
+
+def test_launcher_self_check_does_not_start_dashboard_server(monkeypatch):
+    import scripts.windows.launch_dashboard as launcher
+    monkeypatch.setattr(launcher, "self_check", lambda: 71)
+    assert launcher.main(["--self-check"]) == 71
+
+
+def test_windows_binary_manifest_is_not_mistaken_for_signed_installer(tmp_path):
+    if sys.platform != "win32":
+        pytest.skip("Windows artifact branch is only meaningful on Windows CI")
+    folder=tmp_path/"onedir"
+    folder.mkdir()
+    (folder/"MimarLLM_V2.exe").write_bytes(b"synthetic payload, not a real PE")
+    (folder/"_internal").mkdir()
+    (folder/"_internal"/"dashboard.css").write_bytes(b"offline data")
+    info=create_manifest(folder,kind="WINDOWS_ONEDIR")
+    assert info["kind"]=="WINDOWS_ONEDIR"
+    assert info["license_review"].startswith("HOLD")
+    record=save_manifest(tmp_path/"bundle-manifest.json",info)
+    assert verify_manifest(folder,record,expected_kind="WINDOWS_ONEDIR")==info
+    (folder/"_internal"/"dashboard.css").write_bytes(b"changed data")
+    with pytest.raises(ManifestError):
+        verify_manifest(folder,record,expected_kind="WINDOWS_ONEDIR")
