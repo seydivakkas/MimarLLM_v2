@@ -65,6 +65,8 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 ## Aktif dokümantasyon ve işlem kanıtı
 
 - [İşlem 020 — yeniden yapılandırma ve doğrulama kaydı](docs/islem_020.md)
+- [ADR-004 — ARCH-CORE Local opsiyonel eğitim kapsamı](docs/adr/ADR-004-ARCH-CORE-Local-Kapsam-Genislemesi.md)
+- [TÜBİTAK 2209-A araştırma/12 aylık iş paketleri taslağı](docs/tubitak-2209a-is-paketleri.md)
 - [Master sistem mimarisi](docs/master-mimari-arch-core-local.md)
 - [F01–F37 kapsam/uygulama envanteri](docs/ozellik-envanteri.md)
 - [İşlem 020–031 geliştirme sırası](docs/uygulama-yol-haritasi.md)
