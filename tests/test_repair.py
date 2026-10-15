@@ -224,7 +224,8 @@ def test_repair_svg_rejects_alien_hash_or_wrong_cad_source_ref(tmp_path):
     d=dxf_lines(tmp_path,[((0,0),(1,0)),((1.08,0),(2,0))])
     overlay=propose_repair_overlay(d,d.frames[0].frame_id)
     forged=overlay.model_copy(update={"source_sha256":"1"*64})
-    with pytest.raises(RepairInputError,match="SHA"):
+    # Forged outer SHA fails at Pydantic source/frame gate before rendering.
+    with pytest.raises(ValidationError,match="Overlay mixes CAD"):
         render_repair_overlay_svg(d,forged)
     changed_source=overlay.candidates[0].source_references[0].model_copy(
         update={"cad_handle":"FAKE"}
