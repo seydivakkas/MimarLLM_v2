@@ -315,3 +315,21 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-171 | Windows offline dağıtım ve 3D/LLM/model transitive ve TS belge hakları SBOM/yeniden dağıtım incelemesine tabidir | **LİSANS KABULÜ HOLD** |
 
 **Güvenlik notu:** İşlem 020 diğer İşlem 001–019 karar ve tarihsel kayıtlarını silmez veya geriye dönük kod değiştirmez; gerçek kaynak modüllerine dokunmadan gelecek modüllerin giriş/çıkış sözleşmeleri ve önceki planın eksikleri yeniden tarif edildi.
+
+
+## İşlem 021 — Windows offline onedir / wheelhouse / lisans envanteri kararları (2026-10-15)
+
+| Karar | Mühendislik sınırı | Durum |
+| --- | --- | --- |
+| K-172 | Mevcut `src/mimarllm`, `app.launch` ve yerel static UI kullanılır; paralel `src/mimar` eski entrypoint yok | KODLANDI |
+| K-173 | `run.bat` yalnız hazır ortamı başlatır; otomatik pip/ağ yok | KODLANDI |
+| K-174 | Kurulum `install_offline.bat` ayrı bilinçli adım; hash verified wheelhouse ve `--no-index` fail closed | KODLANDI |
+| K-175 | Wheel cache internet kullanımı **yalnız hazırlama** `-AllowNetwork`; runtime ağ gerektirmeyecek politika korunur | KODLANDI / GERÇEK OFFLINE ACCEPTANCE HOLD |
+| K-176 | `mimar.spec` Win32, `onedir`, `console=True`, `upx=False` ve gerçek PDF/OCR/GEOS/UI bağımlılığı | KODLANDI / ONEDIR BINARY BUILD HOLD |
+| K-177 | Frozen `--self-check` yerel UI asset, PDF/OCR/GEOS/ONNX CPU import sözleşmesi; tam kullanıcı tıklama/temiz PC testi değildir | KODLANDI / WINDOWS SMOKE HOLD |
+| K-178 | Paket payload SHA manifesti yerel bytes/size; harici imza olmadan dosya kökeni veya tamper-proof garanti değil | KODLANDI / SIGNATURE HOLD |
+| K-179 | SBOM metadata'da `declared_license` kullanıcı/dağıtıcı hukuki izin doğrulaması değildir; DLL/NOTICE/UCRT hakları bağımsız inceleme | HOLD |
+| K-180 | Kullanıcı workspace dist altına değil `LOCALAPPDATA`; dashboard sadece `127.0.0.1` ve kaynaklı rapor pipeline aynı | KODLANDI |
+| K-181 | `F20` kısmi kaynak ve sentetik CI kabulü; gerçek Windows exe, installer/MSI, cihaz/Edge ve lisans kabulü final | HOLD |
+
+[İşlem 021](islem_021.md) · [Windows offline paket v0.1](specs/windows-offline-package-v0.1.md).
