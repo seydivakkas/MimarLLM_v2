@@ -58,7 +58,7 @@ def test_wheel_modified_after_manifest_prevents_install(tmp_path):
         create_manifest(wheels, kind="WHEELHOUSE", pyproject=project),
     )
     wheel = wheels / "rapidocr-3.12.0-py3-none-any.whl"
-    wheel.write_bytes(b"test dependency tampered")
+    wheel.write_bytes(b"Z" * len(wheel.read_bytes()))
     with pytest.raises(ManifestError, match="hash"):
         verify_manifest(wheels, record, expected_kind="WHEELHOUSE", pyproject=project)
 
