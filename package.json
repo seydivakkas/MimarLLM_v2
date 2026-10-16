@@ -1,0 +1,13 @@
+{
+  "name": "mimarllm-25d-vendor-preparation",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Preparation-only Three.js dependency; no runtime npm/network",
+  "scripts": {
+    "build:three": "node scripts/build_three_vendor_026.mjs",
+    "verify:three": "node scripts/build_three_vendor_026.mjs --verify"
+  },
+  "dependencies": {
+    "three": "0.160.1"
+  }
+}
