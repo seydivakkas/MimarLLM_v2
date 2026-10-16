@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[]};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -123,6 +123,7 @@ async function loadRun(id) {
   }
   if(data.truncated) findings.append(el("p","Ön izleme sayısı sınırlandırıldı; tam veri JSON raporundadır.","hint"));
   await loadReviews();
+  await loadDxfEditStatus();
   const exports=$("report-files");clear(exports);
   for(const name of data.reports) {
     if(name==="drawingir.json") continue;
@@ -141,6 +142,7 @@ function renderDrawing(data) {
   inspector.textContent="Henüz kaynak seçilmedi.";
   state.selectedSource=null;
   $("save-review-note").disabled=true;
+  $("edit-run").disabled=true;
   if(!frames.length) {
     frame.add(new Option("Kaynak çizgi bulunamadı",""));
     layer.add(new Option("Katman yok",""));
@@ -152,6 +154,7 @@ function renderDrawing(data) {
     clear(svg);
     state.selectedSource=null;
     $("save-review-note").disabled=true;
+    $("edit-run").disabled=true;
     inspector.textContent="Kaynak çizgi seçin; bu seçim orijinal dosyayı değiştirmez.";
     showReviews();
     const selected=lines.filter(s=>s.frame_id===frame.value &&
@@ -191,6 +194,13 @@ function renderDrawing(data) {
         item.classList.add("selected");
         state.selectedSource={...source,source_sha256:data.source_sha256||data.manifest?.source_sha256};
         $("save-review-note").disabled=false;
+        const editable=source.origin==="CAD_NATIVE" && source.frame_id==="cad:Model" &&
+          !!source.cad_handle && source.entity_id==="Model|"+source.cad_handle+"|LINE";
+        for(const [id,value] of [["edit-start-x",source.points[0][0]],["edit-start-y",source.points[0][1]],
+                                 ["edit-end-x",source.points[1][0]],["edit-end-y",source.points[1][1]]]) {
+          $(id).value=editable?String(value):"";
+        }
+        $("edit-run").disabled=!editable || !state.editStatus || state.editStatus.head!=="original";
         showReviews();
         inspector.textContent=[
           "Kaynak SHA256: "+(data.source_sha256||data.manifest?.source_sha256||"BELİRSİZ"),
@@ -287,6 +297,89 @@ async function retractReview(reviewId) {
   } catch(e) {notice(e.message,true);}
 }
 
+
+async function loadDxfEditStatus() {
+  state.editStatus=null;
+  $("edit-run").disabled=true;
+  $("edit-undo").disabled=true;
+  clear($("edit-download"));
+  const project=state.projects.find(x=>x.project_id===state.projectId);
+  if(!project || project.source_kind!=="DXF") {
+    $("edit-status").textContent="DXF kaynağı seçildiğinde düzenleme kullanılabilir.";
+    return;
+  }
+  const projectId=state.projectId;
+  try {
+    const status=await api("/api/projects/"+projectId+"/edits");
+    if(projectId!==state.projectId) return;
+    state.editStatus=status;
+    const latest=status.history.at(-1);
+    $("edit-status").textContent=status.head==="original"?
+      "Özgün DXF aktif · Kaynak çizgi seçin. Henüz revizyon oluşturulmadı.":
+      "Son revizyon: "+status.head.slice(0,12)+"… · "+
+       status.history.length+" kayıt. Önizleme hâlâ özgün çizimi gösterir.";
+    $("edit-undo").disabled=!latest || latest.operation!=="MOVE_LINE";
+    const src=state.selectedSource;
+    $("edit-run").disabled=!src || src.origin!=="CAD_NATIVE" || src.frame_id!=="cad:Model" ||
+      !src.cad_handle || src.entity_id!=="Model|"+src.cad_handle+"|LINE" || status.head!=="original";
+    if(status.head!=="original") {
+      const link=el("a","Son revizyon DXF dosyasını indir ↗");
+      link.href="/api/projects/"+projectId+"/edits/"+status.head+"/download";
+      link.download="MimarLLM-"+status.head+".dxf";
+      $("edit-download").append(link);
+    }
+  }catch(e) {
+    $("edit-status").textContent="DXF revizyon geçmişi okunamadı: "+e.message;
+    $("edit-undo").disabled=true;
+  }
+}
+async function commitDxfEdit() {
+  const source=state.selectedSource,head=state.editStatus,projectId=state.projectId;
+  if(!source||!head||head.head!=="original"||source.origin!=="CAD_NATIVE"||
+    source.frame_id!=="cad:Model"||!source.cad_handle) {
+    return notice("Yalnız özgün doğrudan Model LINE kaynağı düzenlenebilir.",true);
+  }
+  const fields=["edit-start-x","edit-start-y","edit-end-x","edit-end-y"];
+  if(fields.some(id=>$(id).value.trim()===""))return notice("Dört CAD koordinatı da gerekli.",true);
+  const coords=fields.map(id=>Number($(id).value));
+  if(coords.some(n=>!Number.isFinite(n)||Math.abs(n)>1e6))return notice("CAD koordinatları geçersiz.",true);
+  const label=$("reviewer-input").value.trim();
+  if(!label)return notice("İncelemeci etiketi gerekli.",true);
+  $("edit-run").disabled=true;
+  try {
+    const result=await api("/api/projects/"+projectId+"/edits",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        source_sha256:head.original_sha256,expected_head:head.head,
+        expected_sha256:head.head_sha256,
+        entity_id:source.entity_id,frame_id:source.frame_id,
+        cad_handle:source.cad_handle,expected_start:source.points[0],
+        expected_end:source.points[1],
+        new_start:coords.slice(0,2),new_end:coords.slice(2,4),
+        reviewer_label:label
+      })
+    });
+    notice("Yeni DXF revizyonu kaydedildi: "+result.revision_id.slice(0,12)+"… Orijinal korundu.");
+    await loadDxfEditStatus();
+  }catch(e){notice(e.message,true);await loadDxfEditStatus();}
+}
+async function undoDxfEdit() {
+  const current=state.editStatus;
+  if(!current||current.head==="original") return notice("Geri alınacak DXF revizyonu yok.",true);
+  $("edit-undo").disabled=true;
+  try {
+    const result=await api("/api/projects/"+state.projectId+"/edits/undo",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        source_sha256:current.original_sha256,
+        expected_head:current.head,expected_sha256:current.head_sha256
+      })
+    });
+    notice("Son düzenleme geri alındı. Geri alınmış DXF revizyonu ayrıca saklandı: "+result.revision_id.slice(0,12)+"…");
+    await loadDxfEditStatus();
+  }catch(e){notice(e.message,true);await loadDxfEditStatus();}
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -365,6 +458,8 @@ $("upload-button").addEventListener("click",upload);
 $("refresh-button").addEventListener("click",()=>refresh().catch(e=>notice(e.message,true)));
 $("analyze-button").addEventListener("click",analyze);
 $("save-review-note").addEventListener("click",saveReview);
+$("edit-run").addEventListener("click",commitDxfEdit);
+$("edit-undo").addEventListener("click",undoDxfEdit);
 $("selected-project").addEventListener("change",e=>chooseProject(e.target.value).catch(x=>notice(x.message,true)));
 $("drawing-file").addEventListener("change",e=>{
   const file=e.target.files?.[0];$("picked-file").textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"Henüz dosya seçilmedi.";
