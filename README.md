@@ -141,3 +141,14 @@ Kullanıcı kararıyla **İşlem 025'in fiziksel Windows/Edge, gerçek çizim, p
 Yalnız CAD Model'deki özgün LINE kenarlarından oluşan tek kapalı sınır, bağımsız doğrulanmış metre ölçeği ve açık kullanıcı yüksekliği beyanıyla kaynaklı 2.5D kütle önizlemesi üretir. Fiziksel bina, kat/oda veya yasal uygunluk kararı değildir. Rapor/DrawingIR/CAD değişmez.
 
 Three.js 0.160.1 ESM yerel olarak SHA/MIT manifestiyle hazırlanır (scripts/build_three_vendor_026.mjs). Tarayıcının çalışma anında CDN/ücretli API yok. Bu hazırlama yapılmadan Three görüntüleyici çalışmaz. Gerçek Windows/Edge, GPU, dağıtım ve saha testi son İşlem 031'de yapılacak.
+
+
+## İşlem 027 — Tamamen yerel, kaynak-korumalı GGUF/MMProj VLM adayı
+
+[İşlem kaydı](docs/islem_027.md) · [Teknik güvenlik sözleşmesi](docs/specs/local-vlm-027-v0.1.md) · [Draft PR #5](https://github.com/seydivakkas/MimarLLM_v2/pull/5).
+
+- Açıkça seçilmiş 1–48 aynı-frame native DXF/PDF LINE, gerçek `DrawingIR`/orijinal dosya SHA ile doğrulanır ve yerel 512×512 PNG linework önizlemesi üretilir. Bu görüntü mimari semantik/ölçü onayı değildir.
+- Kullanıcının opt-in onayından sonra **yalnız operatörün önceden sağladığı ve SHA256 doğrulaması yapılan** GGUF+MMProj+llama-server ikilisi local `127.0.0.1` subprocess'te çalıştırılır; model ağırlığı ve API anahtarı bulunmazsa sistem 503/unavailable ile anlaşılır biçimde reddeder. Dış model indirme, bulut API veya abonelik **yoktur**.
+- RAM/VRAM ön denetimi sistem boş RAM ve tek NVIDIA nvidia-smi verisinden sınır/bütçe kararı verir; izinli CPU fallback veya açık red. 8 GiB VRAM için başarı/performans garantisi veya gerçek GGUF inference kabulü yok.
+- Modelin JSON sonucu Pydantic `extra=forbid` ile yalnız `kind`, `commentary`, izin verilen `entity_ids`; koordinat/alan/kural skoru/mevzuat PASS veya DrawingIR değişikliği kesinlikle kabul edilmez. Model seçimi tarayıcıdan dosya yolu olarak verilemez; operatörün güvenilir yerel `vlm-runtime.json` profilidir.
+- Gerçek Windows GPU/VRAM/Edge kalite, model/template/MMProj uyumu, mimarî uzman değerlendirimi ve `onedir` kullanıcı kabulü İşlem 031'de HOLD. İşlem 028 rubrik skorunun kaynağı model olmayacak; deterministik rubrik kodu kullanılır. `main` ve üretim sürümü değişmedi.
