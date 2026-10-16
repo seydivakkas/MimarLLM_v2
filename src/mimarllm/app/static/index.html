@@ -116,6 +116,22 @@
             <button id="save-review-note" type="button" class="btn solid" disabled>Seçili kaynak için not kaydet</button>
             <div id="review-list" class="review-list"><p class="muted">Henüz inceleme notu yok.</p></div>
           </div>
+          <div class="calibrate" id="cad-edit-section">
+            <div class="stack-title"><h3>DXF kaynak çizgi revizyonu</h3><span class="mini-label">YALNIZ DOĞRUDAN LINE</span></div>
+            <p class="hint">Yalnız CAD Model alanındaki doğrudan LINE uçları düzenlenir. Orijinal DXF korunur; düzenleme yeni bir DXF dosyası üretir. Bu kaynaklı teknik edit hukukî/semantik doğrulama değildir.</p>
+            <div class="field-grid">
+              <div class="field"><label for="edit-start-x">Başlangıç X (CAD birimi)</label><input id="edit-start-x" type="number" step="any" placeholder="X"></div>
+              <div class="field"><label for="edit-start-y">Başlangıç Y (CAD birimi)</label><input id="edit-start-y" type="number" step="any" placeholder="Y"></div>
+              <div class="field"><label for="edit-end-x">Bitiş X (CAD birimi)</label><input id="edit-end-x" type="number" step="any" placeholder="X"></div>
+              <div class="field"><label for="edit-end-y">Bitiş Y (CAD birimi)</label><input id="edit-end-y" type="number" step="any" placeholder="Y"></div>
+            </div>
+            <p id="edit-status" class="hint" role="status" aria-live="polite">Düzenleme geçmişi yüklenmedi.</p>
+            <div class="report-options">
+              <button id="edit-run" type="button" class="btn solid" disabled>Yeni DXF revizyonu üret</button>
+              <button id="edit-undo" type="button" class="btn minor" disabled>Son DXF değişikliğini geri al</button>
+            </div>
+            <div id="edit-download" class="report-files"></div>
+          </div>
           <p class="hint">Çizimler ölçek onayı veya yeni oda/kapı tespiti değildir. Orijinal DXF/PDF, DrawingIR ve rapor değişmez.</p>
         </section>
       </div>
