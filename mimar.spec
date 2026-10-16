@@ -23,6 +23,14 @@ STATIC = SRC / "mimarllm" / "app" / "static"
 if not ENTRY.is_file() or not STATIC.is_dir():
     raise SystemExit("Actual dashboard launcher or local static UI missing")
 
+# The local, preparation-time pinned Three.js ESM must be packaged with
+# its SHA manifest. Never silently substitute a CDN at runtime.
+THREE_JS = STATIC / "three.module.js"
+THREE_MANIFEST = STATIC / "three-vendor-026.json"
+if not THREE_JS.is_file() or not THREE_MANIFEST.is_file():
+    raise SystemExit("026: local Three.js vendor and SHA manifest missing; prepare before onedir build")
+
+
 # All packages below are used in the implemented drawing/PDF/OCR/report
 # pipeline and/or loopback FastAPI UI. Missing builds MUST fail.
 REQUIRED = (
