@@ -41,7 +41,7 @@ def selection(ir, ids):
     return VlmRequest(
         source_sha256=ir.source_sha256, frame_id="cad:Model",
         entity_ids=ids, question="Yalnız kaynaklı çizgilerdeki belirsizliği belirt.",
-        reviewer_label="synthetic reviewer",
+        reviewer_label="synthetic reviewer", consent=True,
     )
 
 
@@ -195,10 +195,12 @@ def test_vlm_api_model_missing_and_strict_provenance(tmp_path,drawing,monkeypatc
             "source_sha256":created.json()["source_sha256"],"frame_id":"cad:Model",
             "entity_ids":[n["entity_id"] for n in native],
             "question":"Lütfen yalnız olası çizim belirsizliklerini özetle.",
-            "reviewer_label":"Reviewer",
+            "reviewer_label":"Reviewer","consent":True,
         }
         url=f"/api/projects/{pid}/runs/{rid}/vlm/suggest"
         assert http.post(url,json=payload).status_code==403
+        assert http.post(url,json={k:v for k,v in payload.items() if k!="consent"},
+            headers={"X-Mimar-CSRF":csrf}).status_code==422
         assert http.post(url,json=payload,headers={"X-Mimar-CSRF":csrf}).status_code==503
         modeldir=tmp_path/"models"
         modeldir.mkdir()
