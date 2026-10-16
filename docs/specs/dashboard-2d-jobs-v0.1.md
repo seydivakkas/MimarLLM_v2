@@ -20,10 +20,20 @@
 - `frame_id` ve `layer` filtreleri aynı raporda gösterilir. Tek çizgi seçildiğinde `source_sha256`, `frame_id`, `origin`, `entity_id`, CAD handle ve native koordinatlar gösterilir. Hiçbiri ayrı yasal/onaylı oda semantiği değildir.
 - Kaynak verisinden `innerHTML` veya `eval` üretilmez; kullanıcı girdisi `textContent`/DOM attribute ile işlenir. Harici JS/CDN/Three.js yüklenmez.
 - CAD Y ekseninde görsel dönüşüm yalnız SVG'de uygulanır; PDF native üst-yön referansı ayrı tutulur. Orijinal koordinatlar kaynak panelinde olduğu gibi gösterilir; metrik veya ölçek onayı çıkarılmaz.
-- Kalıcı geometri edit, undo, uzman inceleme işaretlemesi, 3B önizleme, otonom Layer 0 kapı/duvar/oda sınıflaması ve gerçek PDF sayfa karşılaştırmalı üst üste bindirme **bu alt teslim kapsamında henüz yoktur**.
+- Salt-okunur SVG üzerinde seçimden sonra **manuel inceleme notu** ekleme ve geri alma denetim kaydı mevcuttur. Bu özellik fiziksel CAD geometrisini düzenlemez. Kalıcı CAD edit, geometrik undo, 3B önizleme, otonom Layer 0 sınıflaması ve gerçek PDF sayfa üstüne bindirmesi **henüz yoktur**.
 
 ## Kabul
 
 - Ubuntu + Windows mevcut sentetik API/DXF/PDF/RAG/rule testlerinin ve yeni job/2D/CSP kontrolünün geçmesi.
 - JavaScript sözdizimi her iki CI ortamında `node --check` ile doğrulanır.
 - Gerçek Windows/Edge tıklama, Android/mobil, gerçek mimari A0/bozuk CAD, fiziksel performans, model GPU ve hukukî uzman kabulü nihai İşlem 031'e kalır.
+
+## 3. Yerel manuel inceleme sidecar
+
+- `GET /api/projects/{project_id}/runs/{run_id}/reviews`: mevcut run ve kaynak SHA doğrulandıktan sonra `UNVERIFIED_OBSERVATION` notlarını, geri alınmış kayıtlar dahil döndürür.
+- `POST .../reviews` (201): `source_sha256`, `entity_id`, `frame_id`, `reviewer_label`, `note` JSON; 409 kaynak/frame/eşsiz native-line uyuşmazlığı, 413 üst sınır 4KB, 422 şema hatası.
+- `DELETE .../reviews/{review_id}` (200): notu silmez, `retracted_utc` ile denetim izini korur; aynı notun tekrar geri alınması 409.
+- Yalnız DrawingIR içinde aynı SHA+frame/entity ile bulunan native `LINE/PDF_LINE` için yazım yapılır. Yazım, `run/review-notes.json` sidecar dosyasına atomik yapılır; 100 not / 120KB üst sınır ve symlink ret kapısı vardır.
+- Kullanıcı notları gerçek kimlik doğrulamalı uzman görüşü değildir. `reviewer_label` kullanıcı girdisidir; oluşturulan not `RuleEngine` ve hukukî mevzuat kanıtına otomatik eklenmez.
+- `analysis.html`, `analysis.json`, orijinal DXF/PDF, `drawingir.json` veya pipeline manifesti not ekleme/geri alma sırasında değiştirilmez. Sidecar PDF HTML rapor çıktısı içine sahte hukukî işaret eklemez.
+- CI sentetik testleri persistence, POST/GET/DELETE, CSRF, SHA/ID taklidi, 4KB sınırı, kaynak bütünlüğü ve `REGULATORY_LOCKED` durumunu korumayı inceler.
