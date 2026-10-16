@@ -82,7 +82,9 @@ def build_massing_candidate(drawing: DrawingIR, request: MassingRequest) -> Mass
         raise MassingError("Selected native geometry is missing")
     for entity in selected:
         assert entity is not None
-        if (entity.frame_id != request.frame_id
+        if (entity.source.document_sha256 != drawing.source_sha256
+                or entity.source.source_kind.value != "DXF"
+                or entity.frame_id != request.frame_id
                 or entity.origin != EvidenceOrigin.CAD_NATIVE
                 or entity.type_candidate != "LINE"
                 or entity.geometry.kind.value != "SEGMENT"
