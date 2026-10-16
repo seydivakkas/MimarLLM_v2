@@ -135,7 +135,10 @@ class PipelineConfig(BaseModel):
 
     @model_validator(mode="after")
     def limits(self):
-        if len(self.tiled_ocr) > 8 or sum(t.max_tiles for t in self.tiled_ocr) > 256:
+        if (len(self.tiled_ocr) > 8
+                or sum(t.max_tiles for t in self.tiled_ocr) > 256
+                or sum(t.max_total_pixels for t in self.tiled_ocr) > 120_000_000
+                or sum(t.max_ocr_candidates for t in self.tiled_ocr) > 10_000):
             raise ValueError("Combined tiled OCR request count/pixel budget exceeded")
         if len(self.rules) > 128 or len(self.topology) > 20:
             raise ValueError("Pipeline rule/topology configuration budget exceeded")
