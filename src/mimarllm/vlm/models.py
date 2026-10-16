@@ -16,6 +16,7 @@ class VlmRequest(BaseModel):
     entity_ids: tuple[str, ...] = Field(min_length=1, max_length=48)
     question: str = Field(min_length=1, max_length=320)
     reviewer_label: str = Field(min_length=1, max_length=80)
+    consent: Literal[True]  # explicit server-side opt-in; browser checkbox alone is insufficient
 
     @model_validator(mode="after")
     def distinct(self) -> "VlmRequest":
