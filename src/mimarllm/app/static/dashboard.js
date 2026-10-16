@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false,rubricLines:[],rubricSha:"",rubricCatalog:null,rubricRunning:false};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -76,6 +76,7 @@ async function loadProject() {
     renderDrawing({native_lines:[],manifest:{}});
     updateMassingSources({native_lines:[],source_sha256:""});
     updateVlmSources({native_lines:[],source_sha256:""});
+    updateRubricSources({native_lines:[],source_sha256:""});
     state.reviews=[];showReviews();
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
@@ -117,6 +118,7 @@ async function loadRun(id) {
   renderDrawing(data);
   updateMassingSources(data);
   updateVlmSources(data);
+  updateRubricSources(data);
   const findings=$("finding-list");clear(findings);
   findings.append(el("h3","Bulgular / değerlendirme adayları"));
   if(!data.findings.length) findings.append(el("p","Henüz bulgu yok; kaynak geometrisi HTML raporunda incelenebilir.","muted"));
@@ -579,6 +581,165 @@ async function inferVlm() {
   }
 }
 
+
+function rubricAvailability() {
+  $("rubric-evaluate").disabled=state.rubricRunning ||
+    !state.projectId || !state.runId || !state.rubricSha ||
+    !state.rubricCatalog || !state.rubricLines.length ||
+    !$("rubric-human-confirm").checked;
+}
+function clearRubricOutput() {
+  const destination=$("rubric-outcome");clear(destination);
+  destination.append(el("p","Henüz onaylanmış bir insan rubrik taslağı hesaplanmadı.","muted"));
+}
+function updateRubricSources(data) {
+  state.rubricSha=data.source_sha256||"";
+  state.rubricLines=Array.isArray(data.native_lines)?
+    data.native_lines.filter(s=>
+      ["CAD_NATIVE","PDF_NATIVE"].includes(s.origin) &&
+      typeof s.entity_id==="string" && typeof s.frame_id==="string" &&
+      Array.isArray(s.points) && s.points.length===2):[];
+  const frame=$("rubric-frame");clear(frame);
+  const frameIds=[...new Set(state.rubricLines.map(x=>x.frame_id))].sort();
+  if(!frameIds.length)frame.add(new Option("Önce kaynaklı analiz seçin",""));
+  else for(const id of frameIds)frame.add(new Option(id,id));
+  $("rubric-human-confirm").checked=false;
+  clearRubricOutput();
+  renderRubricCatalog();
+  rubricAvailability();
+}
+async function loadRubricProfile() {
+  const year=Number($("rubric-year").value);
+  state.rubricCatalog=null;
+  $("rubric-catalog-status").textContent="Sınıf kriterleri yükleniyor…";
+  clearRubricOutput();
+  rubricAvailability();
+  try {
+    const catalogue=await api("/api/rubric/profile/"+year);
+    if(year!==Number($("rubric-year").value))return;
+    if(catalogue.rubric_version!=="028.0.1" || catalogue.official_grade!==false ||
+       !Array.isArray(catalogue.axes)||catalogue.axes.length!==8)
+      throw new Error("Kademeli rubrik sözleşmesi yanlış.");
+    state.rubricCatalog=catalogue;
+    $("rubric-catalog-status").textContent=
+      year+". sınıf · "+catalogue.criteria.length+" aktif kriter · "+
+      catalogue.excluded_higher_year_criteria.length+" üst sınıf kriteri kapsam dışı. "+
+      "Sürüm "+catalogue.rubric_version+" (pilot).";
+    renderRubricCatalog();
+  }catch(e){
+    $("rubric-catalog-status").textContent="Kriter kataloğu yüklenemedi: "+e.message;
+  }
+  rubricAvailability();
+}
+function renderRubricCatalog(){
+  const view=$("rubric-criteria");clear(view);
+  const catalogue=state.rubricCatalog;
+  if(!catalogue){view.append(el("p","Kriterler yüklenmedi.","muted"));return;}
+  const frame=$("rubric-frame").value;
+  const refs=state.rubricLines.filter(x=>x.frame_id===frame);
+  for(const axis of catalogue.axes) {
+    const group=el("section","","rubric-axis");
+    const heading=el("div","","rubric-axis-heading");
+    heading.append(el("strong",axis.title_tr),
+      el("small",axis.active ? "Temel ağırlık: %"+axis.default_weight :
+        "Bu sınıf için uygulanmaz · puan kesilmez"));
+    group.append(heading);
+    if(!axis.active){
+      group.append(el("p","Kademeli iskele nedeniyle bu sınıfın kapsamı dışında.","hint"));
+      view.append(group);continue;
+    }
+    for(const criterion of catalogue.criteria.filter(x=>x.axis===axis.axis)){
+      const card=el("div","","rubric-criterion");
+      card.dataset.criterionId=criterion.criterion_id;
+      const label=el("label",criterion.title_tr);
+      const hint=el("p",criterion.evidence_hint_tr,"hint");
+      const grade=el("select");
+      grade.className="rubric-criterion-level";
+      grade.setAttribute("aria-label",criterion.title_tr+" insan değerlendirme düzeyi");
+      grade.add(new Option("Henüz insan tarafından değerlendirilmedi",""));
+      for(let n=0;n<=4;n++)grade.add(new Option(n+" — "+catalogue.scale_levels[String(n)],String(n)));
+      const source=el("select");
+      source.className="rubric-criterion-source";
+      source.setAttribute("aria-label",criterion.title_tr+" kaynak çizgi");
+      source.add(new Option("Kaynak çizgi seçilmedi",""));
+      for(const item of refs){
+        source.add(new Option((item.layer||"Katmansız")+" · "+item.entity_id,item.entity_id));
+      }
+      const note=el("textarea");note.className="rubric-criterion-note";
+      note.maxLength=500;note.rows=2;
+      note.placeholder="İnsan gözlemi, gerekçe ve eleştiri (en az 15 karakter)";
+      note.setAttribute("aria-label",criterion.title_tr+" insan inceleme notu");
+      card.append(label,hint,grade,source,note);
+      group.append(card);
+    }
+    view.append(group);
+  }
+}
+async function evaluateRubric() {
+  if(!state.rubricCatalog || !state.runId || !state.rubricSha ||
+     !$("rubric-human-confirm").checked) {
+    return notice("Rubrik için kaynak analizi ve açık insan inceleme beyanı gerekli.",true);
+  }
+  const reviewer=$("rubric-reviewer").value.trim();
+  if(reviewer.length<2)return notice("İncelemeci etiketi gerekli.",true);
+  const selected=[];
+  for(const row of document.querySelectorAll(".rubric-criterion")){
+    const raw=row.querySelector(".rubric-criterion-level").value;
+    if(raw==="")continue;
+    const source=row.querySelector(".rubric-criterion-source").value;
+    const note=row.querySelector(".rubric-criterion-note").value.trim();
+    if(!source || note.length<15)
+      return notice("Girilen her değerlendirme için gerçek çizgi kaynağı ve en az 15 karakter insan gerekçesi gerekir.",true);
+    selected.push({
+      criterion_id:row.dataset.criterionId,
+      human_level:Number(raw),source_entity_ids:[source],
+      reviewer_note:note,human_review_attested:true,
+    });
+  }
+  const pid=state.projectId,rid=state.runId;
+  state.rubricRunning=true;rubricAvailability();clearRubricOutput();
+  try{
+    const result=await api("/api/projects/"+pid+"/runs/"+rid+"/rubric/evaluate",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        source_sha256:state.rubricSha,frame_id:$("rubric-frame").value,
+        rubric_version:state.rubricCatalog.rubric_version,
+        academic_year:Number($("rubric-year").value),
+        reviewer_label:reviewer,human_review_attested:true,
+        reviews:selected,
+      }),
+    });
+    if(pid!==state.projectId||rid!==state.runId)return;
+    if(result.regulatory_status!=="REGULATORY_LOCKED" ||
+       result.official_grade!==false || result.vlm_derived_scores!==false)
+      throw new Error("Pedagojik rubrik kanıt sözleşmesi geçersiz.");
+    const view=$("rubric-outcome");clear(view);
+    const heading=el("strong",result.status==="NOT_SCORED"?
+      "NOT_SCORED — eksik insan incelemesi var":
+      "Yalnız yerel taslak puan: "+result.draft_points_out_of_100+" / 100");
+    view.append(heading,el("p",
+      "İncelenen kriter: "+result.reviewed_criterion_count+" / "+result.active_criterion_count+
+      " · Bu sonuç RESMÎ DERS NOTU DEĞİLDİR.","hint"));
+    for(const axis of result.axes){
+      const item=el("div","","rubric-axis-result");
+      item.append(el("strong",axis.title_tr),
+        el("span",axis.status==="NOT_APPLICABLE_BY_LEVEL"?"SINIF KAPSAMI DIŞI":
+          axis.status==="REVIEW_REQUIRED"?"KANIT / İNSAN İNCELEMESİ BEKLİYOR":
+          String(axis.draft_axis_percent)+" / 100 TASLAK"));
+      view.append(item);
+    }
+    $("rubric-status").textContent=result.status==="NOT_SCORED"?
+      "Eksik kriterler: "+result.missing_criterion_ids.join(", ")+". Genel puan üretilmedi.":
+      "Tüm geçerli kriterler insan beyanıyla değerlendirildi. Puan yalnız doğrulanmamış yerel eğitim taslağıdır.";
+  }catch(e){
+    clearRubricOutput();
+    $("rubric-status").textContent="Rubrik değerlendirilemedi: "+e.message;
+    notice("Rubrik reddedildi. Analiz veya resmî not değiştirilmedi.",true);
+  }finally{
+    state.rubricRunning=false;rubricAvailability();
+  }
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -652,6 +813,7 @@ async function start() {
     if(!state.csrf) throw new Error("Yerel oturum güvenlik anahtarı alınamadı.");
     await refresh();
     await loadVlmAvailability();
+    await loadRubricProfile();
   }catch(e){notice("Yerel uygulama başlatılamadı: "+e.message,true);}
 }
 $("upload-button").addEventListener("click",upload);
@@ -666,6 +828,14 @@ $("vlm-source-frame").addEventListener("change",vlmFrameChanged);
 $("vlm-opt-in").addEventListener("change",vlmReady);
 $("vlm-infer").addEventListener("click",inferVlm);
 $("vlm-clear").addEventListener("click",clearVlm);
+$("rubric-year").addEventListener("change",()=>loadRubricProfile().catch(e=>notice(e.message,true)));
+$("rubric-frame").addEventListener("change",()=>{renderRubricCatalog();clearRubricOutput();rubricAvailability();});
+$("rubric-human-confirm").addEventListener("change",rubricAvailability);
+$("rubric-evaluate").addEventListener("click",evaluateRubric);
+$("rubric-clear").addEventListener("click",()=>{
+  renderRubricCatalog();$("rubric-human-confirm").checked=false;
+  clearRubricOutput();rubricAvailability();
+});
 $("selected-project").addEventListener("change",e=>chooseProject(e.target.value).catch(x=>notice(x.message,true)));
 $("drawing-file").addEventListener("change",e=>{
   const file=e.target.files?.[0];$("picked-file").textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"Henüz dosya seçilmedi.";
