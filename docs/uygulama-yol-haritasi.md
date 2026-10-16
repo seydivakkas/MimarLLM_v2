@@ -26,7 +26,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_024` | Türkçe mimari arama ipuçları + sınırlı SQLite RAG pasaj cache'i | KISMI / mevcut kod, 013–015/019 | Opt-in kurasyonlu FTS arama, SHA izolasyonu; genel workspace/WAL/retention HOLD |
 | `islem_025` | Dashboard 2B kaynak çizgisi, bounded işler, dar DXF Model LINE revizyon/undo | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS / DRAFT PR #2 | fiziksel Edge, gerçek CAD/PDF ve offline exe yalnız son İşlem 031 kabulünde; 026'yı bloklamaz |
 | `islem_026` | Kaynak bağlı 2.5D prizma ve çevrimdışı Three.js | MÜHENDİSLİK KOD ADAYI / SENTETİK_CI_PASS, 025 bağımlı dal | Yalnız doğrudan CAD Model LINE + bağımsız CONFIRMED ölçek + kullanıcı beyanı yüksekliği; fiziksel UAT 031 |
-| `islem_027` | Yerel GGUF/MMProj VLM, VRAM profiler, structured response/no-overwrite | AR-GE, 023/025 | model Windows/8GB ölçümü, GPU fallback gerçek QA |
+| `islem_027` | Opt-in yerel GGUF/MMProj, RAM/VRAM preflight, kaynaklı structured VLM yorumu | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS, 026 bağımlı Draft PR #5 | gerçek GGUF/model uyumu, Windows/8GB GPU/VRAM, inference kalitesi ve offline EXE son 031 kabulünde |
 | `islem_028` | Sekiz boyutlu rubrik ontolojisi/weight/supervisor, score-in-code | PLAN, 017/027 bağımsız GPU modu | uzman onaylı kriter yoksa otomatik gerçek not yok |
 | `islem_029` | Sıralı pedagojik jüri/persona/ton (isteğe bağlı) | PLAN, 027/028 | çok metinsel persona = bağımsız uzman oyu değildir |
 | `islem_030` | Öğrenci analitiği, trend, izinli geçmiş ve radar rapor (isteğe bağlı) | PLAN, 028/029 | onam, küçük örneklem belirsizliği, kimlik/gizlilik |
@@ -202,3 +202,14 @@ F28/F04 **KISMI**; sentetik fake CPU reader testleri gerçek OCR modeli doğrulu
 4. **Resmî hukukî kapı:** F08–F12 `HUKUKI_HOLD` ve `RuleEngine.REGULATORY=INSUFFICIENT_EVIDENCE` bütün aşamalarda sürer. Teknik sentetik test veya 2.5D görüntü hukukî PASS olamaz.
 
 **Sıradaki kesin mühendislik yazımı:** `docs/islem_026.md`, 026'nın kendi kaynak dosyalarından *önce* ilk GitHub değişikliği olarak açılacak. 026 dalı gerekiyorsa açık 025 aday dalını temel alabilir; 025 PR #2 Draft ve `main` değişmeden kalır.
+
+## 8. İşlem 027 — Yerel GGUF/MMProj VLM güvenlik hattı (2026-10-16)
+
+**İşlem 027 ayrı bağımlı Draft PR #5**: `feature/islem-027-local-vlm-guard` → 026 branch → 025 branch → main (henüz hiçbir merge yok). İlk commit `docs/islem_027.md`; gerçek kod `vlm/models.py`, `budget.py`, `source.py`, `local_engine.py`, FastAPI / UI, operatör CLI ve sentetik test.
+- Yalnız açık kullanıcı opt-in, SHA/frame/native entity doğrulanmış çizgiler; 512x512 yerel PNG yalnız bir *çizgi görüntüsü adayı*. Modelin yazdığı JSON yalnız sınırlı `kind/commentary/entity_ids` önerileri; kesin alan/ölçü/hukuk/skor/çizim düzenlemesi mümkün değil.
+- GGUF/MMProj ağırlıkları ile `llama-server` bu repoda yok, model ağırlığına dayalı gerçek inference henüz hiç çalıştırılmadı. Operatör tarafından yerel SHA profili sağlanmadığında model 503 ile reddedilir ve deterministik analiz devam eder.
+- RAM/VRAM preflight model+MMProj boyutları, sistem RAM ve tek NVIDIA GPU telemetry için yaklaşık rezerv. Bilinmeyen VRAM ile GPU tahmin edilmez; izinli ve yeterli RAM varsa CPU fallback, aksi ret. Gerçek FPS, GPU performansı veya 8GB uyumu doğrulanmış değildir.
+- `tests/test_vlm_027.py` sentetik schema/provenance/CSRF/offline/fallback ölçümleri CI'ya eklendi. Fiziksel Windows/Edge, gerçek GPU, mimari uzman semantik ölçümü ve offline `onedir` kabulü son `islem_031`de HOLD.
+- Bir sonraki geliştirme, VLM sözlü iddialarından bağımsız **İşlem 028 — rubrik ontolojisi/puanlama kodu**. F08–F12 `HUKUKI_HOLD` sabit.
+
+[İşlem 027](islem_027.md) · [VLM 027 sözleşmesi](specs/local-vlm-027-v0.1.md).
