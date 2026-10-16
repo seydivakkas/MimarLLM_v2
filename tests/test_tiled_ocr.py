@@ -290,7 +290,7 @@ def test_tile_count_rejected_before_generating_any_grid(a0,monkeypatch):
     monkeypatch.setattr(mod,"_tile_starts",allocate_forbidden)
     req=TiledOcrRequest(
         page_index=0,roi_points=(0,0,2384,3370),
-        tile_width_pt=32,tile_height_pt=32,
+        tile_width_pt=32,tile_height_pt=32,overlap_pt=0,
         max_tiles=8,
     )
     with pytest.raises(PdfInputError,match="tile count"):
