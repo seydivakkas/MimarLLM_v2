@@ -101,3 +101,11 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 - `importers/pdf_ir.py` ve `pipeline.py` OCR token'larını yalnız `OCR_CANDIDATE`, sayfa/quad/source SHA, şema `REVIEW_REQUIRED` olarak tutar; overlap'teki gerçekten aynı metin+konum tekrarlarını ayırır. `PipelineManifest` OCR tile/token/dedup ve `layout_candidates` kaydeder. `ocr/layout.py` sağ-alt antet/üst-alt marjda **sadece konum ipucu** üretir.
 - `mimarllm analyze local.pdf --config tiled.json --output-dir out` örneği teknik şartnamede. Varsayılan OCR kapalı. Döndürülmüş çok büyük sayfa ve özel CropBox güvenli kaynak dönüşümü doğrulanmadıysa reddedilir.
 - **Gerçek A0 taranmış belge OCR CER/WER ve bellek benchmark, gerçek Windows/Edge kabulü, gerçek hukukî mevzuat sertifikası yapılmadı.** F04/F28 KISMI; F08–F12 HUKUKI_HOLD.
+
+
+## İşlem 024 — Türkçe mimari RAG arama ipuçları ve yerel cache
+
+- [İşlem 024](docs/islem_024.md) · [Teknik şartname](docs/specs/rag-lexicon-v0.1.md).
+- **Kod:** `rag/lexicon.py` Türkçe tam terim/çok sözcüklü **arama ipuçları** (`ışıklık`, `ışık kuyusu`, `kapı temiz/net genişliği` gibi); `search_legal(..., lexical_expansion=True)` opt-in, özgün BM25 eşleşmeleri ilk sırada, alternatifler ek aday. Metin/LegalAST/source PDF quad ve `UNREVIEWED` korunur.
+- **Yerel SQLite:** `rag_lexical_cache` azami 128 FTS arama kimliği ve sıralı passage ID saklar, query/filter/limit için ayrı anahtar; PDF görüntüsü veya ham kullanıcı sorgusu değil. Re-index ve passages SQL trigger'ları cache'i temizler; PDF varlığı ve SHA her sonucun gösteriminde tekrar denetlenir. Başarısız indeksleme eski dizini/önbelleği bozmaz.
+- **Hukukî ve semantik sınır:** İpucu sözlüğü mevzuatın **resmî eş anlam sözlüğü değildir**; cache relevance veya yürürlük doğruluğu sağlamaz. Gerçek Türkçe öğrenilmiş embedding benchmark, çok yıllı Resmî Gazete, uzman onayı ve gerçek Windows kabulü HOLD. F29 yalnız başlangıç/kurasyonlu aday; F30 yalnız yerel arama cache'i, **WAL, genel workspace geçmişi ve retention yok**. F08–F12 HUKUKI_HOLD.
