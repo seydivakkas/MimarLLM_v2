@@ -64,7 +64,7 @@ def main() -> int:
                   "--disable-background-networking","--no-default-browser-check",
                   "--user-data-dir="+str(root/"edge-profile"),
                   "--virtual-time-budget=4000"]
-            process=subprocess.run(base+["--dump-dom",url],text=True,capture_output=True,timeout=65)
+            process=subprocess.run(base+["--dump-dom",url],text=True,encoding="utf-8",errors="replace",capture_output=True,timeout=65)
             if process.returncode!=0:
                 raise RuntimeError("Edge DOM smoke failed")
             dom=process.stdout
