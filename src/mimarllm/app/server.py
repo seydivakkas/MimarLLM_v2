@@ -27,6 +27,7 @@ from starlette.concurrency import run_in_threadpool
 
 from mimarllm.app.jobs import BoundedAnalysisJobs, JobQueueFull
 from mimarllm.app.reviews import ReviewStore, ReviewPayload, ReviewError
+from mimarllm.app.dxf_edits import DxfRevisions, EditRequest, UndoRequest, EditError
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -383,6 +384,7 @@ def create_app(workspace: str | Path) -> FastAPI:
     # in the existing source-validated run directories.
     jobs = BoundedAnalysisJobs(_generate_run, running)
     reviews = ReviewStore()
+    dxf_revisions = DxfRevisions()
 
     @app.post("/api/projects/{project_id}/jobs", status_code=202)
     async def queue_analysis(project_id: str, request: Request):
@@ -514,6 +516,73 @@ def create_app(workspace: str | Path) -> FastAPI:
             return reviews.retract(folder, source_sha, review_id)
         except ReviewError as exc:
             raise HTTPException(status_code=409, detail="İnceleme notu bulunamadı veya geri alındı.") from exc
+
+    def dxf_edit_context(project_id: str):
+        project = metadata(project_id)
+        if project["source_kind"] != "DXF":
+            raise HTTPException(status_code=415, detail="Kalıcı geometri revizyonu yalnız DXF içindir.")
+        folder = project_path(project_id)
+        source = folder / "input.dxf"
+        if source.is_symlink() or not source.is_file() or _hash_file(source) != project["source_sha256"]:
+            raise HTTPException(status_code=409, detail="Orijinal DXF SHA doğrulaması başarısız.")
+        return folder, project["source_sha256"]
+
+    async def parse_dxf_edit_payload(request: Request, schema):
+        data = bytearray()
+        length = request.headers.get("content-length")
+        if length:
+            try:
+                if int(length) > 4096:
+                    raise HTTPException(status_code=413, detail="CAD düzenleme komutu çok büyük.")
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Geçersiz gövde uzunluğu.") from exc
+        async for chunk in request.stream():
+            data.extend(chunk)
+            if len(data) > 4096:
+                raise HTTPException(status_code=413, detail="CAD düzenleme komutu çok büyük.")
+        try:
+            return schema.model_validate_json(bytes(data))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="CAD düzenleme komutu doğrulanamadı.") from exc
+
+    @app.get("/api/projects/{project_id}/edits")
+    def dxf_edit_status(project_id: str):
+        folder, sha = dxf_edit_context(project_id)
+        try:
+            return dxf_revisions.status(folder, sha)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail="DXF revizyon geçmişi güvenilir değil.") from exc
+
+    @app.post("/api/projects/{project_id}/edits", status_code=201)
+    async def dxf_edit_line(project_id: str, request: Request):
+        folder, sha = dxf_edit_context(project_id)
+        command = await parse_dxf_edit_payload(request, EditRequest)
+        try:
+            return dxf_revisions.revise(folder, sha, command)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail="DXF düzenleme kaynağı ya da revizyonu doğrulanamadı.") from exc
+
+    @app.post("/api/projects/{project_id}/edits/undo", status_code=201)
+    async def dxf_edit_undo(project_id: str, request: Request):
+        folder, sha = dxf_edit_context(project_id)
+        command = await parse_dxf_edit_payload(request, UndoRequest)
+        try:
+            return dxf_revisions.undo(folder, sha, command)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail="CAD revizyonu geri alınamadı.") from exc
+
+    @app.get("/api/projects/{project_id}/edits/{revision_id}/download")
+    def dxf_edit_download(project_id: str, revision_id: str):
+        folder, sha = dxf_edit_context(project_id)
+        try:
+            binary = dxf_revisions.download(folder, sha, revision_id)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=404, detail="DXF revizyonu bulunamadı.") from exc
+        return Response(
+            content=binary,
+            media_type="application/dxf",
+            headers={"Content-Disposition": f'attachment; filename="MimarLLM-{revision_id}.dxf"'},
+        )
 
     @app.get("/api/projects/{project_id}/runs/{run_id}/files/{filename}")
     def report_file(project_id: str, run_id: str, filename: str):
