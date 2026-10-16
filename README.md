@@ -109,3 +109,10 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 - **Kod:** `rag/lexicon.py` Türkçe tam terim/çok sözcüklü **arama ipuçları** (`ışıklık`, `ışık kuyusu`, `kapı temiz/net genişliği` gibi); `search_legal(..., lexical_expansion=True)` opt-in, özgün BM25 eşleşmeleri ilk sırada, alternatifler ek aday. Metin/LegalAST/source PDF quad ve `UNREVIEWED` korunur.
 - **Yerel SQLite:** `rag_lexical_cache` azami 128 FTS arama kimliği ve sıralı passage ID saklar, query/filter/limit için ayrı anahtar; PDF görüntüsü veya ham kullanıcı sorgusu değil. Re-index ve passages SQL trigger'ları cache'i temizler; PDF varlığı ve SHA her sonucun gösteriminde tekrar denetlenir. Başarısız indeksleme eski dizini/önbelleği bozmaz.
 - **Hukukî ve semantik sınır:** İpucu sözlüğü mevzuatın **resmî eş anlam sözlüğü değildir**; cache relevance veya yürürlük doğruluğu sağlamaz. Gerçek Türkçe öğrenilmiş embedding benchmark, çok yıllı Resmî Gazete, uzman onayı ve gerçek Windows kabulü HOLD. F29 yalnız başlangıç/kurasyonlu aday; F30 yalnız yerel arama cache'i, **WAL, genel workspace geçmişi ve retention yok**. F08–F12 HUKUKI_HOLD.
+
+## İşlem 025 — Kaynaklı 2B inceleme ve yerel iş durumları (Draft PR #2)
+
+- [İşlem 025 kaydı](docs/islem_025.md) · [API/önizleme şartnamesi](docs/specs/dashboard-2d-jobs-v0.1.md).
+- Yeni iş hattı `POST /api/projects/{id}/jobs` (202) + `GET /api/projects/{id}/jobs/{job_id}` ile yerel, sınırlı, geçici `QUEUED/RUNNING/COMPLETED/FAILED` durumlarını verir. Tek worker, en fazla 4 aktif/bekleyen. Eski senkron `/runs` API'si bozulmaz.
+- 2B arayüz mevcut kaynağa bağlı native LINE çizgileri için frame/katman filtreli **salt-okunur** SVG önizleme ve SHA/entity/handle/nokta incelemesi sunar. Henüz gerçek CAD edit, kalıcı anotasyon veya kesin mekân tanıma değildir.
+- GitHub-hosted [CI 38834544453](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38834544453): Ubuntu 364 PASS/1 SKIP, Windows 365 PASS; gerçek Windows/Edge kullanıcı/performans kabulü ve son PR head CI ayrı. `main` değil, aday `feature/islem-025-source-2d-jobs` dalındadır.
