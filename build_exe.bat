@@ -20,6 +20,16 @@ if errorlevel 1 (
   echo MIMARLLM_ERROR: Required preinstalled CPU build dependencies missing. 1>&2
   exit /b 2
 )
+where node >nul 2>nul
+if errorlevel 1 (
+  echo MIMARLLM_ERROR: Node.js needed for local Three.js SHA manifest verification at build time. 1>&2
+  exit /b 2
+)
+node "scripts\build_three_vendor_026.mjs" --verify
+if errorlevel 1 (
+  echo MIMARLLM_ERROR: Local Three.js vendor not prepared or modified. 1>&2
+  exit /b 2
+)
 "%PY%" -m PyInstaller --noconfirm --clean "mimar.spec"
 if errorlevel 1 (
   echo MIMARLLM_ERROR: PyInstaller build failed. 1>&2
