@@ -62,6 +62,8 @@ class RagResponse(BaseModel):
     dense_model_id: str | None = None
     dense_state: Literal["DISABLED", "INDEXED", "NO_MODEL_VECTORS"] = "DISABLED"
     results: tuple[RagHit, ...]
+    expansion_version: str | None = None
+    search_hint_terms: tuple[str, ...] = ()
     note: Literal["UNREVIEWED_SOURCES_RELEVANCE_NOT_LEGAL_VALIDITY"] = (
         "UNREVIEWED_SOURCES_RELEVANCE_NOT_LEGAL_VALIDITY"
     )
