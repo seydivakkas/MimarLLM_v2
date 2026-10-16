@@ -293,3 +293,37 @@ def test_tampered_project_metadata_cannot_redirect_source_path(cli,dxf):
     assert http.get(f"/api/projects/{pid}").status_code==409
     assert run(http,csrf,pid).status_code==409
     assert not http.get("/api/projects").json()["projects"]
+
+
+
+def test_studio_import_is_local_and_evidence_gated(cli):
+    """Source HTML capabilities are only enabled when current backend evidence exists."""
+    http, _, _ = cli
+    page = http.get("/").text
+    js = http.get("/static/dashboard.js").text
+    css = http.get("/static/dashboard.css").text
+
+    assert 'id="studio"' in page
+    assert 'id="studio-viewport"' in page
+    for grade, count in ((1, 18), (2, 31), (3, 45), (4, 55)):
+        assert f'data-level="{grade}"' in page
+        assert f'{count} modül hedefi' in page
+
+    assert "REGULATORY_LOCKED" in page
+    assert 'data-view="drawing"' in page
+    assert 'data-view="legal"' in page
+    assert "disabled" in page  # unimplemented 2.5D is not clickable
+    assert "STUDIO_MODULE_EXAMPLES" in js
+    assert "studioRunReport=data" in js
+    assert "analysis.html" in js
+    assert "Puan: —" in js
+    assert "studio-columns" in css
+
+    # Static integration must not introduce unsafe rendering, model calls, or external assets.
+    assert "innerHTML" not in js
+    assert "eval(" not in js
+    assert "https://" not in page
+    assert "three.min.js" not in page
+    assert "89.7 / 100" not in page
+    assert "Ruhsat Ön-Onay" not in page
+    assert http.get("/static/three.min.js").status_code == 404
