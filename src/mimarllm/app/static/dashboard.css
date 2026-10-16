@@ -110,3 +110,31 @@ footer{color:#9ca9b9;font-size:11px;padding:25px 0 12px}
 .vlm-panel #vlm-results{margin:12px 0}
 .vlm-panel #vlm-results article{white-space:normal;overflow-wrap:anywhere}
 .vlm-panel #vlm-results small{display:block;overflow-wrap:anywhere}
+
+
+/* 028: progressive pedagogical studio rubric — no official-grade UI */
+.rubric-panel{margin-top:22px}
+.rubric-panel .field-grid{margin:12px 0}
+.rubric-consent{display:flex;gap:10px;align-items:flex-start;line-height:1.6;
+  padding:12px;border:1px solid #d6e3ef;background:#f7fafd;border-radius:8px}
+.rubric-consent input{margin-top:5px;flex:0 0 auto}
+.rubric-criteria{display:flex;flex-direction:column;gap:12px;margin:14px 0}
+.rubric-axis{border:1px solid #d9e2ed;border-radius:10px;padding:12px;background:#fff}
+.rubric-axis-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  padding-bottom:8px;border-bottom:1px solid #edf1f5}
+.rubric-axis-heading strong{font-size:13px;color:#263c53}
+.rubric-axis-heading small{font-size:11px;color:#637991;max-width:40%;text-align:right}
+.rubric-criterion{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr);
+  gap:9px;padding:11px 0;border-bottom:1px dashed #e3eaf1}
+.rubric-criterion:last-child{border-bottom:0}
+.rubric-criterion label,.rubric-criterion .hint{grid-column:1 / -1}
+.rubric-criterion label{font-size:12px;font-weight:600;color:#36506c}
+.rubric-criterion select,.rubric-criterion textarea{width:100%;max-width:100%;min-width:0}
+.rubric-criterion textarea{grid-column:1 / -1;resize:vertical}
+.rubric-outcome{padding:12px;background:#f8fafc;border:1px solid #dee7f1;border-radius:8px;
+  display:flex;flex-direction:column;gap:8px}
+.rubric-axis-result{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+  border-bottom:1px solid #e5ebf3;padding:7px 0;font-size:12px}
+.rubric-axis-result span{font-size:11px;color:#5d738a;text-align:right}
+@media(max-width:690px){.rubric-criterion{grid-template-columns:minmax(0,1fr)}
+  .rubric-axis-heading{flex-direction:column}.rubric-axis-heading small{text-align:left;max-width:100%}}
