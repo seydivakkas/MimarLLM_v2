@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:""};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -75,6 +75,7 @@ async function loadProject() {
     clear($("finding-list"));clear($("report-files"));clear($("stage-list"));
     renderDrawing({native_lines:[],manifest:{}});
     updateMassingSources({native_lines:[],source_sha256:""});
+    updateVlmSources({native_lines:[],source_sha256:""});
     state.reviews=[];showReviews();
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
@@ -115,6 +116,7 @@ async function loadRun(id) {
   }
   renderDrawing(data);
   updateMassingSources(data);
+  updateVlmSources(data);
   const findings=$("finding-list");clear(findings);
   findings.append(el("h3","Bulgular / değerlendirme adayları"));
   if(!data.findings.length) findings.append(el("p","Henüz bulgu yok; kaynak geometrisi HTML raporunda incelenebilir.","muted"));
@@ -474,6 +476,109 @@ async function buildMassing() {
   }
 }
 
+
+function clearVlm() {
+  clear($("vlm-results"));
+  $("vlm-results").append(el("p","Henüz yerel model yorum adayı yok.","muted"));
+}
+function vlmReady() {
+  $("vlm-infer").disabled = !state.vlmConfigured || !state.vlmSha ||
+      !state.vlmLines.length || !state.projectId || !state.runId ||
+      !$("vlm-opt-in").checked || state.vlmRunning;
+}
+function vlmFrameChanged() {
+  const chosen=$("vlm-source-frame").value,list=$("vlm-line-select");
+  clear(list);clearVlm();
+  const lines=state.vlmLines.filter(s=>s.frame_id===chosen);
+  if(!lines.length) {
+    list.append(el("p","Bu sayfada kaynak LINE bulunamadı.","muted"));
+    vlmReady();return;
+  }
+  for(const line of lines) {
+    const label=el("label"),checkbox=el("input");
+    checkbox.type="checkbox";
+    checkbox.className="vlm-source-check";
+    checkbox.value=line.entity_id;
+    label.append(checkbox,el("span",line.frame_id+" · "+(line.layer||"Katmansız")+
+      " · "+(line.cad_handle||line.entity_id)));
+    list.append(label);
+  }
+  vlmReady();
+}
+function updateVlmSources(data) {
+  state.vlmSha=data.source_sha256||"";
+  state.vlmLines=Array.isArray(data.native_lines)?
+    data.native_lines.filter(s=>["CAD_NATIVE","PDF_NATIVE"].includes(s.origin) &&
+      ["cad:Model",s.frame_id].includes(s.frame_id) &&
+      Array.isArray(s.points) && s.points.length===2):[];
+  $("vlm-opt-in").checked=false;
+  const frame=$("vlm-source-frame");clear(frame);
+  const frames=[...new Set(state.vlmLines.map(s=>s.frame_id))].sort();
+  if(!frames.length)frame.add(new Option("Önce kaynak LINE içeren analiz seçin",""));
+  else for(const id of frames)frame.add(new Option(id,id));
+  vlmFrameChanged();
+}
+async function loadVlmAvailability() {
+  try {
+    const status=await api("/api/vlm/status");
+    state.vlmConfigured=!!status.configured;
+    $("vlm-config-status").textContent=status.configured ?
+      "Yerel model yapılandırması mevcut. Model/VRAM doğrulaması çalıştırma sırasında yapılır.":
+      "Yerel model henüz yapılandırılmadı. Deterministik DXF/PDF analizi bundan etkilenmez.";
+  } catch (e) {
+    state.vlmConfigured=false;
+    $("vlm-config-status").textContent="Yerel VLM kullanılamıyor: "+e.message;
+  }
+  vlmReady();
+}
+async function inferVlm() {
+  if(!state.vlmConfigured || !state.projectId || !state.runId ||
+     !$("vlm-opt-in").checked) {
+    return notice("Yerel model yapılandırması ve açık VLM onayı gerekir.",true);
+  }
+  const ids=[...document.querySelectorAll(".vlm-source-check:checked")].map(x=>x.value);
+  const question=$("vlm-question").value.trim();
+  const reviewer=$("vlm-reviewer").value.trim();
+  if(!ids.length || ids.length>48 || !question || question.length>320 || !reviewer) {
+    return notice("1–48 kaynak çizgi, kısa soru ve incelemeci etiketi gerekli.",true);
+  }
+  const projectId=state.projectId,runId=state.runId,sha=state.vlmSha,
+        frame=$("vlm-source-frame").value;
+  clearVlm();state.vlmRunning=true;vlmReady();
+  $("vlm-status").textContent="Yerel GGUF/MMProj başlatılıyor. Sonuç yalnız onaysız yorum adayı olacaktır.";
+  try {
+    const result=await api("/api/projects/"+projectId+"/runs/"+runId+"/vlm/suggest",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        source_sha256:sha,frame_id:frame,entity_ids:ids,
+        question,reviewer_label:reviewer
+      })
+    });
+    if(projectId!==state.projectId || runId!==state.runId)return;
+    if(result.status!=="UNVERIFIED_VLM_SUGGESTION" ||
+       result.source_sha256!==sha || result.legal_gate!=="REGULATORY_LOCKED") {
+      throw new Error("Model yanıtı kaynak veya güvenlik statüsüne uymuyor.");
+    }
+    const list=$("vlm-results");clear(list);
+    list.append(el("p","KAYNAK SHA: "+result.source_sha256+
+      " · "+result.execution_mode+" · YALNIZ ONAYSIZ YORUM","hint"));
+    if(!result.suggestions.length) list.append(el("p","Model temkinli biçimde aday bildirmedi.","muted"));
+    for(const candidate of result.suggestions){
+      const item=el("article","","review-item");
+      item.append(el("strong",candidate.kind+" · İNCELEME GEREKLİ"),
+        el("p",candidate.commentary),
+        el("small","Özgün çizgi kimlikleri: "+candidate.entity_ids.join(", ")));
+      list.append(item);
+    }
+    $("vlm-status").textContent="Yerel model yorumu alındı; doğrulanmış mimari sonuç değildir.";
+  }catch(e){
+    $("vlm-status").textContent="Yerel VLM adayı üretilmedi: "+e.message;
+    notice("VLM çalıştırılamadı; mevcut analiz ve rapor korundu.",true);
+  }finally{
+    state.vlmRunning=false;vlmReady();
+  }
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -546,6 +651,7 @@ async function start() {
     state.csrf=(await api("/api/session")).csrf;
     if(!state.csrf) throw new Error("Yerel oturum güvenlik anahtarı alınamadı.");
     await refresh();
+    await loadVlmAvailability();
   }catch(e){notice("Yerel uygulama başlatılamadı: "+e.message,true);}
 }
 $("upload-button").addEventListener("click",upload);
@@ -556,6 +662,10 @@ $("edit-run").addEventListener("click",commitDxfEdit);
 $("edit-undo").addEventListener("click",undoDxfEdit);
 $("massing-build").addEventListener("click",buildMassing);
 $("massing-clear").addEventListener("click",clearMassing);
+$("vlm-source-frame").addEventListener("change",vlmFrameChanged);
+$("vlm-opt-in").addEventListener("change",vlmReady);
+$("vlm-infer").addEventListener("click",inferVlm);
+$("vlm-clear").addEventListener("click",clearVlm);
 $("selected-project").addEventListener("change",e=>chooseProject(e.target.value).catch(x=>notice(x.message,true)));
 $("drawing-file").addEventListener("change",e=>{
   const file=e.target.files?.[0];$("picked-file").textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"Henüz dosya seçilmedi.";
