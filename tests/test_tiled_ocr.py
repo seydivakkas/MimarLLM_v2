@@ -283,3 +283,17 @@ def test_pipeline_rejects_aggregate_unbounded_tiled_pixel_budget():
                         max_total_pixels=100_000_000)
     with pytest.raises(ValidationError,match="budget"):
         PipelineConfig(tiled_ocr=(req,req))
+
+
+def test_tile_count_rejected_before_generating_any_grid(a0,monkeypatch):
+    import mimarllm.ocr.tiles as mod
+    def allocate_forbidden(*args,**kwargs):
+        raise AssertionError("Grid allocation attempted before budget check")
+    monkeypatch.setattr(mod,"_tile_starts",allocate_forbidden)
+    req=TiledOcrRequest(
+        page_index=0,roi_points=(0,0,2384,3370),
+        tile_width_pt=32,tile_height_pt=32,
+        max_tiles=8,
+    )
+    with pytest.raises(PdfInputError,match="tile count"):
+        mod.plan_ocr_tiles(a0,req)
