@@ -14,6 +14,7 @@
     <nav aria-label="Bölüm menüsü">
       <a href="#overview" class="nav-link active"><span>◈</span> Genel Bakış</a>
       <a href="#projects" class="nav-link"><span>▤</span> Çizimlerim</a>
+      <a href="#studio" class="nav-link"><span>▦</span> Stüdyo</a>
       <a href="#analysis" class="nav-link"><span>⌘</span> Analiz Laboratuvarı</a>
       <a href="#evidence" class="nav-link"><span>◇</span> Kanıt ve Bulgular</a>
     </nav>
@@ -35,6 +36,43 @@
       <article class="stat"><span>Seçili çizim</span><strong id="source-type">—</strong><small id="source-meta">DXF / PDF</small></article>
       <article class="stat"><span>Analiz sonucu</span><strong id="count-findings">—</strong><small id="run-state">Henüz çalıştırılmadı</small></article>
       <article class="stat"><span>Mevzuat kapısı</span><strong class="locked">HOLD</strong><small>Bağımsız doğrulama gerekli</small></article>
+    </section>
+    <section class="panel studio-section" id="studio" aria-labelledby="studio-title">
+      <div class="panel-heading"><div><div class="eyebrow">05 / KADEMELİ MİMARİ STÜDYO</div>
+        <h2 id="studio-title">Pedagojik stüdyo ve kaynaklı ön inceleme</h2>
+        <p>Referans HTML'den uyarlanmıştır: modül sayısı müfredat hedefidir; yerel teknik analiz, mevzuat ve jüri kabulü ayrı statülerdir.</p></div>
+        <span class="mini-label">GÜVENLİ UI ÖNİZLEMESİ</span>
+      </div>
+      <div class="studio-columns">
+        <div class="studio-col">
+          <h3>1 · Sınıf / müfredat kapsamı</h3>
+          <div class="studio-grades" role="group" aria-label="Mimarlık proje sınıfı">
+            <button class="studio-grade selected" type="button" data-level="1" aria-pressed="true">1. Sınıf <small>18 modül hedefi</small></button>
+            <button class="studio-grade" type="button" data-level="2" aria-pressed="false">2. Sınıf <small>31 modül hedefi</small></button>
+            <button class="studio-grade" type="button" data-level="3" aria-pressed="false">3. Sınıf <small>45 modül hedefi</small></button>
+            <button class="studio-grade" type="button" data-level="4" aria-pressed="false">4. Sınıf <small>55 modül hedefi</small></button>
+          </div>
+          <p class="studio-tip" id="studio-grade-summary" role="status">1. sınıf müfredat örnekleri</p>
+          <h3>Seçili sınıf için katalog örnekleri</h3>
+          <div id="studio-module-list" class="studio-module-list"></div>
+        </div>
+        <div class="studio-col studio-center">
+          <h3>2 · Çizim ve kanıt laboratuvarı</h3>
+          <div role="tablist" aria-label="Stüdyo görünümleri" class="studio-tabs">
+            <button type="button" data-view="drawing" role="tab" aria-selected="true" class="studio-tab selected">2B çizim raporu</button>
+            <button type="button" data-view="legal" role="tab" aria-selected="false" class="studio-tab">Mevzuat kanıtı</button>
+            <button type="button" role="tab" aria-selected="false" class="studio-tab" disabled title="2.5D kaynaklı kütle islem_026 hedefidir">2.5D · plan</button>
+          </div>
+          <div class="studio-viewport" id="studio-viewport" role="tabpanel" aria-live="polite"></div>
+        </div>
+        <div class="studio-col">
+          <h3>3 · Sekiz boyutlu değerlendirme çerçevesi</h3>
+          <p class="studio-tip">Rubrik ve Delphi uzman geçerliği bekleniyor. Puan veya jüri onayı üretilmez.</p>
+          <div id="studio-rubric" class="studio-rubric"></div>
+          <div class="studio-hold">REGULATORY_LOCKED · Hukukî HOLD</div>
+          <p class="studio-tip">Morfolojik benzerlik, GPU VLM, canlı jüri ve 3B güneş analizi daha sonraki aşamaların geliştirme hedefidir.</p>
+        </div>
+      </div>
     </section>
     <div class="layout">
       <div class="primary">
