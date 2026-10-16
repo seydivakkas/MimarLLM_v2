@@ -85,3 +85,17 @@ Bunlar yalnız GitHub-hosted sentetik, küçük örneklemli sayılardır; fiziks
 **Bağlayıcı sınır:** Bu iki sonuç sadece \`fa02984f\` kaynak kodu için doğrulanmıştır; onu izleyen README/spec/işlem açıklama commit'leri yeni kod üretmedi. GitHub-hosted Windows 10.0.26100, gerçek kullanıcı Windows 10/11, Windows offline \`onedir\` EXE, Edge erişilebilirlik kullanıcı kabulü, gerçek müşteri/öğrenci DXF, A0 PDF, 20 tekrar p95 ve süreç RSS, hukuki/bağımsız mimari inceleme yerine **geçmez**.
 
 **Son durum:** \`islem_025\` AÇIK / \`F31 KISMI-MEVCUT_KOD + SENTETİK_CI_PASS + HOSTED_EDGE_SMOKE_PASS\`; **FİZİKSEL_KABUL_HOLD**. PR #2 Draft, main merge edilmedi, üretim yayımlanmadı. İşlem 026 kodlaması bu son kabul tamamlanana kadar yapılmayacak.
+
+
+## 7. Geliştirme kapısı ile fiziksel kabul kapısının ayrılması — son kullanıcı kararı (2026-10-16)
+
+**Bu kayıt, yukarıdaki tarihsel "İşlem 026'ya geçilmez" kararını ileriye dönük olarak değiştirir.** Önceki kayıtlar ve gerçek test kanıtları silinmez.
+
+- **İşlem 025 mühendislik aday kodu:** Kaynak-koruyan DXF `LINE` revizyonu/undo, kaynaklı SVG, gözlem sidecar'ı, bounded localhost işler ve bunların sentetik sözleşme testleri geliştirildi. Buna `KOD_ADAYI / SENTETIK_CI_PASS` denebilir; bütün CAD tipleri ve gerçek saha onaylandı denemez.
+- **Son kaynak/dokümantasyon commit'i `6a000eb4b3b6e16f0b68e05e51697f31fa6f195f`:** GitHub Actions [Linux+Windows contracts #38851148490](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38851148490) ve [GitHub-hosted Edge smoke #38851148439](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38851148439) `conclusion=success`. Fiziksel PC testi değil.
+- **Fiziksel kabul ertelendi:** Gerçek Windows 10/11 cihaz, Edge kullanıcı etkileşimi, çeşitli mimari DXF/PDF/A0, bağımsız CAD karşılaştırması, offline `onedir`, büyük veri performansı ve gerçek OS RSS, güvenlik/lisans ve uzman/kullanıcı kabulü **İşlem 031 son doğrulama paketinde** ele alınacak; `DEFERRED_TO_031 / HOLD`. Artık yalnız bu sebeple 026–030 özellik geliştirme aşamalarını engellemeyecek.
+- **CI sürekli çalışır:** Her 026–030 modülü sentetik regresyon, kaynak SHA, schema/fail-closed ve offline-first kapılarını koruyarak geliştirilir. Yeni değişikliğin kırık CI ile ileriye taşınması kabul edilmez.
+- **GitHub sınırı:** PR #2 bu aşamada Draft; önceki işlemlerin tarihçesi değiştirilmez. İleri modüller kendi dallarında, gerekli olduğunda 025 aday kod dalına bağımlı olarak açılabilir. Nihai ürün dağıtımı bu kararla yetkilendirilmiş değildir.
+- **Bir sonraki mühendislik işlemi `islem_026`:** 2.5D kaynak bağlantılı kütle önizlemesi; yükseklik yalnız kanıtlanmış veya kullanıcı tarafından açıkça girilmiş beyan ile; organik serbest 3B, otomatik ruhsat/kaçış metrikleri ve halüsinatif semantik yok. **Henüz 026 kodu veya `docs/islem_026.md` oluşturulmuş sayılmaz.**
+
+**Durum ayrımı:** İşlem 025 = `MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS`; İşlem 031 = `FİZİKSEL_UAT_VE_GERÇEK_VERİ_KABULÜ_HOLD`. Bu ayrım, İşlem 025'e tam ürün veya hukukî geçerlilik mührü vermez.
