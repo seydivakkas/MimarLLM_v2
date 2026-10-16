@@ -220,13 +220,11 @@ def test_pdf_mutation_and_page_isolation(page,tmp_path):
         plan_ocr_tiles(other,request())
 
 
-def test_nondefault_cropbox_fails_closed(page,tmp_path):
-    import pypdfium2 as pdfium
-    src=pdfium.PdfDocument(str(page))
-    # Known coordinate mismatch is already denied by render_region. We
-    # assert the path is not quietly converted by planning.
-    src.close()
-    assert plan_ocr_tiles(page,request())
+def test_default_cropbox_plan_keeps_page_coordinate_metadata(page):
+    # This fixture uses the default CropBox; nondefault CropBox is guarded
+    # by the implementation but awaits its own synthetic cross-engine fixture.
+    tiles=plan_ocr_tiles(page,request())
+    assert tiles and all(t.page_index==0 and t.roi_points[0]>=0 for t in tiles)
 
 
 def test_invalid_tile_overlap_and_roi_rejected():
