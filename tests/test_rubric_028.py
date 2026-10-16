@@ -232,3 +232,21 @@ def test_rubric_rest_is_readonly_and_scope_checked(tmp_path,drawing):
         assert (root/"projects"/pid/"runs"/rid/"drawingir.json").read_bytes()==original_drawing
         assert (root/"projects"/pid/"runs"/rid/"analysis.json").read_bytes()==original_report
         assert not (root/"projects"/pid/"runs"/rid/"rubric-grade.json").exists()
+
+
+def test_rubric_ui_is_native_and_avoids_llm_or_official_grade(tmp_path):
+    with TestClient(create_app(tmp_path/"ui"),base_url="http://127.0.0.1:8765",
+                    client=("127.0.0.1",12345)) as http:
+        page=http.get("/").text
+        js=http.get("/static/dashboard.js").text
+        for node in ("rubric-year","rubric-frame","rubric-reviewer",
+                     "rubric-human-confirm","rubric-criteria",
+                     "rubric-evaluate","rubric-outcome"):
+            assert f'id="{node}"' in page
+        assert "NOT_SCORED" in js
+        assert '"/api/rubric/profile/"' in js
+        assert '"human_review_attested"' not in page  # no hidden forged authority
+        assert "innerHTML" not in js
+        assert "eval(" not in js
+        assert "RESMÎ NOT" in page
+        assert http.get("/api/rubric/profile/1").json()["official_grade"] is False
