@@ -40,6 +40,19 @@ def search_legal(
         query, limit=candidate_limit,
         regulation_id=regulation_id, document_sha256=document_sha256,
     )
+    expansion = None
+    if lexical_expansion:
+        expansion = expand_architectural_terms(query)
+        if expansion.hints:
+            # Expansion is deliberately a SECOND, lower-priority lexical
+            # channel; exact original query hits are never displaced by
+            # related terminology when no dense rank is available.
+            alt_ids = store.lexical_rank(
+                " ".join(expansion.hints), limit=candidate_limit,
+                regulation_id=regulation_id, document_sha256=document_sha256,
+            )
+            original = set(lexical)
+            lexical += [ident for ident in alt_ids if ident not in original]
     dense: list[str] = []
     dense_state = "DISABLED"
     model_id: str | None = None
