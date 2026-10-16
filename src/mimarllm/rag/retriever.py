@@ -18,6 +18,7 @@ def search_legal(
     candidate_limit: int = 100,
     rrf_k: int = 60,
     max_dense_scan: int = 50_000,
+    lexical_expansion: bool = False,
     regulation_id: str | None = None,
     document_sha256: str | None = None,
 ) -> RagResponse:
