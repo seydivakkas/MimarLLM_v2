@@ -34,3 +34,8 @@ Model/binary adları burada sadece operatör tarafından seçilecek örneklerdir
 ## Sonraki işlem
 
 027 sentetik katman tamamlandığında **028 rubrik ontolojisi ve skorun modelden ayrı deterministik hesaplanması**; 029 jüri ve 030 analitik, 031 son fiziksel kabul. PR'lar bağımlı Draft'tır; hiçbir dal \`main\`e otomatik birleştirilmez.
+
+
+## Model işleme izni — API düzeyinde ayrıca zorunlu
+
+VlmRequest ayrıca tam olarak **consent=true** alanını gerektirir. İstemcideki onay kutusu bu değeri yalnız işaretliyken gönderir; sunucu gelen JSON'da false/eksik consent'ı şema hatası (422) ile reddeder. VLM otomatik açılmaz, rapor inceleme veya 2B/2.5D iş akışı modele gizli veri göndermez. Yerel operatör config dosyasının mevcut olması kullanıcı onayının yerine geçmez.
