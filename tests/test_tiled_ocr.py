@@ -243,3 +243,43 @@ def test_layout_text_budget_and_foreign_pages_are_separate(page):
             native.drawing.source_sha256,0,800,800,
             native.text_candidates,max_text=1,
         )
+
+
+def test_tiled_and_layout_review_status_cannot_be_forged(page):
+    output=read_tiled_ocr(page,request(),OverlapReader())
+    with pytest.raises(ValidationError):
+        type(output).model_validate(output.model_dump() | {"approval_status":"APPROVED_FOR_CHECK"})
+    forged_tile=output.tiles[0].model_copy(update={"document_sha256":"a"*64})
+    with pytest.raises(ValidationError,match="source SHA/page"):
+        type(output).model_validate(output.model_dump() | {
+            "tiles":[forged_tile.model_dump(),*(t.model_dump() for t in output.tiles[1:])]
+        })
+    native=parse_pdf_ir(page)
+    candidate=native.layout_candidates[0]
+    with pytest.raises(ValidationError):
+        type(candidate).model_validate(candidate.model_dump() | {
+            "approval_status":"APPROVED_FOR_CHECK"
+        })
+
+
+def test_pipeline_manifest_preserves_tiled_source_and_antet_candidate(page):
+    out=run_local_pipeline(
+        page,PipelineConfig(tiled_ocr=(request(),)),
+        ocr_reader=OverlapReader(),
+    )
+    manifest=out.manifest
+    assert manifest.ocr_tile_count==4
+    assert manifest.ocr_candidate_count==1
+    assert manifest.ocr_overlap_duplicates==3
+    assert out.tiled_ocr_results[0].document_sha256==manifest.source_sha256
+    assert all(x.document_sha256==manifest.source_sha256
+               and x.approval_status=="REVIEW_REQUIRED"
+               for x in manifest.layout_candidates)
+    assert manifest.legal_gate=="REGULATORY_LOCKED"
+
+
+def test_pipeline_rejects_aggregate_unbounded_tiled_pixel_budget():
+    req=TiledOcrRequest(page_index=0,roi_points=(0,0,800,800),
+                        max_total_pixels=100_000_000)
+    with pytest.raises(ValidationError,match="budget"):
+        PipelineConfig(tiled_ocr=(req,req))
