@@ -551,7 +551,7 @@ async function inferVlm() {
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         source_sha256:sha,frame_id:frame,entity_ids:ids,
-        question,reviewer_label:reviewer
+        question,reviewer_label:reviewer,consent:true
       })
     });
     if(projectId!==state.projectId || runId!==state.runId)return;
