@@ -150,6 +150,10 @@ function renderDrawing(data) {
   for(const name of frames) frame.add(new Option(name,name));
   function draw() {
     clear(svg);
+    state.selectedSource=null;
+    $("save-review-note").disabled=true;
+    inspector.textContent="Kaynak çizgi seçin; bu seçim orijinal dosyayı değiştirmez.";
+    showReviews();
     const selected=lines.filter(s=>s.frame_id===frame.value &&
       (layer.value==="*" || (s.layer||"Katmansız")===layer.value));
     const good=selected.filter(s=>Array.isArray(s.points) && s.points.length===2 &&
