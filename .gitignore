@@ -100,3 +100,7 @@ Thumbs.db
 src/mimarllm/app/static/three.module.js
 src/mimarllm/app/static/three-vendor-026.json
 src/mimarllm/app/static/three-license-MIT.txt
+
+# 027 operator-only local configuration and model weights (never commit)
+vlm-runtime.json
+*.gguf

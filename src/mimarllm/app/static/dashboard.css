@@ -102,3 +102,11 @@ footer{color:#9ca9b9;font-size:11px;padding:25px 0 12px}
 .massing-canvas canvas{display:block;width:100%;height:100%;outline-offset:-3px}
 .massing-canvas canvas:focus-visible{outline:3px solid #3d76aa}
 @media(max-width:690px){.massing-canvas{height:300px}}
+
+/* 027: optional local VLM review, no inferred architectural approval */
+.vlm-panel{margin-top:22px}
+.vlm-panel .field-grid{margin:12px 0}
+.vlm-panel #vlm-line-select{max-height:185px}
+.vlm-panel #vlm-results{margin:12px 0}
+.vlm-panel #vlm-results article{white-space:normal;overflow-wrap:anywhere}
+.vlm-panel #vlm-results small{display:block;overflow-wrap:anywhere}

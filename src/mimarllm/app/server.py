@@ -30,6 +30,8 @@ from mimarllm.app.reviews import ReviewStore, ReviewPayload, ReviewError
 from mimarllm.app.dxf_edits import DxfRevisions, EditRequest, UndoRequest, EditError
 from mimarllm.core.ir import DrawingIR
 from mimarllm.geometry.massing25d import MassingRequest, MassingError, build_massing_candidate
+from mimarllm.vlm import local_engine
+from mimarllm.vlm.models import VlmRequest, VlmFailure
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -387,6 +389,7 @@ def create_app(workspace: str | Path) -> FastAPI:
     jobs = BoundedAnalysisJobs(_generate_run, running)
     reviews = ReviewStore()
     dxf_revisions = DxfRevisions()
+    vlm_lock = Lock()
 
     @app.post("/api/projects/{project_id}/jobs", status_code=202)
     async def queue_analysis(project_id: str, request: Request):
@@ -546,6 +549,53 @@ def create_app(workspace: str | Path) -> FastAPI:
                 detail="2.5D senaryosu üretilemedi: ölçü, kaynak veya kapalı yüzey kanıtı yetersiz.",
             ) from exc
         return candidate.model_dump(mode="json")
+
+    @app.get("/api/vlm/status")
+    def vlm_status():
+        # Do not reveal operator local model paths or assume a model is present.
+        try:
+            local_engine.config_from_local_file(root)
+            configured=True
+        except VlmFailure:
+            configured=False
+        return {
+            "configured": configured, "enabled_by_default": False,
+            "model_inference_verified": False,
+            "legal_gate": "REGULATORY_LOCKED",
+            "physical_gpu_acceptance": "DEFERRED_TO_031",
+        }
+
+    @app.post("/api/projects/{project_id}/runs/{run_id}/vlm/suggest")
+    async def vlm_suggest(project_id: str, run_id: str, request: Request):
+        # Model text can only produce a candidate response envelope; never mutate files.
+        _folder, source_sha, raw_drawing = review_context(
+            project_id, run_id, include_drawing=True)
+        raw=bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw)>8192:
+                raise HTTPException(status_code=413, detail="Yerel VLM komutu çok büyük.")
+        try:
+            payload=VlmRequest.model_validate_json(bytes(raw))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Kaynaklı VLM isteği geçersiz.") from exc
+        if payload.source_sha256!=source_sha:
+            raise HTTPException(status_code=409, detail="VLM kaynak SHA uyuşmuyor.")
+        try:
+            config=local_engine.config_from_local_file(root)
+        except VlmFailure as exc:
+            raise HTTPException(status_code=503, detail="Yerel GGUF/MMProj yapılandırılmadı.") from exc
+        if not vlm_lock.acquire(blocking=False):
+            raise HTTPException(status_code=429, detail="Başka bir yerel VLM yorumu yürütülüyor.")
+        try:
+            drawing=DrawingIR.model_validate(raw_drawing)
+            result=await run_in_threadpool(local_engine.infer,drawing,payload,config)
+            return result.model_dump(mode="json")
+        except (VlmFailure,ValidationError,ValueError) as exc:
+            # Never send model paths, raw model text, remote URLs or input text.
+            raise HTTPException(status_code=409, detail="Yerel VLM çalıştırılamadı; kaynak, şema veya bellek doğrulaması yetersiz.") from exc
+        finally:
+            vlm_lock.release()
 
     def dxf_edit_context(project_id: str):
         project = metadata(project_id)

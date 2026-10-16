@@ -70,6 +70,10 @@ def main() -> int:
                 scene_code=response.read().decode("utf-8")
             if 'import * as THREE from "./three.module.js"' not in scene_code:
                 raise RuntimeError("026 local Three.js import path invalid")
+            with urlopen(url+"api/vlm/status",timeout=10) as response:
+                vlm_status=json.load(response)
+            if vlm_status.get("configured") is not False or vlm_status.get("legal_gate")!="REGULATORY_LOCKED":
+                raise RuntimeError("VLM fail-closed unavailable-state not visible on fresh localhost")
             base=[str(edge),"--headless=new","--disable-gpu","--no-first-run",
                   "--disable-background-networking","--no-default-browser-check",
                   "--user-data-dir="+str(root/"edge-profile"),
@@ -82,6 +86,7 @@ def main() -> int:
               "Proje inceleme paneli","id=\"drawing-2d\"",
               "id=\"edit-run\"","id=\"edit-undo\"",
               "id=\"massing-canvas\"","id=\"massing-build\"",
+              "id=\"vlm-opt-in\"","id=\"vlm-infer\"","id=\"vlm-results\"",
               "Henüz yerel çizim eklenmedi",
               "Hukukî doğrulama kilitli",
             ]
