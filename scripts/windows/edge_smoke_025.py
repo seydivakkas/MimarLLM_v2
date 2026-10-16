@@ -6,6 +6,7 @@ No downloads, public addresses, telemetry or outside page navigation from app.
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 import os
 from pathlib import Path
 import platform
@@ -60,6 +61,15 @@ def main() -> int:
                     sleep(.3)
             else:
                 raise RuntimeError("Loopback server not ready")
+            # Three.js must be served by localhost, with pinned SHA, not CDN.
+            with urlopen(url+"static/three.module.js",timeout=10) as response:
+                vendor=response.read()
+            if sha256(vendor).hexdigest()!="76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495":
+                raise RuntimeError("Local Three.js vendor SHA mismatch")
+            with urlopen(url+"static/scene25d.js",timeout=10) as response:
+                scene_code=response.read().decode("utf-8")
+            if 'import * as THREE from "./three.module.js"' not in scene_code:
+                raise RuntimeError("026 local Three.js import path invalid")
             base=[str(edge),"--headless=new","--disable-gpu","--no-first-run",
                   "--disable-background-networking","--no-default-browser-check",
                   "--user-data-dir="+str(root/"edge-profile"),
@@ -71,6 +81,7 @@ def main() -> int:
             required=[
               "Proje inceleme paneli","id=\"drawing-2d\"",
               "id=\"edit-run\"","id=\"edit-undo\"",
+              "id=\"massing-canvas\"","id=\"massing-build\"",
               "Henüz yerel çizim eklenmedi",
               "Hukukî doğrulama kilitli",
             ]
@@ -82,6 +93,8 @@ def main() -> int:
                 "platform":platform.platform(),
                 "edge_exe":edge.name,
                 "loopback_only":True,"required_nodes_verified":required,
+                "local_three_sha_verified":True,
+                "local_026_module_verified":True,
                 "offline_runtime_network_not_proven":True,
                 "javascript_visible_project_empty_state":True,
                 "legal_gate":"REGULATORY_LOCKED",

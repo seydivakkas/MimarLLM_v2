@@ -28,6 +28,8 @@ from starlette.concurrency import run_in_threadpool
 from mimarllm.app.jobs import BoundedAnalysisJobs, JobQueueFull
 from mimarllm.app.reviews import ReviewStore, ReviewPayload, ReviewError
 from mimarllm.app.dxf_edits import DxfRevisions, EditRequest, UndoRequest, EditError
+from mimarllm.core.ir import DrawingIR
+from mimarllm.geometry.massing25d import MassingRequest, MassingError, build_massing_candidate
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -202,7 +204,7 @@ def create_app(workspace: str | Path) -> FastAPI:
 
     @app.get("/static/{filename}")
     def static_file(filename: str):
-        if filename not in {"dashboard.css", "dashboard.js"}:
+        if filename not in {"dashboard.css", "dashboard.js", "scene25d.js", "three.module.js"}:
             raise HTTPException(status_code=404, detail="Statik dosya yok.")
         kind = "text/css" if filename.endswith(".css") else "text/javascript"
         return Response(_ASSET.joinpath(filename).read_bytes(), media_type=kind)
@@ -516,6 +518,34 @@ def create_app(workspace: str | Path) -> FastAPI:
             return reviews.retract(folder, source_sha, review_id)
         except ReviewError as exc:
             raise HTTPException(status_code=409, detail="İnceleme notu bulunamadı veya geri alındı.") from exc
+
+    @app.post("/api/projects/{project_id}/runs/{run_id}/massing25d", status_code=200)
+    async def create_massing25d(project_id: str, run_id: str, request: Request):
+        # Same local-only middleware, CSRF and provenance checks as review notes.
+        _folder, source_sha, raw_drawing = review_context(
+            project_id, run_id, include_drawing=True)
+        chunks = []
+        length = 0
+        async for chunk in request.stream():
+            length += len(chunk)
+            if length > 12_000:
+                raise HTTPException(status_code=413, detail="2.5D senaryo isteği çok büyük.")
+            chunks.append(chunk)
+        try:
+            payload = MassingRequest.model_validate_json(b"".join(chunks))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="2.5D geometri isteği geçersiz.") from exc
+        if payload.source_sha256 != source_sha:
+            raise HTTPException(status_code=409, detail="Kaynak dosya SHA uyuşmuyor.")
+        try:
+            drawing = DrawingIR.model_validate(raw_drawing)
+            candidate = build_massing_candidate(drawing, payload)
+        except (MassingError, ValidationError, ValueError) as exc:
+            raise HTTPException(
+                status_code=409,
+                detail="2.5D senaryosu üretilemedi: ölçü, kaynak veya kapalı yüzey kanıtı yetersiz.",
+            ) from exc
+        return candidate.model_dump(mode="json")
 
     def dxf_edit_context(project_id: str):
         project = metadata(project_id)

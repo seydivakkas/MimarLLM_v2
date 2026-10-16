@@ -25,7 +25,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet konum adayları | KISMI / KODLANDI, 009/022 | bounded tile, PDF source quad/dedup, sentetik CI; gerçek OCR/CER/RSS finalde |
 | `islem_024` | Türkçe mimari arama ipuçları + sınırlı SQLite RAG pasaj cache'i | KISMI / mevcut kod, 013–015/019 | Opt-in kurasyonlu FTS arama, SHA izolasyonu; genel workspace/WAL/retention HOLD |
 | `islem_025` | Dashboard 2B kaynak çizgisi, bounded işler, dar DXF Model LINE revizyon/undo | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS / DRAFT PR #2 | fiziksel Edge, gerçek CAD/PDF ve offline exe yalnız son İşlem 031 kabulünde; 026'yı bloklamaz |
-| `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | SIRADAKİ GELİŞTİRME / PLAN, 022/025 sentetik kod adayı | 025 fiziksel kabulü beklenmez; organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
+| `islem_026` | Kaynak bağlı 2.5D prizma ve çevrimdışı Three.js | MÜHENDİSLİK KOD ADAYI / SENTETİK_CI_PASS, 025 bağımlı dal | Yalnız doğrudan CAD Model LINE + bağımsız CONFIRMED ölçek + kullanıcı beyanı yüksekliği; fiziksel UAT 031 |
 | `islem_027` | Yerel GGUF/MMProj VLM, VRAM profiler, structured response/no-overwrite | AR-GE, 023/025 | model Windows/8GB ölçümü, GPU fallback gerçek QA |
 | `islem_028` | Sekiz boyutlu rubrik ontolojisi/weight/supervisor, score-in-code | PLAN, 017/027 bağımsız GPU modu | uzman onaylı kriter yoksa otomatik gerçek not yok |
 | `islem_029` | Sıralı pedagojik jüri/persona/ton (isteğe bağlı) | PLAN, 027/028 | çok metinsel persona = bağımsız uzman oyu değildir |
