@@ -37,3 +37,7 @@
 - Kullanıcı notları gerçek kimlik doğrulamalı uzman görüşü değildir. `reviewer_label` kullanıcı girdisidir; oluşturulan not `RuleEngine` ve hukukî mevzuat kanıtına otomatik eklenmez.
 - `analysis.html`, `analysis.json`, orijinal DXF/PDF, `drawingir.json` veya pipeline manifesti not ekleme/geri alma sırasında değiştirilmez. Sidecar PDF HTML rapor çıktısı içine sahte hukukî işaret eklemez.
 - CI sentetik testleri persistence, POST/GET/DELETE, CSRF, SHA/ID taklidi, 4KB sınırı, kaynak bütünlüğü ve `REGULATORY_LOCKED` durumunu korumayı inceler.
+
+## Ek karar — Kullanıcı tarafından istenen gerçek DXF revizyonu
+
+Başlangıçtaki "kalıcı CAD edit henüz yok" notu tarihsel 025 v0.1 alt-kapsamıdır. Yeni \`docs/specs/dxf-revisions-025.md\` ile yalnız native direct Model LINE geometrisinin orijinal DXF'ye yazılmadan türetilmiş yeni DXF dosyasında kalıcı düzenlenmesi ve geri alınması aday olarak eklendi. Genel CAD/3D edit, blok içi edit veya hukukî uyumluluk onayı bu istisnadan çıkarılamaz. Fiziksel Windows kullanıcı testi \`docs/specs/windows-acceptance-025.md\` kapanış kapısında tutulur.
