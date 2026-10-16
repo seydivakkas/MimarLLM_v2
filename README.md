@@ -92,3 +92,12 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 - **Kodlandı:** `geometry/repair.py` ile native CAD kaynağındaki kısa uç boşluğu / önerilen snap, çakışan ve tekrarlı çizgiler için `RepairOverlay` + `RepairCandidate` (salt-okunur). Gerçek kaynak SHA, frame, DXF CAD handle, blok yolu ve entity ID korunur. `geometry/repair_viewer.py` lacivert özgün çizgi/turuncu kesikli sanal bağlantı SVG'si oluşturur.
 - **Yalnız kaynak hipotezi:** `UnitHypothesis` mevcut `$INSUNITS`/kalibrasyon beyanını özetler; `Layer0SemanticCandidate` katman 0 çizgilerini kullanıcıya sınıflandırma **adayı** olarak gösterir. Ne fiziksel metre, ne otomatik duvar/kapı/oda, ne yangın kaçış bağlantısı, ne hukukî PASS üretilir. Onarım orijinal `DrawingIR` veya `RuleEngine` verisine uygulanmaz.
 - **Durum:** F25 `KISMI/MEVCUT_KOD`; F26 `KISMI` (yalnız birim header, dimension/door histogramı yok); F27 `KISMI` (Layer0 yalnız inceleme; HATCH/ARC mimari semantik yok). Gerçek kirli CAD ve Windows/Edge kullanıcı kabulü, resmî mevzuat sürümleri ve F08–F12 `HUKUKI_HOLD` açık.
+
+
+## İşlem 023 — A0/A1 PDF opt-in karo/ROI OCR (kaynak kanıtlı, kısmi)
+
+- [İşlem 023](docs/islem_023.md) · [Karo OCR v0.1 teknik sözleşmesi](docs/specs/tiled-ocr-v0.1.md).
+- `src/mimarllm/ocr/tiles.py` kullanıcı seçtiği PDF page-point ROI için küçük overlap karoları yaratır; dosya SHA, rotasyon, sayfa ve CropBox, tile/total pixel ve OCR candidate bütçe denetimi. Mevcut `RapidOCR + onnxruntime CPU` **isteğe bağlı**, çevrimdışı kurulmuş olmalı; hiç OCR modeli otomatik indirilmez.
+- `importers/pdf_ir.py` ve `pipeline.py` OCR token'larını yalnız `OCR_CANDIDATE`, sayfa/quad/source SHA, şema `REVIEW_REQUIRED` olarak tutar; overlap'teki gerçekten aynı metin+konum tekrarlarını ayırır. `PipelineManifest` OCR tile/token/dedup ve `layout_candidates` kaydeder. `ocr/layout.py` sağ-alt antet/üst-alt marjda **sadece konum ipucu** üretir.
+- `mimarllm analyze local.pdf --config tiled.json --output-dir out` örneği teknik şartnamede. Varsayılan OCR kapalı. Döndürülmüş çok büyük sayfa ve özel CropBox güvenli kaynak dönüşümü doğrulanmadıysa reddedilir.
+- **Gerçek A0 taranmış belge OCR CER/WER ve bellek benchmark, gerçek Windows/Edge kabulü, gerçek hukukî mevzuat sertifikası yapılmadı.** F04/F28 KISMI; F08–F12 HUKUKI_HOLD.
