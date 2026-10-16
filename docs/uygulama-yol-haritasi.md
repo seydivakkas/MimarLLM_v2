@@ -22,7 +22,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | **`islem_020`** | **Bu yeniden mimari ve ARCH-CORE Local geliştirme planı** | **DOKÜMAN KARARI** | Kod/jüri/3D/modeller eklenmiş sayılmaz |
 | `islem_021` | Windows-first offline wheelhouse/onedir, başlatıcı, SBOM | KISMI / KODLANDI — kaynak betikleri; actual Windows exe HOLD | `run.bat`, `install_offline.bat`, `mimar.spec`, SHA/metadata manifest, sentetik Linux/Windows CI; gerçek PC ve ticari dağıtım doğrulaması en sonda |
 | `islem_022` | Kirli CAD kaynak-koruyan repair-overlay; unit hypothesis; Layer0 heuristik | PLAN, 007–011 | önerilen geometri/orijinal entity ayrılır; SI onayı yok |
-| `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet, source transforms | PLAN, 009/022 | memory budget, PDF source quad; OCR accuracy test finalde |
+| `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet konum adayları | KISMI / KODLANDI, 009/022 | bounded tile, PDF source quad/dedup, sentetik CI; gerçek OCR/CER/RSS finalde |
 | `islem_024` | Mimari synonym FTS5 sorgu genişletmesi + gömülü workspace cache | PLAN, 013–015/019 | RAG sıralaması kanunî onay değil; SQLite kaynak izolasyonu |
 | `islem_025` | Dashboard 2D edit/katman kanıtı, bounded job queue + SSE/polling | PLAN, 019/024 | olaylar kaynak SHA/frame/runcase ile bağlı, localhost-only |
 | `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | PLAN, 022/025 | organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
@@ -172,3 +172,10 @@ F20 için kaynak dosyaları: `run.bat` (hazır yerel ortam), `install_offline.ba
 `src/mimarllm/geometry/repair.py` ile orijinal `DrawingIR` kaynak SHA/frame/CAD handle/blok yolu üzerinde salt-okunur kısa boşluk sanal köprü, uç snap, duplicate/overlap çizgi `RepairCandidate` katmanı geliştirildi. `geometry/repair_viewer.py` kaynak çizgiyi lacivert, önerileri turuncu kesikli SVG gösterir. Geometri önerisi `RuleEngine`, `TopologyResult`, gerçek `assess_area` veya tek gerçek DrawingIR kaynağına yazılmaz. Belirsiz komşu uç ve bütçe aşımı reddedilir; kapı boşluğu otomatik kapanmaz.
 
 **F25 KISMI/MEVCUT_KOD**, **F26 KISMI** (mevcut header fiziksel birim ipucu, gerçek dimension/door histogramı yok), **F27 KISMI** (Layer0 kaynak adayı, ARC/HATCH semantiği yok). F08–F12 HUKUKI_HOLD ve kullanıcı Windows onedir/Edge gerçek kabulü ayrıca. **Sıradaki kod paketi `islem_023`** A0/A1 tile/ROI OCR; önce `docs/islem_023.md` yeni ilk GitHub yazımı olarak açılacak.
+
+
+## İşlem 023 uygulama notu (2026-10-16)
+
+`src/mimarllm/ocr/tiles.py` opt-in A0/A1 PDF ROI'yi pixel/tile/token/çoklu istek bütçeleriyle sıralı render edilmiş kartlara böler. `rapid_engine.py` mevcut CPU OCR adapter'ı korunur; source quad ve PDF SHA/page/rotation doğrulaması olmadan çizim kanıtı üretilmez. Overlap aynı metin + bbox IoU varsa deterministik dedup; `ocr/layout.py` antet/kenar metin **konum** adayı, bina/proje/ölçek semantiği asla onaylı değil. `importers/pdf_ir.py`, `pipeline.py` ve `cli.py` explicit ROI ile birbirine bağlandı; manifestin `layout_candidates` ve tile sayaçları kaynaklıdır.
+
+F28/F04 **KISMI**; sentetik fake CPU reader testleri gerçek OCR modeli doğruluğunu ispatlamaz, döndürülmüş büyük A0 sayfada full-page fallback piksel sınırını aşarsa işlem kesin reddedilir. Gerçek A0/A1 tarama/Windows offline/karakter hata oranı/peak RSS ve hukukî kabul ayrı. Sonraki paket `islem_024` Türkçe mimari jargon eşanlam ve SQLite yerel indeks/cache; `docs/islem_024.md` bir sonraki değişiklikten önce ilk GitHub yazımı olacak.
