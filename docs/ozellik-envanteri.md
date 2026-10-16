@@ -11,7 +11,7 @@
 | F01 | Birim, ölçek, CAD/DXF veri modeli `DrawingIR` | `core/ir.py`, `core/units.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Birim bilinmiyorsa kalibrasyonsuz gerçek ölçüm yok | Genel kapsam |
 | F02 | DXF ayrıştırma, block/nested INSERT ve layer sinyali | `importers/dxf.py`, `importers/layers.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrolü** | Katman/handle/transform ve bozulan bloklarda güvenli hata | (2) / eski 003 |
 | F03 | PDF native vector + ROI + source provenance | `importers/pdf.py`, `importers/pdf_ir.py` | **KISMI / MEVCUT_KOD — sentetik CI** | PDF char/line/curve/rect; dönüş/limit/görsel bbox ölçümü | İlk PDF kararları |
-| F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py` (adapter MEVCUT), `ocr/tiled_regions.py` (PLAN) | **KISMI / MEVCUT_KOD — CPU adapter, layout/tiled OCR planlı** | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
+| F04 | OCR ve pafta layout (antet, mahal, kot, tablo) | `ocr/rapid_engine.py`, `ocr/tiles.py`, `ocr/layout.py` | **KISMI / MEVCUT_KOD — opt-in karo OCR ve konum adayları** | CPU provider, Türkçe/simge CER, bbox + doğru yöne dönüş | (6) / eski 007 |
 | F05 | Oda/duvar/poligon ve net-brüt alan, snap | `geometry/spatial.py`, `geometry/walls.py` | **KISMI / MEVCUT_KOD — sentetik CI kontrollü** | İki oda, açık sınır ve wall-inner-boundary referans alanı | (3) / eski 004 |
 | F06 | Mekânsal topoloji, kapı bağlantısı, geçiş grafı | `geometry/topology.py` | **KISMI / MEVCUT_KOD — sentetik CI** | Unreachable ve articulation; dış kapı/balkon ayrımı | (4) / eski 005 |
 | F07 | Deterministik rule engine + altı durum ve kanıt | `rules/base.py`, `rules/engine.py` | **KISMI / MEVCUT_KOD — sentetik CI** | PASS/FAIL/REVIEW/INSUFFICIENT/NA/ERROR; hesap izi | (5) / eski 006 |
@@ -159,7 +159,7 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 | F25 | Kirli CAD için ray/snap/virtual gap bridge *aday katmanı* | `geometry/repair.py`, `geometry/repair_viewer.py` | **KISMI / MEVCUT_KOD — sentetik CAD** | orijinal entity/handle ve source polygon değişmez; önerilen köprü PASS değil | 022 |
 | F26 | Dimension/door histogramı, birim hipotezi | `geometry/repair.py` (yalnız `UnitHypothesis`), `core/calibration_candidates.py` (plan) | **KISMI — header birim ipucu var, dimension/door histogramı yok** | `INFERRED` ≠ `CONFIRMED`; yanlış fiziksel metreye hukuki sonuç yok | 022 |
 | F27 | Layer0, HATCH/ARC duvar/kolon/kapı heuristik adayı | `geometry/repair.py` (yalnız Layer0), `geometry/heuristics.py` (plan) | **KISMI — Layer0 gözlem adayı; ARC/HATCH veya sınıf kesinleştirme yok** | güven/provenance/false-positive, sınıf otomatik kesinleştirilmez | 022 |
-| F28 | A0/A1 tiled/ROI OCR ve sayfa quad geri dönüşümü | `ocr/tiled_regions.py` | **PLAN** | kaynak PDF page/rotation/crop ve bounded memory | 023 |
+| F28 | A0/A1 tiled/ROI OCR ve sayfa quad geri dönüşümü | `ocr/tiles.py`, `ocr/layout.py`, `importers/pdf_ir.py`, `pipeline.py` | **KISMI / MEVCUT_KOD — sentetik CI** | kaynak PDF page/rotation/crop ve bounded memory | 023 |
 | F29 | Mimari jargon/eş anlam sorgu genişletmesi | `rag/synonyms.py` + lisanslı yerel sözlük | **PLAN** | FTS5 baseline'a karşı Recall@k; madde–fıkra karışma yok | 024 |
 | F30 | Gömülü SQLite WAL analiz geçmişi/cache/retention | `storage/workspace.py` | **PLAN** | kaynak SHA ve proje izolasyonu, özel veri Git'e yok | 024 |
 | F31 | Kaynaklı canlı stage/progress SSE, task budget ve UI genişlemesi | `app/jobs.py` + `app/static/*` | **PLAN** | loopback, request bounds, iş iptali, fallback polling | 025 |
@@ -195,3 +195,12 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 `geometry/repair.py`: orijinal `DrawingIR` CAD çizgi/segmente eşlenen kaynak SHA, `frame_id`, CAD `handle`, nested `block_path` ve entity ID taşıyan `RepairOverlay` üretir. Küçük hat boşluklarının sanal kapatılması, endpoint snap, duplicate veya overlapping segment **adayları**; her biri `REVIEW_REQUIRED` ve `VIRTUAL_CANDIDATE`. `geometry/repair_viewer.py` SVG'de orijinal lacivert/sanal öneri turuncu kesikli gösterir. Bu çıktılar ŞİMDİLİK ne mevcut DrawingIR'yi değiştirir ne RuleEngine/NetworkX/alan ölçümüne gönderilir.
 
 `UnitHypothesis` sadece header/önceki `CalibrationState` bilgisidir (`INFERRED` ≠ `CONFIRMED`); gerçek DIMENSION/door histogramı tasarlanmadı. `Layer0SemanticCandidate` Layer 0 CAD gözlemini yalnız incelemeye sunar; HATCH/ARC heuristikler veya doğrulanmış wall/door/room semantiği **henüz yok**. Gerçek farklı CAD dosyaları ve Windows görsel kabulü açık. F08–F12 `HUKUKI_HOLD`. [İşlem 022](islem_022.md) · [Teknik şartname](specs/source-preserving-repair-v0.1.md).
+
+
+## İşlem 023 — A0/A1 karo OCR / belge yerleşimi, gerçek kod ve eksik kabul
+
+**F28 KISMI/MEVCUT_KOD:** `ocr/tiles.py` kullanıcı explicit PDF page-point ROI'sini küçük, üst üste bindirilmiş, render/total pixel ve token budget ile kaynak SHA/rotasyon/marj doğrulayan pypdfium2 karo planına böler. Yerel `rapidocr_cpu` okuyucusu tek tek çalıştırılır. Çıkan dörtgenler `RenderedRegion.pixel_to_source` üzerinden PDF üst-sol page quad'a döner, aynı metin+overlap IoU için dedup edilir; güvenlik uyuşmazlığı reddedilir. `importers/pdf_ir.py` → `DrawingIR OCR_CANDIDATE`, `PipelineManifest` tile/token/dedup + layout kanıtları. PDF native vektörler korunur.
+
+**F04 KISMI:** `ocr/layout.py` gerçek native/OCR glyph metinlerinden `LOWER_RIGHT_TEXT_CLUSTER` (olası antet), TOP/BOTTOM margin alanları çıkarır; `REVIEW_REQUIRED` konum ipucu, antet semantiği/ölçek/proje ruhsatı alanı veya kesin mahal/kot/tablo tanıma değildir. Resmî belge sınıflandırması, Türkçe içerik ve dönmüş A0 sayfaların tam düşük bellekte OCR kaynağı henüz doğrulanmadı.
+
+**Kabul açık:** Gerçek RapidOCR Türkçe model, A0 CER/WER, peak RSS, düşük ışık tarama, farklı rotasyon/CropBox, gerçek Windows/Edge, korumalı PDF ve insan bbox incelemesi. Rotated büyük sayfa `render_region` güvenli full render bütçesini aşarsa fail-closed. `RuleEngine REGULATORY=INSUFFICIENT_EVIDENCE`, F08–F12 `HUKUKI_HOLD`. [İşlem 023](islem_023.md) · [Tiled OCR şartnamesi](specs/tiled-ocr-v0.1.md).
