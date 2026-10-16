@@ -225,9 +225,16 @@ def infer(drawing: DrawingIR, request: VlmRequest, config: LocalVlmConfig,
             suggestions=suggestions,
         )
     finally:
-        process.terminate()
+        if process.poll() is None:
+            try:
+                process.terminate()
+            except (OSError, ProcessLookupError):
+                pass
         try:
             process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            process.kill()
+            try:
+                process.kill()
+            except (OSError, ProcessLookupError):
+                pass
             process.wait(timeout=5)
