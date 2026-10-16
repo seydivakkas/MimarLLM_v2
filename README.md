@@ -133,3 +133,11 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 Kullanıcı kararıyla **İşlem 025'in fiziksel Windows/Edge, gerçek çizim, performans ve offline exe testleri son İşlem 031'e ertelendi.** 025'in 2B/LINE revizyon-kaynaklı not/job uygulaması mevcut sentetik Linux/Windows CI ve GitHub-hosted Edge smoke açısından mühendislik adayıdır; hedef cihazda gerçek kullanıcı tarafından kabul edilmiş ürün değildir.
 
 **Sıra:** 025 mühendislik kod adayı → 026 kaynaklı 2.5D → 027 yerel VLM → 028 rubrik → 029 jüri → 030 öğrenci analitiği → 031 tüm gerçek cihaz/saha, bağımsız performans/hukukî uzman kabulü. Her ara aşamada sentetik regresyon ve güvenlik testleri devam eder. Gerçek kabul ertelenmesi üretim dağıtımına izin vermez. Mevcut Draft PR #2, ana dalın üretim kodu sayılmaz. Ayrıntılar [güncel yol haritasında](docs/uygulama-yol-haritasi.md) ve [karar defterinde](docs/kararlar.md).
+
+## İşlem 026 — Kaynaklı 2.5D Three.js (Draft aday)
+
+[İşlem 026](docs/islem_026.md) ve [2.5D teknik sözleşmesi](docs/specs/massing25d-v0.1.md).
+
+Yalnız CAD Model'deki özgün LINE kenarlarından oluşan tek kapalı sınır, bağımsız doğrulanmış metre ölçeği ve açık kullanıcı yüksekliği beyanıyla kaynaklı 2.5D kütle önizlemesi üretir. Fiziksel bina, kat/oda veya yasal uygunluk kararı değildir. Rapor/DrawingIR/CAD değişmez.
+
+Three.js 0.160.1 ESM yerel olarak SHA/MIT manifestiyle hazırlanır (scripts/build_three_vendor_026.mjs). Tarayıcının çalışma anında CDN/ücretli API yok. Bu hazırlama yapılmadan Three görüntüleyici çalışmaz. Gerçek Windows/Edge, GPU, dağıtım ve saha testi son İşlem 031'de yapılacak.
