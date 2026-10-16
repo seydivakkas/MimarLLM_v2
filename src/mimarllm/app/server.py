@@ -32,6 +32,8 @@ from mimarllm.core.ir import DrawingIR
 from mimarllm.geometry.massing25d import MassingRequest, MassingError, build_massing_candidate
 from mimarllm.vlm import local_engine
 from mimarllm.vlm.models import VlmRequest, VlmFailure
+from mimarllm.pedagogy.rubric import profile as rubric_profile
+from mimarllm.pedagogy.scoring import RubricSubmission, RubricError, evaluate_rubric
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -596,6 +598,40 @@ def create_app(workspace: str | Path) -> FastAPI:
             raise HTTPException(status_code=409, detail="Yerel VLM çalıştırılamadı; kaynak, şema veya bellek doğrulaması yetersiz.") from exc
         finally:
             vlm_lock.release()
+
+    @app.get("/api/rubric/profile/{academic_year}")
+    def get_rubric_profile(academic_year: int):
+        try:
+            return rubric_profile(academic_year)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail="Bu mimarlık sınıfı profili bulunamadı.") from exc
+
+    @app.post("/api/projects/{project_id}/runs/{run_id}/rubric/evaluate")
+    async def local_rubric_evaluate(project_id: str, run_id: str, request: Request):
+        # This is an ephemeral local pedagogical DRAFT, never saved as an
+        # official academic mark or appended to the deterministic report.
+        _folder, source_sha, raw_drawing = review_context(
+            project_id, run_id, include_drawing=True)
+        raw = bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw) > 32768:
+                raise HTTPException(status_code=413, detail="Rubrik inceleme sınırı aşıldı.")
+        try:
+            submission = RubricSubmission.model_validate_json(bytes(raw))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Rubrik şeması veya insan onayı eksik.") from exc
+        if submission.source_sha256 != source_sha:
+            raise HTTPException(status_code=409, detail="Rubrik kaynak SHA eşleşmedi.")
+        try:
+            drawing = DrawingIR.model_validate(raw_drawing)
+            evaluation = evaluate_rubric(drawing, submission)
+        except (RubricError, ValidationError, ValueError) as exc:
+            raise HTTPException(
+                status_code=409,
+                detail="Rubrik incelemesi doğrulanamadı: kriter, sınıf veya çizim kanıtı belirsiz.",
+            ) from exc
+        return evaluation.model_dump(mode="json")
 
     def dxf_edit_context(project_id: str):
         project = metadata(project_id)
