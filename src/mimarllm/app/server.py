@@ -25,6 +25,9 @@ from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.concurrency import run_in_threadpool
 
+from mimarllm.app.jobs import BoundedAnalysisJobs, JobQueueFull
+from mimarllm.app.reviews import ReviewStore, ReviewPayload, ReviewError
+from mimarllm.app.dxf_edits import DxfRevisions, EditRequest, UndoRequest, EditError
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -377,6 +380,50 @@ def create_app(workspace: str | Path) -> FastAPI:
             shutil.rmtree(target, ignore_errors=True)
             raise
 
+    # A finite, in-process dispatcher: statuses are ephemeral, reports persist
+    # in the existing source-validated run directories.
+    jobs = BoundedAnalysisJobs(_generate_run, running)
+    reviews = ReviewStore()
+    dxf_revisions = DxfRevisions()
+
+    @app.post("/api/projects/{project_id}/jobs", status_code=202)
+    async def queue_analysis(project_id: str, request: Request):
+        project = metadata(project_id)
+        if (project_path(project_id) / project["source_name"]).is_symlink():
+            raise HTTPException(status_code=409, detail="Kaynak sembolik bağlantı olamaz.")
+        declared = request.headers.get("content-length")
+        if declared:
+            try:
+                if int(declared) > 256_000:
+                    raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Bozuk JSON gövde uzunluğu.") from exc
+        chunks = []
+        size = 0
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > 256_000:
+                raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+            chunks.append(chunk)
+        try:
+            options = RunPayload.checked(b"".join(chunks))
+        except DashboardError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        try:
+            return jobs.submit(project, options)
+        except JobQueueFull as exc:
+            raise HTTPException(status_code=429, detail="Yerel analiz kuyruğu dolu.") from exc
+
+    @app.get("/api/projects/{project_id}/jobs/{job_id}")
+    def job_status(project_id: str, job_id: str):
+        metadata(project_id)
+        if not _ID.fullmatch(job_id):
+            raise HTTPException(status_code=404, detail="Analiz işi bulunamadı.")
+        result = jobs.status(project_id, job_id)
+        if result is None:
+            raise HTTPException(status_code=404, detail="Analiz işi bulunamadı veya oturum yeniden başladı.")
+        return result
+
     @app.get("/api/projects/{project_id}/runs/{run_id}")
     def read_run(project_id: str, run_id: str):
         folder = run_dir(project_id, run_id)
@@ -396,6 +443,7 @@ def create_app(workspace: str | Path) -> FastAPI:
                 candidate_lines.append({
                     "entity_id": entity["entity_id"],
                     "frame_id": entity["frame_id"],
+                    "origin": entity["origin"],
                     "layer": entity.get("layer"),
                     "points": geom["points"],
                     "cad_handle": entity["source"].get("cad_handle"),
@@ -406,6 +454,7 @@ def create_app(workspace: str | Path) -> FastAPI:
         ]
         return {
             "run_id": run_id, "manifest": manifest,
+            "source_sha256": manifest["source_sha256"],
             "findings": report["findings"][:200],
             "frames": report["frames"][:50],
             "sources": report["sources"][:250],
@@ -413,6 +462,127 @@ def create_app(workspace: str | Path) -> FastAPI:
             "reports": sorted(available),
             "truncated": len(report["findings"]) > 200 or len(report["sources"]) > 250,
         }
+
+    def review_context(project_id: str, run_id: str, *, include_drawing: bool = False):
+        project = metadata(project_id)
+        run = run_dir(project_id, run_id)
+        input_file = project_path(project_id) / project["source_name"]
+        if (input_file.is_symlink() or not input_file.is_file()
+                or _hash_file(input_file) != project["source_sha256"]):
+            raise HTTPException(status_code=409, detail="Özgün kaynak SHA doğrulaması başarısız.")
+        manifest = json.loads(_read_safely(run / "pipeline-manifest.json", max_bytes=512_000))
+        if manifest.get("source_sha256") != project["source_sha256"]:
+            raise HTTPException(status_code=409, detail="Analiz kaynak SHA kimliği uyuşmuyor.")
+        drawing = None
+        if include_drawing:
+            drawing = json.loads(_read_safely(run / "drawingir.json", max_bytes=40_000_000))
+            if drawing.get("source_sha256") != project["source_sha256"]:
+                raise HTTPException(status_code=409, detail="Çizim kaynak SHA kimliği uyuşmuyor.")
+        return run, project["source_sha256"], drawing
+
+    @app.get("/api/projects/{project_id}/runs/{run_id}/reviews")
+    def list_reviews(project_id: str, run_id: str):
+        folder, source_sha, _ = review_context(project_id, run_id)
+        try:
+            notes = reviews.list(folder, source_sha)
+        except ReviewError as exc:
+            raise HTTPException(status_code=409, detail="İnceleme kayıtları güvenilir değil.") from exc
+        return {"source_sha256": source_sha, "review_state": "UNVERIFIED_OBSERVATION",
+                "notes": notes}
+
+    @app.post("/api/projects/{project_id}/runs/{run_id}/reviews", status_code=201)
+    async def add_review(project_id: str, run_id: str, request: Request):
+        folder, source_sha, drawing = review_context(project_id, run_id, include_drawing=True)
+        parts, size = [], 0
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > 4096:
+                raise HTTPException(status_code=413, detail="İnceleme notu gövdesi çok büyük.")
+            parts.append(chunk)
+        try:
+            payload = ReviewPayload.model_validate_json(b"".join(parts))
+            return reviews.add(folder, source_sha, drawing, payload)
+        except ReviewError as exc:
+            raise HTTPException(status_code=409, detail="Kaynak eşleşmesi veya not bütçesi başarısız.") from exc
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Kaynaklı inceleme notu geçersiz.") from exc
+
+    @app.delete("/api/projects/{project_id}/runs/{run_id}/reviews/{review_id}")
+    def retract_review(project_id: str, run_id: str, review_id: str):
+        if not _ID.fullmatch(review_id):
+            raise HTTPException(status_code=404, detail="İnceleme notu bulunamadı.")
+        folder, source_sha, _ = review_context(project_id, run_id)
+        try:
+            return reviews.retract(folder, source_sha, review_id)
+        except ReviewError as exc:
+            raise HTTPException(status_code=409, detail="İnceleme notu bulunamadı veya geri alındı.") from exc
+
+    def dxf_edit_context(project_id: str):
+        project = metadata(project_id)
+        if project["source_kind"] != "DXF":
+            raise HTTPException(status_code=415, detail="Kalıcı geometri revizyonu yalnız DXF içindir.")
+        folder = project_path(project_id)
+        source = folder / "input.dxf"
+        if source.is_symlink() or not source.is_file() or _hash_file(source) != project["source_sha256"]:
+            raise HTTPException(status_code=409, detail="Orijinal DXF SHA doğrulaması başarısız.")
+        return folder, project["source_sha256"]
+
+    async def parse_dxf_edit_payload(request: Request, schema):
+        data = bytearray()
+        length = request.headers.get("content-length")
+        if length:
+            try:
+                if int(length) > 4096:
+                    raise HTTPException(status_code=413, detail="CAD düzenleme komutu çok büyük.")
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Geçersiz gövde uzunluğu.") from exc
+        async for chunk in request.stream():
+            data.extend(chunk)
+            if len(data) > 4096:
+                raise HTTPException(status_code=413, detail="CAD düzenleme komutu çok büyük.")
+        try:
+            return schema.model_validate_json(bytes(data))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="CAD düzenleme komutu doğrulanamadı.") from exc
+
+    @app.get("/api/projects/{project_id}/edits")
+    def dxf_edit_status(project_id: str):
+        folder, sha = dxf_edit_context(project_id)
+        try:
+            return dxf_revisions.status(folder, sha)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail="DXF revizyon geçmişi güvenilir değil.") from exc
+
+    @app.post("/api/projects/{project_id}/edits", status_code=201)
+    async def dxf_edit_line(project_id: str, request: Request):
+        folder, sha = dxf_edit_context(project_id)
+        command = await parse_dxf_edit_payload(request, EditRequest)
+        try:
+            return dxf_revisions.revise(folder, sha, command)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail="DXF düzenleme kaynağı ya da revizyonu doğrulanamadı.") from exc
+
+    @app.post("/api/projects/{project_id}/edits/undo", status_code=201)
+    async def dxf_edit_undo(project_id: str, request: Request):
+        folder, sha = dxf_edit_context(project_id)
+        command = await parse_dxf_edit_payload(request, UndoRequest)
+        try:
+            return dxf_revisions.undo(folder, sha, command)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail="CAD revizyonu geri alınamadı.") from exc
+
+    @app.get("/api/projects/{project_id}/edits/{revision_id}/download")
+    def dxf_edit_download(project_id: str, revision_id: str):
+        folder, sha = dxf_edit_context(project_id)
+        try:
+            binary = dxf_revisions.download(folder, sha, revision_id)
+        except (EditError, OSError, ValueError) as exc:
+            raise HTTPException(status_code=404, detail="DXF revizyonu bulunamadı.") from exc
+        return Response(
+            content=binary,
+            media_type="application/dxf",
+            headers={"Content-Disposition": f'attachment; filename="MimarLLM-{revision_id}.dxf"'},
+        )
 
     @app.get("/api/projects/{project_id}/runs/{run_id}/files/{filename}")
     def report_file(project_id: str, run_id: str, filename: str):

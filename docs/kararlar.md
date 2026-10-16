@@ -384,3 +384,21 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-208 | `RuleEngine.REGULATORY` sonuçları INSUFFICIENT_EVIDENCE ve F08–F12 HUKUKI_HOLD | DEĞİŞMEDİ |
 
 [İşlem 024](islem_024.md) · [Türkçe RAG/CACHE v0.1](specs/rag-lexicon-v0.1.md).
+
+
+## İşlem 025 → 031 — Fiziksel kabulü sona erteleme kararı (2026-10-16)
+
+Önceki İşlem 025 duraklatma kuralı, kullanıcı talebiyle **bu bölüm kapsamında ileriye dönük olarak değiştirilmiştir**. Tarihsel kararlar silinmez; bunlarla çelişen eski "026'ya geçilemez" ifadeleri bu kararın tarihinden sonra geçerli değildir.
+
+| Karar | Uygulanacak mühendislik kuralı | Durum |
+| --- | --- | --- |
+| K-209 | İşlem 025'te mevcut dar kapsamlı DXF LINE revizyon/undo, kaynaklı 2B önizleme ve bounded job kodu, sentetik CI başarılıysa **mühendislik aday teslimi** sayılır; fiziksel kullanıcı kabulü bundan bağımsızdır | KOD ADAYI / SENTETİK PASS |
+| K-210 | Fiziksel Windows 10/11/Edge kullanıcı testi, gerçek kirli DXF ve A0/A1 PDF, p50/p95/peak RSS, Windows offline `onedir` exe/DLL, erişilebilirlik ve bağımsız uygulayıcı imzası **İşlem 031** birleşik kabulüne ertelenir | SON KABUL / HOLD |
+| K-211 | 026–030 geliştirme işlemleri 025'in **fiziksel** kabulünü beklemez; yalnız CI/kaynak-provenance regresyonu, güvenlik ve yerel API sözleşmeleri korunur. CI FAIL olan kod bir sonraki özelliğe temel olamaz | İLERİYE DÖNÜK GELİŞTİRME KARARI |
+| K-212 | Her işlemde hızlı sentetik Linux/Windows testleri ve sözleşme doğrulamaları devam eder. Gerçek saha/fiziksel testler son aşamada topluca yapılır; test kapsamı ve açık HOLD durumları kaybolmaz | ZORUNLU |
+| K-213 | PR #2 mevcut Draft kalsa da yeni özellik için gerekiyorsa **ayrı feature dalı onun onaylanmış kod commit'inden** açılabilir. Draft/bağımlı PR açık etiketlenir; `main` merge'i ve üretim sürümü ayrı kod inceleme + CI kapısına tabidir | GÜVENLİ DAL YÖNETİMİ |
+| K-214 | Fiziksel onay olmadan kullanılabilir müşteri paketi, mimari doğruluk sertifikası veya hukukî yönetmelik PASS iddia edilemez; F08–F12 HUKUKI_HOLD / REGULATORY_LOCKED aynı kalır | DEĞİŞMEDİ |
+
+**Yeni yürütme sırası:** 025 mühendislik adayını koru → `islem_026` ilk GitHub kaydı → 026–030 özellikleri ve sentetik CI → 031 fiziksel/gerçek veri/kullanıcı/hukukî uzman kabulü → ancak sonrasında dağıtım kararı.
+
+Bkz. [İşlem 025](islem_025.md), [yol haritası](uygulama-yol-haritasi.md) ve [final fiziksel test protokolü](specs/windows-acceptance-025.md).

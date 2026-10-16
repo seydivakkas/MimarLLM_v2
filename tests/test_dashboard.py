@@ -293,3 +293,266 @@ def test_tampered_project_metadata_cannot_redirect_source_path(cli,dxf):
     assert http.get(f"/api/projects/{pid}").status_code==409
     assert run(http,csrf,pid).status_code==409
     assert not http.get("/api/projects").json()["projects"]
+
+
+def test_async_job_pipeline_preserves_source_and_regulatory_hold(cli,dxf):
+    from time import sleep
+    http,csrf,_=cli
+    pid=upload(http,csrf,dxf).json()["project_id"]
+    source_sha=http.get(f"/api/projects/{pid}").json()["project"]["source_sha256"]
+    resp=http.post(f"/api/projects/{pid}/jobs",
+                   json={"config":{},"formats":["json","html"]},
+                   headers={"X-Mimar-CSRF":csrf})
+    assert resp.status_code==202,resp.text
+    job=resp.json()
+    assert job["project_id"]==pid and job["source_sha256"]==source_sha
+    assert job["state"] in ("QUEUED","RUNNING")
+    for _ in range(200):
+        state=http.get(f"/api/projects/{pid}/jobs/{job['job_id']}")
+        assert state.status_code==200
+        job=state.json()
+        if job["state"] in ("COMPLETED","FAILED"):
+            break
+        sleep(.025)
+    assert job["state"]=="COMPLETED",job
+    assert job["run_id"] and len(job["run_id"])==32
+    result=details(http,pid,job["run_id"])
+    assert result["source_sha256"]==source_sha
+    assert result["manifest"]["legal_gate"]=="REGULATORY_LOCKED"
+    assert result["native_lines"]
+    assert all(item["origin"] in ("CAD_NATIVE","PDF_NATIVE")
+               for item in result["native_lines"])
+    assert all(item["frame_id"] for item in result["native_lines"])
+
+
+def test_async_jobs_obey_csrf_id_body_and_ownership(cli,dxf):
+    http,csrf,_=cli
+    p1=upload(http,csrf,dxf).json()["project_id"]
+    p2=upload(http,csrf,dxf).json()["project_id"]
+    endpoint=f"/api/projects/{p1}/jobs"
+    assert http.post(endpoint,json={"config":{}}).status_code==403
+    assert http.post(endpoint,content=b"x"*256001,
+                     headers={"X-Mimar-CSRF":csrf}).status_code==413
+    assert http.post(endpoint,json={"config":{"remote_api_key":"x"}},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==422
+    job=http.post(endpoint,json={"config":{}},
+                  headers={"X-Mimar-CSRF":csrf}).json()
+    assert http.get(f"/api/projects/{p2}/jobs/{job['job_id']}").status_code==404
+    assert http.get(f"/api/projects/{p1}/jobs/not-valid").status_code==404
+
+
+def test_2d_ui_source_inspector_offline_and_escaped(cli):
+    http,_,_=cli
+    html=http.get("/").text
+    js=http.get("/static/dashboard.js").text
+    assert 'id="drawing-2d"' in html
+    assert 'id="frame-filter"' in html and 'id="layer-filter"' in html
+    assert 'id="job-status"' in html
+    assert 'renderDrawing(data)' in js
+    assert 'data.source_sha256' in js
+    assert 'document.createElementNS' in js
+    assert 'innerHTML' not in js
+    assert 'eval(' not in js
+    assert "https://" not in html
+    assert "script-src 'self'" in http.get("/").headers["content-security-policy"]
+
+
+def test_2d_review_note_sidecar_audited_and_original_unchanged(cli,dxf):
+    http,csrf,workspace=cli
+    project=upload(http,csrf,dxf).json()
+    pid=project["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    data=details(http,pid,rid)
+    source=data["native_lines"][0]
+    base=f"/api/projects/{pid}/runs/{rid}"
+    input_file=workspace/"projects"/pid/"input.dxf"
+    drawing_file=workspace/"projects"/pid/"runs"/rid/"drawingir.json"
+    original_drawing=drawing_file.read_bytes()
+    payload={
+      "source_sha256":project["source_sha256"],
+      "entity_id":source["entity_id"],"frame_id":source["frame_id"],
+      "reviewer_label":"Studio reviewer",
+      "note":"Kaynak çizgisi manuel kontrol gerektirir."
+    }
+    add=http.post(base+"/reviews",json=payload,headers={"X-Mimar-CSRF":csrf})
+    assert add.status_code==201,add.text
+    note=add.json()
+    assert note["review_state"]=="UNVERIFIED_OBSERVATION"
+    assert note["retracted_utc"] is None
+    assert len(note["review_id"])==32
+    listed=http.get(base+"/reviews").json()
+    assert listed["source_sha256"]==project["source_sha256"]
+    assert len(listed["notes"])==1
+    assert listed["notes"][0]["entity_id"]==source["entity_id"]
+    assert input_file.read_bytes()==dxf
+    assert drawing_file.read_bytes()==original_drawing
+    assert details(http,pid,rid)["manifest"]["legal_gate"]=="REGULATORY_LOCKED"
+    assert http.get(base+"/files/review-notes.json").status_code==404
+    assert http.delete(base+"/reviews/"+note["review_id"]).status_code==403
+    erased=http.delete(base+"/reviews/"+note["review_id"],
+                       headers={"X-Mimar-CSRF":csrf})
+    assert erased.status_code==200,erased.text
+    assert erased.json()["retracted_utc"] is not None
+    assert http.delete(base+"/reviews/"+note["review_id"],
+                       headers={"X-Mimar-CSRF":csrf}).status_code==409
+    assert len(http.get(base+"/reviews").json()["notes"])==1
+    assert drawing_file.read_bytes()==original_drawing
+    app=create_app(workspace)
+    with TestClient(app,base_url="http://127.0.0.1:8765",
+                    client=("127.0.0.1",12345)) as another_process:
+        retained=another_process.get(base+"/reviews").json()["notes"]
+        assert len(retained)==1 and retained[0]["retracted_utc"]
+
+
+def test_review_source_forgery_budget_and_payload_rejected(cli,dxf):
+    http,csrf,workspace=cli
+    project=upload(http,csrf,dxf).json()
+    pid=project["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    source=details(http,pid,rid)["native_lines"][0]
+    url=f"/api/projects/{pid}/runs/{rid}/reviews"
+    payload={
+      "source_sha256":project["source_sha256"],
+      "entity_id":source["entity_id"],"frame_id":source["frame_id"],
+      "reviewer_label":"Reviewer","note":"Manuel gözlem."
+    }
+    headers={"X-Mimar-CSRF":csrf}
+    assert http.post(url,json=payload).status_code==403
+    assert http.post(url,content=b"x"*4097,headers=headers).status_code==413
+    assert http.post(url,json={**payload,"source_sha256":"f"*64},
+                     headers=headers).status_code==409
+    assert http.post(url,json={**payload,"entity_id":"fabricated-id"},
+                     headers=headers).status_code==409
+    assert http.post(url,json={**payload,"unexpected":"malicious"},
+                     headers=headers).status_code==422
+    assert http.get(url).json()["notes"]==[]
+    (workspace/"projects"/pid/"input.dxf").write_bytes(dxf+b"\\nmodified")
+    assert http.post(url,json=payload,headers=headers).status_code==409
+    assert http.get(url).status_code==409
+
+
+def test_dxf_revision_edits_persist_and_undo_is_lossless(cli,dxf):
+    import hashlib
+    http,csrf,workspace=cli
+    project=upload(http,csrf,dxf).json()
+    pid=project["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    line=details(http,pid,rid)["native_lines"][0]
+    assert line["origin"]=="CAD_NATIVE" and line["frame_id"]=="cad:Model"
+    base=f"/api/projects/{pid}/edits"
+    status=http.get(base)
+    assert status.status_code==200
+    assert status.json()["head"]=="original"
+    assert status.json()["head_sha256"]==project["source_sha256"]
+    req={
+        "source_sha256":project["source_sha256"],"expected_head":"original",
+        "expected_sha256":project["source_sha256"],
+        "entity_id":line["entity_id"],"frame_id":line["frame_id"],
+        "cad_handle":line["cad_handle"],
+        "expected_start":line["points"][0],"expected_end":line["points"][1],
+        "new_start":[1,2],"new_end":[6,2],"reviewer_label":"CAD reviewer",
+    }
+    orig=workspace/"projects"/pid/"input.dxf"
+    initial=orig.read_bytes()
+    drawing=workspace/"projects"/pid/"runs"/rid/"drawingir.json"
+    initial_ir=drawing.read_bytes()
+    response=http.post(base,json=req,headers={"X-Mimar-CSRF":csrf})
+    assert response.status_code==201,response.text
+    first=response.json()
+    assert first["operation"]=="MOVE_LINE"
+    assert first["legal_gate"]=="REGULATORY_LOCKED"
+    assert first["cad_handle"]==line["cad_handle"].upper()
+    rid1=first["revision_id"]
+    download=http.get(base+f"/{rid1}/download")
+    assert download.status_code==200
+    assert hashlib.sha256(download.content).hexdigest()==first["sha256"]
+    assert orig.read_bytes()==initial
+    assert drawing.read_bytes()==initial_ir
+    exported=workspace/"first-revision.dxf"
+    exported.write_bytes(download.content)
+    doc=ezdxf.readfile(exported)
+    assert not doc.audit().has_errors
+    modified=[e for e in doc.modelspace().query("LINE")
+              if e.dxf.handle==line["cad_handle"]][0]
+    assert tuple(modified.dxf.start) == (1,2,0)
+    assert tuple(modified.dxf.end) == (6,2,0)
+    assert len(list(doc.modelspace().query("LINE")))==4
+    bad=http.post(base,json=req,headers={"X-Mimar-CSRF":csrf})
+    assert bad.status_code==409  # optimistic stale edit rejected
+    next_req=dict(req,expected_head=rid1,expected_sha256=first["sha256"],
+                  expected_start=[1,2],expected_end=[6,2],
+                  new_start=[2,2],new_end=[7,2])
+    nxt=http.post(base,json=next_req,headers={"X-Mimar-CSRF":csrf})
+    assert nxt.status_code==201,nxt.text
+    second=nxt.json()
+    assert second["parent_id"]==rid1
+    undo=http.post(base+"/undo",json={
+        "source_sha256":project["source_sha256"],
+        "expected_head":second["revision_id"],"expected_sha256":second["sha256"]
+    },headers={"X-Mimar-CSRF":csrf})
+    assert undo.status_code==201,undo.text
+    restored=undo.json()
+    assert restored["operation"]=="UNDO"
+    assert restored["sha256"]==first["sha256"]
+    assert http.get(base+f"/{restored['revision_id']}/download").content == download.content
+    assert http.get(base).json()["head"]==restored["revision_id"]
+    assert len(http.get(base).json()["history"])==3
+    assert http.get(base+f"/{second['revision_id']}/download").status_code==200
+    assert orig.read_bytes()==initial and drawing.read_bytes()==initial_ir
+    new_app=create_app(workspace)
+    with TestClient(new_app,base_url="http://127.0.0.1:8765",
+                    client=("127.0.0.1",12345)) as after_restart:
+        state=after_restart.get(base).json()
+        assert state["head"]==restored["revision_id"]
+        assert len(state["history"])==3
+        assert after_restart.get(base+f"/{rid1}/download").content==download.content
+
+
+def test_dxf_edit_security_and_pdf_rejected(cli,dxf,pdf):
+    http,csrf,workspace=cli
+    pid=upload(http,csrf,dxf).json()["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    item=details(http,pid,rid)["native_lines"][0]
+    project=http.get(f"/api/projects/{pid}").json()["project"]
+    url=f"/api/projects/{pid}/edits"
+    req={
+        "source_sha256":project["source_sha256"],
+        "expected_head":"original","expected_sha256":project["source_sha256"],
+        "entity_id":item["entity_id"],"frame_id":item["frame_id"],
+        "cad_handle":item["cad_handle"],
+        "expected_start":item["points"][0],"expected_end":item["points"][1],
+        "new_start":[1,1],"new_end":[2,1],"reviewer_label":"review",
+    }
+    assert http.post(url,json=req).status_code==403
+    assert http.post(url,content=b"x"*4097,headers={"X-Mimar-CSRF":csrf}).status_code==413
+    assert http.post(url,json={**req,"frame_id":"cad:Other"},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==422
+    assert http.post(url,json={**req,"new_start":[2_000_000,1]},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==422
+    assert http.post(url,json={**req,"new_end":[1,1]},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==409
+    assert http.post(url,json={**req,"cad_handle":"BADBEEF"},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==409
+    assert http.post(url,json={**req,"entity_id":"Model|FAKE|LINE"},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==409
+    assert http.post(url,json={**req,"expected_end":[222,222]},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==409
+    assert http.get(url+"/not-id/download").status_code==404
+    assert http.get(url).json()["history"]==[]
+    pdfpid=upload(http,csrf,pdf,"pdf").json()["project_id"]
+    assert http.get(f"/api/projects/{pdfpid}/edits").status_code==415
+    (workspace/"projects"/pid/"input.dxf").write_bytes(dxf+b"\nchanged")
+    assert http.get(url).status_code==409
+    assert http.post(url,json=req,headers={"X-Mimar-CSRF":csrf}).status_code==409
+
+
+def test_dxf_edit_ui_offline_provenance(cli):
+    http,_,_=cli
+    page=http.get("/").text
+    script=http.get("/static/dashboard.js").text
+    assert 'id="edit-start-x"' in page
+    assert 'id="edit-run"' in page
+    assert 'id="edit-undo"' in page
+    assert '"/edits"' in script
+    assert 'download' in script
+    assert "innerHTML" not in script

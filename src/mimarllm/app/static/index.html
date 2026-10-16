@@ -77,6 +77,7 @@
           <div class="report-options"><label><input type="checkbox" id="export-md"> Markdown ekle</label>
             <label><input type="checkbox" id="export-pdf"> PDF özeti ekle</label></div>
           <button id="analyze-button" type="button" class="btn solid action" disabled>Kaynaklı analizi çalıştır <span>→</span></button>
+          <p id="job-status" class="hint" role="status" aria-live="polite">Analiz kuyruğunda iş bulunmuyor.</p>
           <p class="hint">İlk analiz kaynak çizgileri ve alan adaylarını listeler; ileri analiz için aynı projeyi yeniden çalıştırabilirsiniz.</p>
         </section>
       </div>
@@ -92,6 +93,46 @@
           <div id="run-list" class="run-list"><p class="muted">Bir proje seçin.</p></div>
           <div id="finding-list" class="finding-list"></div>
           <div id="report-files" class="report-files"></div>
+        </section>
+        <section class="panel" id="drawing-review">
+          <div class="panel-heading"><div><div class="eyebrow">05 / ÖZGÜN KAYNAK İNCELEMESİ</div>
+            <h2>2B çizim ve kanıt katmanları</h2>
+            <p>Salt okunur önizleme: kaynak LINE/PDF_LINE öğesine dokunarak CAD handle, frame ve çizim SHA bilgisini inceleyin.</p>
+          </div></div>
+          <div class="field-grid">
+            <div class="field"><label for="frame-filter">Kaynak çizim / sayfa</label><select id="frame-filter" aria-label="Çizim veya sayfa"></select></div>
+            <div class="field"><label for="layer-filter">Katman</label><select id="layer-filter" aria-label="Kaynak katmanı"></select></div>
+          </div>
+          <p id="drawing-summary" class="hint">Bir kaynaklı analiz seçin.</p>
+          <div class="drawing-surface">
+            <svg id="drawing-2d" role="img" aria-label="Kaynak çizgi çizimi" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <pre id="source-inspector" class="source-inspector" aria-live="polite">Henüz kaynak seçilmedi.</pre>
+          <div class="calibrate">
+            <div class="stack-title"><h3>Kaynaklı manuel inceleme notları</h3><span class="mini-label">ONAYSIZ GÖZLEM</span></div>
+            <p class="hint">Önce çizgi seçin. Notlar ayrı bir yerel denetim kaydına yazılır; orijinal CAD/DrawingIR değiştirilmez, hukukî PASS üretilmez.</p>
+            <div class="field"><label for="reviewer-input">İncelemeci etiketi</label><input id="reviewer-input" type="text" maxlength="80" placeholder="Yerel incelemeci" autocomplete="off"></div>
+            <div class="field"><label for="review-note">Kaynağa bağlı gözlem</label><textarea id="review-note" rows="3" maxlength="300" placeholder="Kaynağı incelemek için not..." spellcheck="true"></textarea></div>
+            <button id="save-review-note" type="button" class="btn solid" disabled>Seçili kaynak için not kaydet</button>
+            <div id="review-list" class="review-list"><p class="muted">Henüz inceleme notu yok.</p></div>
+          </div>
+          <div class="calibrate" id="cad-edit-section">
+            <div class="stack-title"><h3>DXF kaynak çizgi revizyonu</h3><span class="mini-label">YALNIZ DOĞRUDAN LINE</span></div>
+            <p class="hint">Yalnız CAD Model alanındaki doğrudan LINE uçları düzenlenir. Orijinal DXF korunur; düzenleme yeni bir DXF dosyası üretir. Bu kaynaklı teknik edit hukukî/semantik doğrulama değildir.</p>
+            <div class="field-grid">
+              <div class="field"><label for="edit-start-x">Başlangıç X (CAD birimi)</label><input id="edit-start-x" type="number" step="any" placeholder="X"></div>
+              <div class="field"><label for="edit-start-y">Başlangıç Y (CAD birimi)</label><input id="edit-start-y" type="number" step="any" placeholder="Y"></div>
+              <div class="field"><label for="edit-end-x">Bitiş X (CAD birimi)</label><input id="edit-end-x" type="number" step="any" placeholder="X"></div>
+              <div class="field"><label for="edit-end-y">Bitiş Y (CAD birimi)</label><input id="edit-end-y" type="number" step="any" placeholder="Y"></div>
+            </div>
+            <p id="edit-status" class="hint" role="status" aria-live="polite">Düzenleme geçmişi yüklenmedi.</p>
+            <div class="report-options">
+              <button id="edit-run" type="button" class="btn solid" disabled>Yeni DXF revizyonu üret</button>
+              <button id="edit-undo" type="button" class="btn minor" disabled>Son DXF değişikliğini geri al</button>
+            </div>
+            <div id="edit-download" class="report-files"></div>
+          </div>
+          <p class="hint">Çizimler ölçek onayı veya yeni oda/kapı tespiti değildir. Orijinal DXF/PDF, DrawingIR ve rapor değişmez.</p>
         </section>
       </div>
     </div>
