@@ -115,13 +115,21 @@ def plan_ocr_tiles(
         raise PdfInputError("Nondefault CropBox cannot be tiled with known coordinates")
     width,height = size
     x0,y0,x1,y1 = request.roi_points
-    if not (x1 <= width and y1 <= height):
-        raise PdfInputError("Tiled OCR region exceeds displayed source page")
+    if (not all(isfinite(z) for z in size) or width<=0 or height<=0
+            or x1 > width or y1 > height):
+        raise PdfInputError("Tiled OCR region exceeds finite displayed source page")
     scale = request.dpi/72.0
+    def count_tiles(length:float, tile_width:float) -> int:
+        if length <= tile_width:
+            return 1
+        return ceil((length-tile_width)/(tile_width-request.overlap_pt))+1
+    # Preflight the integer grid count BEFORE allocating a possibly huge list.
+    nx = count_tiles(x1-x0, request.tile_width_pt)
+    ny = count_tiles(y1-y0, request.tile_height_pt)
+    if nx*ny > request.max_tiles:
+        raise PdfInputError("Tiled OCR tile count safety budget exceeded")
     xs = _tile_starts(x0,x1,request.tile_width_pt,request.overlap_pt)
     ys = _tile_starts(y0,y1,request.tile_height_pt,request.overlap_pt)
-    if len(xs)*len(ys) > request.max_tiles:
-        raise PdfInputError("Tiled OCR tile count safety budget exceeded")
     if rotation:
         # Existing PDFium ROI path uses a bounded full-page render on rotated
         # source pages. Preflight it; never secretly rasterize A0 at full DPI.
