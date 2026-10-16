@@ -38,4 +38,4 @@ where = ["src"]
 testpaths = ["tests"]
 
 [tool.setuptools.package-data]
-"mimarllm.app" = ["static/*.html", "static/*.css", "static/*.js"]
+"mimarllm.app" = ["static/*.html", "static/*.css", "static/*.js", "static/*.json", "static/*.txt"]
