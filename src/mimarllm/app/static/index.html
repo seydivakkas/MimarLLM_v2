@@ -134,6 +134,38 @@
           </div>
           <p class="hint">Çizimler ölçek onayı veya yeni oda/kapı tespiti değildir. Orijinal DXF/PDF, DrawingIR ve rapor değişmez.</p>
         </section>
+        <section class="panel" id="massing-25d">
+          <div class="panel-heading"><div>
+            <div class="eyebrow">06 / KAYNAKLI 2.5D SENARYO</div>
+            <h2>2.5D kütle önizlemesi</h2>
+            <p>Yalnız bağımsız doğrulanmış DXF ölçeği + sizin seçtiğiniz kapalı sınır ve açık yükseklik beyanı ile.</p>
+          </div></div>
+          <div class="legal-note"><strong>GERÇEK BİNA MODELİ DEĞİL</strong>
+            <span>Kat, oda, kapı, kaçış mesafesi veya resmî yönetmelik uygunluğu otomatik belirlenmez. Yükseklik kullanıcı senaryosudur.</span>
+          </div>
+          <div class="field"><label for="massing-frame">Çizim koordinat referansı</label>
+            <select id="massing-frame"><option value="">Önce kaynaklı DXF analizi seçin</option></select></div>
+          <p class="hint">Kapalı dış sınırı oluşturan tüm orijinal LINE elemanlarını işaretleyin; daha fazla/eksik/çakışan kenar kabul edilmez.</p>
+          <div class="massing-source-list" id="massing-source-list" aria-label="2.5D kaynak sınır çizgileri">
+            <p class="muted">Bir analiz seçilmedi.</p>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label for="massing-height">Kullanıcı tarafından beyan edilen yükseklik (metre)</label>
+              <input id="massing-height" type="number" step="any" min="0.01" max="150" placeholder="Örn. 3.2"></div>
+            <div class="field"><label for="massing-reviewer">İncelemeci etiketi</label>
+              <input id="massing-reviewer" type="text" maxlength="80" placeholder="Senaryoyu hazırlayan kişi"></div>
+          </div>
+          <div class="report-options">
+            <button type="button" id="massing-build" class="btn solid" disabled>Kaynağa bağlı 2.5D oluştur</button>
+            <button type="button" id="massing-clear" class="btn minor">Önizlemeyi temizle</button>
+          </div>
+          <p class="hint" id="massing-status" role="status" aria-live="polite">Kalibrasyon veya kapalı kaynak sınır olmadan kütle oluşturulmaz.</p>
+          <div class="massing-canvas" id="massing-canvas" role="region" aria-label="Three.js 2.5D kaynaklı kütle önizlemesi">
+            <p class="muted">Önizleme henüz oluşturulmadı. Üç boyutlu görüntü yalnız yerel Three.js modülüyle çalışır.</p>
+          </div>
+          <pre id="massing-evidence" class="source-inspector" aria-live="polite">Orijinal CAD ve kanıt raporu değişmez.</pre>
+          <p class="hint">Fare sürükleme: döndürme · tekerlek: yakınlaştırma · klavyede oklar / +/-: görünüm. Geometri kaynakları yalnız görselleştirilir.</p>
+        </section>
       </div>
     </div>
     <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
