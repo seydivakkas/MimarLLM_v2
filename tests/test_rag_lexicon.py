@@ -229,3 +229,46 @@ def test_no_model_claim_and_expansion_query_metadata(samples):
         assert out.expansion_version==LEXICON_VERSION
         assert all(h.claim_scope=="RETRIEVAL_CANDIDATE_NOT_LEGAL_ADVICE"
                    for h in out.results)
+
+
+def test_local_sql_passage_mutation_triggers_cache_invalidation(samples):
+    (_,base),_=samples
+    with LegalRagStore() as db:
+        db.index_document(base)
+        assert search_legal(db,"isiklik").results
+        assert db.conn.execute(
+            "SELECT COUNT(*) FROM rag_lexical_cache"
+        ).fetchone()[0]>0
+        # A separate local SQL utility bypasses the normal index API; the
+        # SQLite trigger must still invalidate stale ranked passage IDs.
+        target=db.conn.execute("SELECT passage_id FROM passages LIMIT 1").fetchone()[0]
+        with db.conn:
+            db.conn.execute(
+                "UPDATE passages SET payload_json=payload_json WHERE passage_id=?",
+                (target,),
+            )
+        assert db.conn.execute(
+            "SELECT COUNT(*) FROM rag_lexical_cache"
+        ).fetchone()[0]==0
+        assert search_legal(db,"isiklik").results
+
+
+def test_cache_isolated_across_two_local_connections_and_reindex(samples,tmp_path):
+    (first,base),(second,amend)=samples
+    file=tmp_path/"two-connections.sqlite"
+    with LegalRagStore(file) as a:
+        a.index_document(base)
+        with LegalRagStore(file) as b:
+            first_results=search_legal(b,"isik kuyusu",lexical_expansion=True)
+            assert all(h.passage.document_sha256==base.document_sha256
+                       for h in first_results.results)
+            assert b.conn.execute(
+                "SELECT COUNT(*) FROM rag_lexical_cache"
+            ).fetchone()[0]>0
+            a.index_document(amend)
+            second_results=search_legal(b,"isik kuyusu",lexical_expansion=True)
+            assert amend.document_sha256 in {
+                h.passage.document_sha256 for h in second_results.results
+            }
+            assert all(h.legal_compliance_certified is False
+                       for h in second_results.results)
