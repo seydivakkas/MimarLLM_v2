@@ -417,3 +417,20 @@ Bkz. [İşlem 025](islem_025.md), [yol haritası](uygulama-yol-haritasi.md) ve [
 | K-221 | Sentetik Windows/Linux ve hosted Edge ara kontrol; fiziksel Windows/GPU/VRAM/A0/onedir kullanıcı kabulü 031'de | SON KABUL HOLD |
 
 Bkz. docs/islem_026.md ve docs/specs/massing25d-v0.1.md. İşlem 026 PR #4, İşlem 025 PR #2 üzerine bağımlı Draft olarak tutulur. Main ve üretim değişmedi.
+
+
+## İşlem 027 — GGUF/MMProj ve deterministik kanıt sınırları (2026-10-16)
+
+| Karar | Mühendislik sözleşmesi | Durum |
+| --- | --- | --- |
+| K-222 | Yerel VLM isteği varsayılan kapalı; GGUF, MMProj ve llama-server operatör tarafından konfigüre edilip SHA doğrulanmadan model çalışmaz | KODLANDI |
+| K-223 | Yalnız aynı DrawingIR SHA/frame içindeki benzersiz native DXF/PDF LINE ID'leri 512 px lokal raster adayına seçilebilir | KODLANDI |
+| K-224 | RAM/VRAM kullanılabilir değerleri kanıtlanamıyorsa GPU uydurulmaz; tek NVIDIA nvidia-smi, rezervli ağırlık hesabı ve yalnız izinli CPU fallback | TAHMİNİ BÜTÇE / GERÇEK DONANIM 031 |
+| K-225 | Llama subprocess only localhost, `--fit off`, açık model/MMProj, tek iş, zaman/token/JSON sınırı; dış model URL/CDN/ücretli API yok | KODLANDI |
+| K-226 | Model yanıtı `ModelOnlyPayload` extra-forbid ve yalnız izinli entity IDs; metre/m², mevzuat PASS, skor, new source veya DrawingIR değişikliği şema dışı | KODLANDI |
+| K-227 | Kaynak SHA, çalışma tipi, model/MMProj SHA, hukukî kilit ve sonuç statüsü yalnız sunucu tarafından `UNVERIFIED_VLM_SUGGESTION` envelope'unda oluşturulur | KODLANDI |
+| K-228 | VLM kapalı/eksik, başarısız veya belleği yetersizse deterministik pipeline ve değişmez dosyalar çalışmaya devam eder | KODLANDI |
+| K-229 | Gerçek GGUF/MMProj model uyumluluğu, mimarî doğruluk, CUDA/VRAM, fiziksel Windows ve offline `onedir` kullanıcı kabulü yalnız İşlem 031'de doğrulanır | SON KABUL HOLD |
+| K-230 | İşlem 028 rubrik puanı model metninden değil sürümlü deterministik kural ve uzman ölçütüyle hesaplanır; VLM yalnız açık denetim adayı sağlar | SONRAKİ İŞLEM SINIRI |
+
+Bağımlılık: Draft PR #2 (025) → Draft PR #4 (026) → Draft PR #5 (027). `main` dalında değişiklik yok, üretim sürümü veya resmî hukukî PASS yok. [İşlem 027](islem_027.md) ve [VLM kaynak sözleşmesi](specs/local-vlm-027-v0.1.md).
