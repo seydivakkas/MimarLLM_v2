@@ -25,6 +25,7 @@ from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.concurrency import run_in_threadpool
 
+from mimarllm.curriculum.registry import grade_snapshot
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -212,6 +213,14 @@ def create_app(workspace: str | Path) -> FastAPI:
             "service": "MimarLLM F19",
             "legal_gate": "REGULATORY_LOCKED",
         }
+
+    @app.get("/api/curriculum/grades/{grade}")
+    def read_curriculum_grade(grade: int):
+        """Catalogue visibility only; not a compliance, rubric, or product acceptance API."""
+        try:
+            return grade_snapshot(grade)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail="Proje sınıfı 1–4 olmalı.") from exc
 
     @app.get("/api/projects")
     def list_projects():

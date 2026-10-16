@@ -59,9 +59,10 @@ async function refresh() {
   $("source-meta").textContent=state.projectId?state.projectId.slice(0,12)+"…":"Dosya bekleniyor";
   $("analyze-button").disabled=!state.projectId||state.running;
   if(state.projectId) await loadProject();
+  renderStudio();
 }
 async function chooseProject(id) {
-  state.projectId=id;state.runId="";
+  state.projectId=id;state.runId="";state.studioRunReport=null;
   $("selected-project").value=id;
   $("native-line").replaceChildren(new Option("Önce kaynak çizgileri inceleyin",""));
   await refresh();
@@ -71,6 +72,7 @@ async function loadProject() {
   const list=$("run-list");clear(list);
   if(!data.runs.length) {
     list.append(el("p","Bu çizimde henüz analiz kaydı yok.","muted"));
+    state.studioRunReport=null;
     $("count-findings").textContent="—"; $("run-state").textContent="İlk analizi başlatın";
     clear($("finding-list"));clear($("report-files"));clear($("stage-list"));
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
@@ -91,6 +93,7 @@ async function loadProject() {
 async function loadRun(id) {
   state.runId=id;
   const data=await api("/api/projects/"+state.projectId+"/runs/"+id);
+  state.studioRunReport=data;
   $("count-findings").textContent=String(data.manifest.report_finding_count);
   $("run-state").textContent=data.manifest.completion.replaceAll("_"," ");
   const stages=$("stage-list");clear(stages);
@@ -127,6 +130,7 @@ async function loadRun(id) {
     link.target="_blank";link.rel="noopener noreferrer";
     exports.append(link);
   }
+  renderStudio();
 }
 async function upload() {
   const file=$("drawing-file").files?.[0];
@@ -198,4 +202,126 @@ $("selected-project").addEventListener("change",e=>chooseProject(e.target.value)
 $("drawing-file").addEventListener("change",e=>{
   const file=e.target.files?.[0];$("picked-file").textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"Henüz dosya seçilmedi.";
 });
+
+/* UI-only adaptation of the user-supplied studio HTML; actual data exclusively from localhost API. */
+const STUDIO_GRADES=Object.freeze({
+  1:{name:"Proje I",count:18},
+  2:{name:"Proje II",count:31},
+  3:{name:"Proje III",count:45},
+  4:{name:"Proje IV / Bitirme",count:55}
+});
+const STUDIO_DIMENSIONS=[
+  ["TD","Teknik doğruluk"],["MK","Mekânsal kurgu"],
+  ["SM","Strüktürel mantık"],["CE","Cephe ve estetik"],
+  ["YU","Yönetmelik uyumu"],["SU","Sürdürülebilirlik"],
+  ["SK","Sunum kalitesi"],["IF","İnovasyon faktörü"]
+];
+let studioGrade=1,studioView="drawing";
+state.studioRunReport=null;
+state.curriculumCache=new Map();
+
+function studioLink(label) {
+  const link=el("a",label);
+  link.href="/api/projects/"+state.projectId+"/runs/"+state.runId+"/files/analysis.html";
+  link.target="_blank";
+  link.rel="noopener noreferrer";
+  return link;
+}
+function renderStudio() {
+  if(!$("studio-viewport")) return;
+  const grade=STUDIO_GRADES[studioGrade], summary=$("studio-grade-summary");
+  summary.textContent=grade.name+" · "+grade.count+
+    " katalog modülü hedefi (tamamlanmış yazılım modülü sayısı değil).";
+  for(const button of document.querySelectorAll(".studio-grade")) {
+    const active=Number(button.dataset.level)===studioGrade;
+    button.classList.toggle("selected",active);
+    button.setAttribute("aria-pressed",String(active));
+  }
+  const modules=$("studio-module-list");
+  clear(modules);
+  const record=state.curriculumCache.get(studioGrade);
+  if(!record){
+    modules.append(el("p","Sunucudan müfredat kaydı bekleniyor…","studio-tip"));
+  } else {
+    for(const mod of record.modules) {
+      const node=el("div","","studio-module");
+      node.append(el("strong",mod.code),document.createTextNode(mod.title),
+        el("span",mod.implementation_state+" · Puan yok"));
+      modules.append(node);
+    }
+  }
+  const rub=$("studio-rubric");
+  clear(rub);
+  for(const [code,label] of STUDIO_DIMENSIONS) {
+    const box=el("div","","studio-dimension");
+    box.title=label+" · puanlama ve Delphi doğrulaması bekliyor";
+    box.append(el("strong",code),el("small","Puan: —"));
+    rub.append(box);
+  }
+  for(const tab of document.querySelectorAll(".studio-tab[data-view]")) {
+    const selected=tab.dataset.view===studioView;
+    tab.classList.toggle("selected",selected);
+    tab.setAttribute("aria-selected",String(selected));
+  }
+  const view=$("studio-viewport");
+  clear(view);
+  if(studioView==="legal") {
+    view.append(el("strong","Mevzuat kaynak incelemesi · HOLD"),
+      el("p","Gerçek Resmî Gazete belgesi, sürüm, uygulanabilirlik ve uzman doğrulaması olmadan uygunluk kararı veya sarı kaynak bağlantısı üretilemez."));
+    if(state.studioRunReport&&state.projectId&&state.runId)
+      view.append(studioLink("Kaynaklı teknik raporu incele ↗"));
+    return;
+  }
+  if(!state.projectId) {
+    view.append(el("strong","Önce bir DXF veya PDF yükleyin"),
+      el("p","Çizim yükleme ve analiz akışı korunmuştur. Burada sahte 2B plan ya da otomatik onarım gösterilmez."));
+    return;
+  }
+  const report=state.studioRunReport;
+  if(!report) {
+    view.append(el("strong","Analiz raporu bekleniyor"),
+      el("p","Seçilen projeyi analiz laboratuvarında çalıştırın. 2B kaynak geometrisi ve kanıt bağlantıları mevcut HTML raporunda açılır."));
+    return;
+  }
+  const manifest=report.manifest||{};
+  const details=(manifest.completion||"INCELEME_BEKLENIYOR").replaceAll("_"," ");
+  view.append(el("strong","Gerçek yerel analiz · "+details),
+    el("p","Kaynak SHA-256: "+String(manifest.source_sha256||"—").slice(0,16)+"…"),
+    el("p","Bulgular: "+String(manifest.report_finding_count??"—")+
+      " · Kalibrasyon: "+String(manifest.calibration_state||"BELİRSİZ")),
+    el("p","Bu panel kaynağa bağlı rapora yönlendirir; 3D kütle veya doğrulanmamış metre ölçümü üretmez."));
+  if(report.reports?.includes("analysis.html")&&state.runId) 
+    view.append(studioLink("Özgün çizim bulgularını aç ↗"));
+}
+async function loadStudioGrade(grade) {
+  if(!state.curriculumCache.has(grade)) {
+    const info=await api("/api/curriculum/grades/"+grade);
+    if(info.grade!==grade || ![18,31,45,55][grade-1] ||
+        info.catalogued_module_count!==[18,31,45,55][grade-1] ||
+        info.legal_gate!=="REGULATORY_LOCKED") {
+      throw new Error("Müfredat kayıtları tutarsız.");
+    }
+    state.curriculumCache.set(grade,info);
+  }
+  renderStudio();
+}
+function initStudio() {
+  for(const button of document.querySelectorAll(".studio-grade")) {
+    button.addEventListener("click",()=>{
+      studioGrade=Number(button.dataset.level);
+      renderStudio();
+      loadStudioGrade(studioGrade).catch(e=>notice(e.message,true));
+    });
+  }
+  for(const button of document.querySelectorAll(".studio-tab[data-view]")) {
+    button.addEventListener("click",()=>{
+      studioView=button.dataset.view;
+      renderStudio();
+    });
+  }
+  renderStudio();
+  loadStudioGrade(studioGrade).catch(e=>notice(e.message,true));
+}
+
+initStudio();
 start();
