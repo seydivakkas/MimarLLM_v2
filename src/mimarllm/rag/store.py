@@ -206,6 +206,13 @@ class LegalRagStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_vector_model
                     ON passage_vectors(model_id);
+                -- Small, source-ID-only local query memoization. No PDF/image
+                -- bytes, legal interpretation, user identity or embeddings.
+                CREATE TABLE IF NOT EXISTS rag_lexical_cache(
+                    cache_key TEXT PRIMARY KEY,
+                    passage_ids_json TEXT NOT NULL,
+                    cache_seq INTEGER NOT NULL
+                );
             """)
         except sqlite3.OperationalError as exc:
             self.conn.close()
@@ -256,6 +263,9 @@ class LegalRagStore:
         # Prevalidate all model inputs BEFORE deleting old SQLite index rows.
         # If embedding fails, the previous document remains searchable.
         with self.conn:
+            # Index replacement and cache invalidation share ONE transaction.
+            # Failed embedding/source checks above leave both intact.
+            self.conn.execute("DELETE FROM rag_lexical_cache")
             self.conn.execute(
                 "INSERT INTO documents(doc_sha,regulation_id,kind,metadata_json,pdf_path)"
                 " VALUES(?,?,?,?,?) ON CONFLICT(doc_sha) DO UPDATE SET"
@@ -303,13 +313,40 @@ class LegalRagStore:
         regulation_id: str | None = None,
         document_sha256: str | None = None,
     ) -> list[str]:
-        if not 1 <= limit <= 200:
+        """Parameterised FTS5 BM25 with bounded SQLite-local passage-ID cache.
+
+        The key includes the query, filters and ranking limit. Reindexing
+        clears cache transactionally. Source-PDF availability is deliberately
+        checked AFTER retrieval by the caller on every request.
+        """
+        if not isinstance(limit, int) or not 1 <= limit <= 200:
             raise RagStoreError("FTS rank limit exceeded")
         expression = match_expression(query)
         if not expression:
             return []
+        key_payload = json.dumps(
+            ["lexical-cache-v1", expression, limit, regulation_id,
+             document_sha256],
+            ensure_ascii=False, separators=(",", ":"),
+        )
+        key = sha256(key_payload.encode("utf-8")).hexdigest()
+        cached = self.conn.execute(
+            "SELECT passage_ids_json FROM rag_lexical_cache WHERE cache_key=?",
+            (key,),
+        ).fetchone()
+        if cached is not None:
+            try:
+                ids = json.loads(cached[0])
+                if (isinstance(ids, list) and len(ids) <= limit
+                        and all(isinstance(ident, str) for ident in ids)
+                        and len(set(ids)) == len(ids)):
+                    # The index cache is never a source of source text/quad;
+                    # those are loaded from authoritative passages per hit.
+                    return ids
+            except (ValueError, TypeError):
+                pass
         try:
-            return [r[0] for r in self.conn.execute(
+            ids = [row[0] for row in self.conn.execute(
                 "SELECT p.passage_id FROM passage_fts"
                 " JOIN passages p ON p.passage_id = passage_fts.passage_id"
                 " WHERE passage_fts MATCH ?"
@@ -321,6 +358,22 @@ class LegalRagStore:
             ).fetchall()]
         except sqlite3.OperationalError as exc:
             raise RagStoreError(f"FTS query failed: {type(exc).__name__}") from exc
+        # Store the ranked passage IDs only. Bound the SQLite workspace cache
+        # to 128 query variants; on next query old rows are evicted.
+        with self.conn:
+            self.conn.execute(
+                "INSERT INTO rag_lexical_cache(cache_key,passage_ids_json,cache_seq)"
+                " VALUES(?,?,COALESCE((SELECT MAX(cache_seq)+1 FROM rag_lexical_cache),1))"
+                " ON CONFLICT(cache_key) DO UPDATE SET passage_ids_json=excluded.passage_ids_json,"
+                " cache_seq=excluded.cache_seq",
+                (key, json.dumps(ids, separators=(",", ":"))),
+            )
+            self.conn.execute(
+                "DELETE FROM rag_lexical_cache WHERE cache_key NOT IN ("
+                "SELECT cache_key FROM rag_lexical_cache "
+                "ORDER BY cache_seq DESC LIMIT 128)",
+            )
+        return ids
 
     def dense_rank(
         self, query_vector: Sequence[float], *, model_id: str, dimensions: int,
