@@ -72,3 +72,16 @@ Gerçekte kodlananlar:
 Bunlar yalnız GitHub-hosted sentetik, küçük örneklemli sayılardır; fiziksel hedef bilgisayarda performans eşiği veya p95 onayı değildir.
 
 **Geliştirme durumu:** KISMI / Draft PR #2. Gerçek Windows 10/11 kullanıcı, bağımsız Edge tıklama/erişilebilirlik, gerçek çok katmanlı CAD/A0 PDF, process peak RSS ve imzalı bağımsız test kabulü **HOLD**. Gerçek Windows onedir .exe / lisans/SBOM ayrıca HOLD. İşlem 025 kapanışı yapılmadı; 026 geliştirmesi yapılmayacak. F08–F12 HUKUKI_HOLD ve REGULATORY_LOCKED değişmez.
+
+
+## 6. Güncel sentetik CI ve Edge otomasyon sonucu — gerçek kapanış sınırı
+
+**Kaynak kod commit** \`fa02984f0c737359ad5c59ca6bb63a32d46f1e2c\` için iki bağımsız GitHub Actions koşusu gerçekten **success**:
+- [Ubuntu/Windows contracts 38850921765](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38850921765) loglarında Ubuntu Python 3.11 **369 passed / 1 skipped / 1 warning**, Windows Python 3.11 **370 passed / 1 warning**; JS \`node --check\`, sentetik 500-LINE parse/edit/undo ve SHA kaynak regresyonu başarılı. Yeni benchmark stdout/artifact çıktıları:
+  - Ubuntu parse 121.483/119.736/162.367/129.115/130.658 ms; edit 216.237 ms, undo 1.553 ms; tracemalloc peak **8,255,256 byte**.
+  - Windows parse 244.783/243.057/287.935/267.356/275.932 ms; edit 460.082 ms, undo 6.982 ms; tracemalloc peak **8,277,554 byte**.
+- [GitHub-hosted Windows Edge 38850921747](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38850921747) loglarında \`msedge.exe\` headless + mevcut gerçek FastAPI localhost + JS-rendered boş proje durumu + \`drawing-2d\`, \`edit-run\`, \`edit-undo\`, yasal \`REGULATORY_LOCKED\` kontrolü **success**. Edge betiğinin ilk iki başarısız koşusunda Windows console/DOM UTF-8/CP1252 yazdırma hataları vardı; hatalar düzeltilerek ayrı başarılı koşuyla kanıtlandı.
+
+**Bağlayıcı sınır:** Bu iki sonuç sadece \`fa02984f\` kaynak kodu için doğrulanmıştır; onu izleyen README/spec/işlem açıklama commit'leri yeni kod üretmedi. GitHub-hosted Windows 10.0.26100, gerçek kullanıcı Windows 10/11, Windows offline \`onedir\` EXE, Edge erişilebilirlik kullanıcı kabulü, gerçek müşteri/öğrenci DXF, A0 PDF, 20 tekrar p95 ve süreç RSS, hukuki/bağımsız mimari inceleme yerine **geçmez**.
+
+**Son durum:** \`islem_025\` AÇIK / \`F31 KISMI-MEVCUT_KOD + SENTETİK_CI_PASS + HOSTED_EDGE_SMOKE_PASS\`; **FİZİKSEL_KABUL_HOLD**. PR #2 Draft, main merge edilmedi, üretim yayımlanmadı. İşlem 026 kodlaması bu son kabul tamamlanana kadar yapılmayacak.
