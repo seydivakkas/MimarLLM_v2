@@ -26,6 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from mimarllm.app.jobs import BoundedAnalysisJobs, JobQueueFull
+from mimarllm.app.reviews import ReviewStore, ReviewPayload, ReviewError
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -381,6 +382,7 @@ def create_app(workspace: str | Path) -> FastAPI:
     # A finite, in-process dispatcher: statuses are ephemeral, reports persist
     # in the existing source-validated run directories.
     jobs = BoundedAnalysisJobs(_generate_run, running)
+    reviews = ReviewStore()
 
     @app.post("/api/projects/{project_id}/jobs", status_code=202)
     async def queue_analysis(project_id: str, request: Request):
@@ -458,6 +460,60 @@ def create_app(workspace: str | Path) -> FastAPI:
             "reports": sorted(available),
             "truncated": len(report["findings"]) > 200 or len(report["sources"]) > 250,
         }
+
+    def review_context(project_id: str, run_id: str, *, include_drawing: bool = False):
+        project = metadata(project_id)
+        run = run_dir(project_id, run_id)
+        input_file = project_path(project_id) / project["source_name"]
+        if (input_file.is_symlink() or not input_file.is_file()
+                or _hash_file(input_file) != project["source_sha256"]):
+            raise HTTPException(status_code=409, detail="Özgün kaynak SHA doğrulaması başarısız.")
+        manifest = json.loads(_read_safely(run / "pipeline-manifest.json", max_bytes=512_000))
+        if manifest.get("source_sha256") != project["source_sha256"]:
+            raise HTTPException(status_code=409, detail="Analiz kaynak SHA kimliği uyuşmuyor.")
+        drawing = None
+        if include_drawing:
+            drawing = json.loads(_read_safely(run / "drawingir.json", max_bytes=40_000_000))
+            if drawing.get("source_sha256") != project["source_sha256"]:
+                raise HTTPException(status_code=409, detail="Çizim kaynak SHA kimliği uyuşmuyor.")
+        return run, project["source_sha256"], drawing
+
+    @app.get("/api/projects/{project_id}/runs/{run_id}/reviews")
+    def list_reviews(project_id: str, run_id: str):
+        folder, source_sha, _ = review_context(project_id, run_id)
+        try:
+            notes = reviews.list(folder, source_sha)
+        except ReviewError as exc:
+            raise HTTPException(status_code=409, detail="İnceleme kayıtları güvenilir değil.") from exc
+        return {"source_sha256": source_sha, "review_state": "UNVERIFIED_OBSERVATION",
+                "notes": notes}
+
+    @app.post("/api/projects/{project_id}/runs/{run_id}/reviews", status_code=201)
+    async def add_review(project_id: str, run_id: str, request: Request):
+        folder, source_sha, drawing = review_context(project_id, run_id, include_drawing=True)
+        parts, size = [], 0
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > 4096:
+                raise HTTPException(status_code=413, detail="İnceleme notu gövdesi çok büyük.")
+            parts.append(chunk)
+        try:
+            payload = ReviewPayload.model_validate_json(b"".join(parts))
+            return reviews.add(folder, source_sha, drawing, payload)
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Kaynaklı inceleme notu geçersiz.") from exc
+        except ReviewError as exc:
+            raise HTTPException(status_code=409, detail="Kaynak eşleşmesi veya not bütçesi başarısız.") from exc
+
+    @app.delete("/api/projects/{project_id}/runs/{run_id}/reviews/{review_id}")
+    def retract_review(project_id: str, run_id: str, review_id: str):
+        if not _ID.fullmatch(review_id):
+            raise HTTPException(status_code=404, detail="İnceleme notu bulunamadı.")
+        folder, source_sha, _ = review_context(project_id, run_id)
+        try:
+            return reviews.retract(folder, source_sha, review_id)
+        except ReviewError as exc:
+            raise HTTPException(status_code=409, detail="İnceleme notu bulunamadı veya geri alındı.") from exc
 
     @app.get("/api/projects/{project_id}/runs/{run_id}/files/{filename}")
     def report_file(project_id: str, run_id: str, filename: str):
