@@ -160,8 +160,8 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 | F26 | Dimension/door histogramı, birim hipotezi | `geometry/repair.py` (yalnız `UnitHypothesis`), `core/calibration_candidates.py` (plan) | **KISMI — header birim ipucu var, dimension/door histogramı yok** | `INFERRED` ≠ `CONFIRMED`; yanlış fiziksel metreye hukuki sonuç yok | 022 |
 | F27 | Layer0, HATCH/ARC duvar/kolon/kapı heuristik adayı | `geometry/repair.py` (yalnız Layer0), `geometry/heuristics.py` (plan) | **KISMI — Layer0 gözlem adayı; ARC/HATCH veya sınıf kesinleştirme yok** | güven/provenance/false-positive, sınıf otomatik kesinleştirilmez | 022 |
 | F28 | A0/A1 tiled/ROI OCR ve sayfa quad geri dönüşümü | `ocr/tiles.py`, `ocr/layout.py`, `importers/pdf_ir.py`, `pipeline.py` | **KISMI / MEVCUT_KOD — sentetik CI** | kaynak PDF page/rotation/crop ve bounded memory | 023 |
-| F29 | Mimari jargon/eş anlam sorgu genişletmesi | `rag/synonyms.py` + lisanslı yerel sözlük | **PLAN** | FTS5 baseline'a karşı Recall@k; madde–fıkra karışma yok | 024 |
-| F30 | Gömülü SQLite WAL analiz geçmişi/cache/retention | `storage/workspace.py` | **PLAN** | kaynak SHA ve proje izolasyonu, özel veri Git'e yok | 024 |
+| F29 | Mimari jargon/eş anlam sorgu genişletmesi | `rag/lexicon.py`, `rag/retriever.py`, `rag/models.py` | **KISMI / MEVCUT_KOD — kurasyonlu arama ipuçları + sentetik CI** | FTS5 baseline'a karşı Recall@k; madde–fıkra karışma yok | 024 |
+| F30 | Gömülü SQLite WAL analiz geçmişi/cache/retention | `rag/store.py` (yalnız arama cache'i); `storage/workspace.py` (plan) | **KISMI / yalnız FTS5 arama cache'i — WAL/geçmiş/retention PLAN** | kaynak SHA ve proje izolasyonu, özel veri Git'e yok | 024 |
 | F31 | Kaynaklı canlı stage/progress SSE, task budget ve UI genişlemesi | `app/jobs.py` + `app/static/*` | **PLAN** | loopback, request bounds, iş iptali, fallback polling | 025 |
 | F32 | 2.5D kütle extrude, Three.js sahne ve kaynak-pin | `geometry/massing.py` + `app/static/scene3d.js` | **PLAN** | onaylı polygon, açık yükseklik, kaynak coordinates; yürürlük/yangın 3D tahmini yok | 026 |
 | F33 | Yerel GGUF, multimodal mmproj, gramer, VRAM ön denetimi | `vision/local_vlm.py`, `vision/grammar.py` | **AR-GE/PLAN** | 8 GB Windows gerçek ölçüm, model lisansı, schema/output QA | 027 |
@@ -204,3 +204,12 @@ Mevcut F01–F24 kimlikleri değiştirilmez. Aşağıdakiler **yalnız planlanan
 **F04 KISMI:** `ocr/layout.py` gerçek native/OCR glyph metinlerinden `LOWER_RIGHT_TEXT_CLUSTER` (olası antet), TOP/BOTTOM margin alanları çıkarır; `REVIEW_REQUIRED` konum ipucu, antet semantiği/ölçek/proje ruhsatı alanı veya kesin mahal/kot/tablo tanıma değildir. Resmî belge sınıflandırması, Türkçe içerik ve dönmüş A0 sayfaların tam düşük bellekte OCR kaynağı henüz doğrulanmadı.
 
 **Kabul açık:** Gerçek RapidOCR Türkçe model, A0 CER/WER, peak RSS, düşük ışık tarama, farklı rotasyon/CropBox, gerçek Windows/Edge, korumalı PDF ve insan bbox incelemesi. Rotated büyük sayfa `render_region` güvenli full render bütçesini aşarsa fail-closed. `RuleEngine REGULATORY=INSUFFICIENT_EVIDENCE`, F08–F12 `HUKUKI_HOLD`. [İşlem 023](islem_023.md) · [Tiled OCR şartnamesi](specs/tiled-ocr-v0.1.md).
+
+
+## İşlem 024 — F29 terim ipuçları ve F30 sınırlı yerel arama cache'i
+
+**F29 KISMI / MEVCUT_KOD:** Sadece manuel kurasyonlu `rag/lexicon.py` arama ipucu listesi; Türkçe diakritik ve çok sözcüklü tam ifade eşleştirme; `search_legal(..., lexical_expansion=True)` seçilmedikçe sorgu davranışı eski. Öncelik asıl FTS5 BM25 sorgu pasajlarının; diğer eşleşmeler ek adaydır. Sözlük hukukî tanım veya resmî eşdeğer mevzuat değildir. Türkçe gerçek embedding kalite/Recall@k ölçülmedi.
+
+**F30 KISMI / sadece arama cache'i:** `rag/store.py` SQLite `rag_lexical_cache` passage ID'leri, SHA ile türetilmiş query+filter+limit anahtarı ve 128 kayıt bütçesi; re-index ve native passages SQL mutasyonu cache'i siler. `source_pdf_available` dosya SHA'sı her aramada yeniden kontrol edilir. **Genel workspace işlem geçmişi, veri retention, WAL politikası, merkezi analiz oturumu/çok kullanıcılı tutarlılık yoktur**; bu F30 tamamlama değildir.
+
+**HUKUKI_HOLD:** `IndexedPassage.review_status=UNREVIEWED`; `RagHit.legal_compliance_certified=False`; F08–F12 resmî kaynak/yürürlük/istisna ve `RuleEngine.REGULATORY` kilidi değişmez. [İşlem 024](islem_024.md) · [Şartname](specs/rag-lexicon-v0.1.md).
