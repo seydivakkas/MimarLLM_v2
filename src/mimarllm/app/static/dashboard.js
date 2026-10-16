@@ -63,7 +63,6 @@ async function refresh() {
 }
 async function chooseProject(id) {
   state.projectId=id;state.runId="";state.studioRunReport=null;
-state.curriculumCache=new Map();
   $("selected-project").value=id;
   $("native-line").replaceChildren(new Option("Önce kaynak çizgileri inceleyin",""));
   await refresh();
@@ -219,6 +218,7 @@ const STUDIO_DIMENSIONS=[
 ];
 let studioGrade=1,studioView="drawing";
 state.studioRunReport=null;
+state.curriculumCache=new Map();
 
 function studioLink(label) {
   const link=el("a",label);
