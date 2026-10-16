@@ -29,6 +29,7 @@ from mimarllm.geometry.topology import (
 from mimarllm.importers.dxf import DxfInputError, parse_dxf
 from mimarllm.importers.pdf_ir import PdfIrResult, PdfIrIssue, parse_pdf_ir, OcrReader
 from mimarllm.importers.pdf import PdfInputError
+from mimarllm.ocr.tiles import TiledOcrRequest
 from mimarllm.reports.builder import ReportInputError, build_analysis_report
 from mimarllm.reports.models import AnalysisReport
 from mimarllm.rules.base import (
@@ -123,6 +124,7 @@ class PipelineConfig(BaseModel):
     geometry_frame_ids: tuple[str, ...] = ()
     # OCR is never implicit. Values are bounded source-PDF-point rectangles.
     ocr_regions: dict[int, tuple[tuple[float, float, float, float], ...]] = Field(default_factory=dict)
+    tiled_ocr: tuple[TiledOcrRequest, ...] = ()
     calibration: CalibrationReference | None = None
     topology: tuple[ReviewedTopology, ...] = ()
     rules: tuple[RuleRun, ...] = ()
@@ -132,6 +134,8 @@ class PipelineConfig(BaseModel):
 
     @model_validator(mode="after")
     def limits(self):
+        if len(self.tiled_ocr) > 8 or sum(t.max_tiles for t in self.tiled_ocr) > 256:
+            raise ValueError("Combined tiled OCR request count/pixel budget exceeded")
         if len(self.rules) > 128 or len(self.topology) > 20:
             raise ValueError("Pipeline rule/topology configuration budget exceeded")
         if (sum(len(v) for v in self.ocr_regions.values()) > 64
@@ -255,9 +259,9 @@ def run_local_pipeline(
     if suffix not in {".dxf", ".pdf"}:
         raise PipelineInputError("Only .dxf and .pdf drawings are supported")
     effective_ocr = ocr_regions if ocr_regions is not None else opts.ocr_regions
-    if suffix == ".dxf" and (effective_ocr or ocr_reader is not None):
+    if suffix == ".dxf" and (effective_ocr or opts.tiled_ocr or ocr_reader is not None):
         raise PipelineInputError("OCR is only applicable to PDF, never DXF")
-    if effective_ocr and ocr_reader is None:
+    if (effective_ocr or opts.tiled_ocr) and ocr_reader is None:
         raise PipelineInputError("OCR regions require explicit local CPU OCR reader")
     try:
         if suffix == ".dxf":
@@ -267,9 +271,12 @@ def run_local_pipeline(
         else:
             imported_pdf: PdfIrResult = parse_pdf_ir(
                 file, ocr_regions=effective_ocr, ocr_engine=ocr_reader,
+                tiled_ocr=opts.tiled_ocr,
             )
             drawing = imported_pdf.drawing
             import_codes = tuple(i.code for i in imported_pdf.issues)
+            if imported_pdf.tiled_ocr_results:
+                import_codes += ("TILED_OCR_REQUIRES_HUMAN_REVIEW",)
     except (DxfInputError, PdfInputError, OSError, ValueError) as exc:
         # External input must not leak full source text through a CLI traceback.
         raise PipelineInputError(
