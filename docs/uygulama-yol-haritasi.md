@@ -23,7 +23,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_021` | Windows-first offline wheelhouse/onedir, başlatıcı, SBOM | KISMI / KODLANDI — kaynak betikleri; actual Windows exe HOLD | `run.bat`, `install_offline.bat`, `mimar.spec`, SHA/metadata manifest, sentetik Linux/Windows CI; gerçek PC ve ticari dağıtım doğrulaması en sonda |
 | `islem_022` | Kirli CAD kaynak-koruyan repair-overlay; unit hypothesis; Layer0 heuristik | PLAN, 007–011 | önerilen geometri/orijinal entity ayrılır; SI onayı yok |
 | `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet konum adayları | KISMI / KODLANDI, 009/022 | bounded tile, PDF source quad/dedup, sentetik CI; gerçek OCR/CER/RSS finalde |
-| `islem_024` | Mimari synonym FTS5 sorgu genişletmesi + gömülü workspace cache | PLAN, 013–015/019 | RAG sıralaması kanunî onay değil; SQLite kaynak izolasyonu |
+| `islem_024` | Türkçe mimari arama ipuçları + sınırlı SQLite RAG pasaj cache'i | KISMI / mevcut kod, 013–015/019 | Opt-in kurasyonlu FTS arama, SHA izolasyonu; genel workspace/WAL/retention HOLD |
 | `islem_025` | Dashboard 2D edit/katman kanıtı, bounded job queue + SSE/polling | PLAN, 019/024 | olaylar kaynak SHA/frame/runcase ile bağlı, localhost-only |
 | `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | PLAN, 022/025 | organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
 | `islem_027` | Yerel GGUF/MMProj VLM, VRAM profiler, structured response/no-overwrite | AR-GE, 023/025 | model Windows/8GB ölçümü, GPU fallback gerçek QA |
@@ -179,3 +179,10 @@ F20 için kaynak dosyaları: `run.bat` (hazır yerel ortam), `install_offline.ba
 `src/mimarllm/ocr/tiles.py` opt-in A0/A1 PDF ROI'yi pixel/tile/token/çoklu istek bütçeleriyle sıralı render edilmiş kartlara böler. `rapid_engine.py` mevcut CPU OCR adapter'ı korunur; source quad ve PDF SHA/page/rotation doğrulaması olmadan çizim kanıtı üretilmez. Overlap aynı metin + bbox IoU varsa deterministik dedup; `ocr/layout.py` antet/kenar metin **konum** adayı, bina/proje/ölçek semantiği asla onaylı değil. `importers/pdf_ir.py`, `pipeline.py` ve `cli.py` explicit ROI ile birbirine bağlandı; manifestin `layout_candidates` ve tile sayaçları kaynaklıdır.
 
 F28/F04 **KISMI**; sentetik fake CPU reader testleri gerçek OCR modeli doğruluğunu ispatlamaz, döndürülmüş büyük A0 sayfada full-page fallback piksel sınırını aşarsa işlem kesin reddedilir. Gerçek A0/A1 tarama/Windows offline/karakter hata oranı/peak RSS ve hukukî kabul ayrı. Sonraki paket `islem_024` Türkçe mimari jargon eşanlam ve SQLite yerel indeks/cache; `docs/islem_024.md` bir sonraki değişiklikten önce ilk GitHub yazımı olacak.
+
+
+## İşlem 024 uygulama notu (2026-10-16)
+
+`rag/lexicon.py` üzerinden kontrollü tam sözcük mimari terim ipuçları; `retriever.py` opt-in `lexical_expansion` ile özgün FTS5 BM25 önceliği ve ek arama adayları; `rag/store.py` içinde 128 adede kadar yalnız arama passage ID tutan source-filter kimlikli SQLite cache geliştirildi. Re-index aynı transaction içinde ve `passages` SQL trigger'ları ile cache invalidation; yerel PDF hash durumu her sonuçta kontrol edilir. Çoklu belge madde-fıkra ve özgün PDF quad izolasyonu korunur.
+
+**F29 KISMI:** Kurasyonlu aday sözcükler hukukî semantik eşitlik iddiası değildir; gerçek Türkçe relevance/Recall@k/NDGC ve uzman testleri yok. **F30 KISMI:** yalnız yerel lexical query cache, tam workspace geçmişi/WAL/retention yok. F08–F12 HUKUKI_HOLD. Sonraki mühendislik planı mevcut yol haritasındaki `islem_025` kapsamı olacaktır; koddan önce `docs/islem_025.md` ilk GitHub değişikliğiyle açılacak.
