@@ -527,7 +527,7 @@ def test_dxf_edit_security_and_pdf_rejected(cli,dxf,pdf):
     assert http.post(url,content=b"x"*4097,headers={"X-Mimar-CSRF":csrf}).status_code==413
     assert http.post(url,json={**req,"frame_id":"cad:Other"},
                      headers={"X-Mimar-CSRF":csrf}).status_code==422
-    assert http.post(url,json={**req,"new_start":[float("inf"),1]},
+    assert http.post(url,json={**req,"new_start":[2_000_000,1]},
                      headers={"X-Mimar-CSRF":csrf}).status_code==422
     assert http.post(url,json={**req,"new_end":[1,1]},
                      headers={"X-Mimar-CSRF":csrf}).status_code==409
