@@ -29,7 +29,8 @@ from mimarllm.geometry.topology import (
 from mimarllm.importers.dxf import DxfInputError, parse_dxf
 from mimarllm.importers.pdf_ir import PdfIrResult, PdfIrIssue, parse_pdf_ir, OcrReader
 from mimarllm.importers.pdf import PdfInputError
-from mimarllm.ocr.tiles import TiledOcrRequest
+from mimarllm.ocr.tiles import TiledOcrRequest, TiledOcrOutput
+from mimarllm.ocr.layout import LayoutCandidate
 from mimarllm.reports.builder import ReportInputError, build_analysis_report
 from mimarllm.reports.models import AnalysisReport
 from mimarllm.rules.base import (
@@ -171,6 +172,10 @@ class PipelineManifest(BaseModel):
     calibration_state: str
     stages: tuple[StageRecord, ...]
     import_issue_codes: tuple[str, ...]
+    ocr_tile_count: int = Field(default=0, ge=0)
+    ocr_candidate_count: int = Field(default=0, ge=0)
+    ocr_overlap_duplicates: int = Field(default=0, ge=0)
+    layout_candidates: tuple[LayoutCandidate, ...] = ()
     completion: Literal["COMPLETED_WITH_REVIEW_GATES", "PARTIAL_WITH_ERRORS"]
     legal_gate: Literal["REGULATORY_LOCKED"] = "REGULATORY_LOCKED"
 
@@ -183,6 +188,7 @@ class PipelineResult(BaseModel):
     rules: tuple[RuleResult, ...]
     report: AnalysisReport
     manifest: PipelineManifest
+    tiled_ocr_results: tuple[TiledOcrOutput, ...] = ()
 
 
 def _apply_calibration(drawing: DrawingIR, selection: CalibrationReference) -> None:
@@ -263,6 +269,7 @@ def run_local_pipeline(
         raise PipelineInputError("OCR is only applicable to PDF, never DXF")
     if (effective_ocr or opts.tiled_ocr) and ocr_reader is None:
         raise PipelineInputError("OCR regions require explicit local CPU OCR reader")
+    imported_pdf: PdfIrResult | None = None
     try:
         if suffix == ".dxf":
             imported = parse_dxf(file, max_entities=opts.max_import_entities)
@@ -468,6 +475,10 @@ def run_local_pipeline(
         rule_count=len(rule_results), report_finding_count=len(report.findings),
         calibration_state=drawing.calibration.state.value,
         stages=tuple(stages), import_issue_codes=import_codes[:100],
+        ocr_tile_count=sum(len(t.tiles) for t in imported_pdf.tiled_ocr_results) if imported_pdf else 0,
+        ocr_candidate_count=sum(len(t.candidates) for t in imported_pdf.tiled_ocr_results) if imported_pdf else 0,
+        ocr_overlap_duplicates=sum(t.removed_duplicate_count for t in imported_pdf.tiled_ocr_results) if imported_pdf else 0,
+        layout_candidates=tuple(imported_pdf.layout_candidates) if imported_pdf else (),
         completion=("PARTIAL_WITH_ERRORS"
                     if any(s.status == StageStatus.ERROR for s in stages)
                     else "COMPLETED_WITH_REVIEW_GATES"),
@@ -476,4 +487,5 @@ def run_local_pipeline(
         drawing=drawing, geometries=tuple(geometries),
         topologies=tuple(topologies), rules=tuple(rule_results),
         report=report, manifest=manifest,
+        tiled_ocr_results=tuple(imported_pdf.tiled_ocr_results) if imported_pdf else (),
     )
