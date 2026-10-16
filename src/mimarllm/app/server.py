@@ -500,10 +500,10 @@ def create_app(workspace: str | Path) -> FastAPI:
         try:
             payload = ReviewPayload.model_validate_json(b"".join(parts))
             return reviews.add(folder, source_sha, drawing, payload)
-        except (ValidationError, ValueError) as exc:
-            raise HTTPException(status_code=422, detail="Kaynaklı inceleme notu geçersiz.") from exc
         except ReviewError as exc:
             raise HTTPException(status_code=409, detail="Kaynak eşleşmesi veya not bütçesi başarısız.") from exc
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Kaynaklı inceleme notu geçersiz.") from exc
 
     @app.delete("/api/projects/{project_id}/runs/{run_id}/reviews/{review_id}")
     def retract_review(project_id: str, run_id: str, review_id: str):
