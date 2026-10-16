@@ -213,6 +213,17 @@ class LegalRagStore:
                     passage_ids_json TEXT NOT NULL,
                     cache_seq INTEGER NOT NULL
                 );
+                -- Invalidate even if a local tool changes passage rows
+                -- through SQL rather than using LegalRagStore.index_document.
+                CREATE TRIGGER IF NOT EXISTS rag_cache_passage_insert
+                    AFTER INSERT ON passages
+                    BEGIN DELETE FROM rag_lexical_cache; END;
+                CREATE TRIGGER IF NOT EXISTS rag_cache_passage_update
+                    AFTER UPDATE ON passages
+                    BEGIN DELETE FROM rag_lexical_cache; END;
+                CREATE TRIGGER IF NOT EXISTS rag_cache_passage_delete
+                    AFTER DELETE ON passages
+                    BEGIN DELETE FROM rag_lexical_cache; END;
             """)
         except sqlite3.OperationalError as exc:
             self.conn.close()
