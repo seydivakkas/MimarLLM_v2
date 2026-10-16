@@ -115,6 +115,7 @@ def evaluate_rubric(drawing: DrawingIR, submitted: RubricSubmission) -> RubricOu
             if entity is None or entity.frame_id!=submitted.frame_id:
                 raise RubricError("RUBRIC_SOURCE_ENTITY_NOT_FOUND_IN_FRAME")
             if (entity.source.document_sha256!=drawing.source_sha256
+                    or entity.source.source_kind!=drawing.source_kind
                     or entity.source.frame_id!=submitted.frame_id
                     or entity.origin not in {
                         EvidenceOrigin.CAD_NATIVE, EvidenceOrigin.PDF_NATIVE
