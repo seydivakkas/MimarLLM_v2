@@ -350,3 +350,19 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-190 | Gerçek saha CAD, fiziksel ölçüm, onaylı Resmî Gazete kaynak zinciri ve ticari Windows yeniden dağıtım kabulü | HOLD |
 
 [İşlem 022](islem_022.md) · [Onarım overlay v0.1](specs/source-preserving-repair-v0.1.md).
+
+
+## İşlem 023 — Tiled OCR / kaynak dörtgeni / antet aday kararları (2026-10-16)
+
+| Karar | Uygulanan kural | Durum |
+| --- | --- | --- |
+| K-191 | OCR ancak explicit PDF page-point ROI ve yerel RapidOCR CPU reader ile; A0 sayfada tam bitmap arka kapısı yok | KODLANDI |
+| K-192 | Her tile source SHA/page/rotation/ROI ve pixel-to-source transform kaydına bağlı; nondefault CropBox/unsafe rotation fail-closed | KODLANDI |
+| K-193 | Max tile, per-tile ve toplam pixel, OCR candidate ve pipeline global budget render öncesi denetlenir | KODLANDI |
+| K-194 | Overlap dedup hem normalize metin hem source bbox IoU ≥0.50; farklı konumdaki aynı yazı saklanır | KODLANDI |
+| K-195 | `OCR_CANDIDATE` ve `REVIEW_REQUIRED` Pydantic güven kapısı, fiziksel ölçüm, onaylı room/wall/door / hukukî PASS üretilmez | KODLANDI |
+| K-196 | Olası antet sadece sağ-alt text cluster source polygon; kesin mimar/ölçek/mahal/kot/ruhsat metaverisi değil | KODLANDI / SEMANTİK HOLD |
+| K-197 | Gerçek A0/A1 OCR model, Türkçe CER/WER, peak RSS, rotasyon/CropBox farkları, Windows offline kullanıcı kabulü | HOLD |
+| K-198 | F08–F12, resmî hukukî kaynak/yürürlük ve `RuleEngine.REGULATORY` kilidi değişmez | HUKUKI_HOLD |
+
+[İşlem 023](islem_023.md) · [Karo OCR v0.1](specs/tiled-ocr-v0.1.md).
