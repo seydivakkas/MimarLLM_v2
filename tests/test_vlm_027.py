@@ -200,7 +200,6 @@ def test_vlm_api_model_missing_and_strict_provenance(tmp_path,drawing,monkeypatc
         url=f"/api/projects/{pid}/runs/{rid}/vlm/suggest"
         assert http.post(url,json=payload).status_code==403
         assert http.post(url,json=payload,headers={"X-Mimar-CSRF":csrf}).status_code==503
-        artifacts=config_for(tmp_path/"nonexistent") if False else None
         modeldir=tmp_path/"models"
         modeldir.mkdir()
         config=config_for(modeldir)
@@ -209,7 +208,7 @@ def test_vlm_api_model_missing_and_strict_provenance(tmp_path,drawing,monkeypatc
         assert http.post(url,json={**payload,"source_sha256":"f"*64},
             headers={"X-Mimar-CSRF":csrf}).status_code==409
         assert http.post(url,json={**payload,"entity_ids":["BAD_SOURCE"]},
-            headers={"X-Mimar-CSRF":csrf}).status_code==409 or False
+            headers={"X-Mimar-CSRF":csrf}).status_code==409
         assert http.post(url,json={**payload,"question":"x"*321},
             headers={"X-Mimar-CSRF":csrf}).status_code==422
         assert http.post(url,content=b"x"*8193,
