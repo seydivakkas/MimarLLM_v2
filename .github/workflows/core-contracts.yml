@@ -23,6 +23,11 @@ on:
       - "tests/**"
       - "pyproject.toml"
       - ".github/workflows/core-contracts.yml"
+  pull_request:
+    paths:
+      - "src/mimarllm/**"
+      - "tests/**"
+      - ".github/workflows/core-contracts.yml"
   workflow_dispatch:
 
 permissions:
