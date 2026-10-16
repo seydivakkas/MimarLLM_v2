@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[]};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -74,6 +74,7 @@ async function loadProject() {
     $("count-findings").textContent="—"; $("run-state").textContent="İlk analizi başlatın";
     clear($("finding-list"));clear($("report-files"));clear($("stage-list"));
     renderDrawing({native_lines:[],manifest:{}});
+    state.reviews=[];showReviews();
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
   }
@@ -121,6 +122,7 @@ async function loadRun(id) {
     findings.append(card);
   }
   if(data.truncated) findings.append(el("p","Ön izleme sayısı sınırlandırıldı; tam veri JSON raporundadır.","hint"));
+  await loadReviews();
   const exports=$("report-files");clear(exports);
   for(const name of data.reports) {
     if(name==="drawingir.json") continue;
@@ -137,6 +139,8 @@ function renderDrawing(data) {
   const frames=[...new Set(lines.map(s=>s.frame_id))].sort();
   clear(frame);clear(layer);clear(svg);
   inspector.textContent="Henüz kaynak seçilmedi.";
+  state.selectedSource=null;
+  $("save-review-note").disabled=true;
   if(!frames.length) {
     frame.add(new Option("Kaynak çizgi bulunamadı",""));
     layer.add(new Option("Katman yok",""));
@@ -181,6 +185,9 @@ function renderDrawing(data) {
       const focusSource=()=>{
         for(const old of svg.querySelectorAll(".selected")) old.classList.remove("selected");
         item.classList.add("selected");
+        state.selectedSource={...source,source_sha256:data.source_sha256||data.manifest?.source_sha256};
+        $("save-review-note").disabled=false;
+        showReviews();
         inspector.textContent=[
           "Kaynak SHA256: "+(data.source_sha256||data.manifest?.source_sha256||"BELİRSİZ"),
           "Frame: "+source.frame_id,
@@ -213,6 +220,67 @@ function renderDrawing(data) {
   frame.onchange=updateLayers;
   layer.onchange=draw;
   updateLayers();
+}
+
+function showReviews() {
+  const panel=$("review-list");clear(panel);
+  const current=state.selectedSource;
+  const notes=(state.reviews||[]).filter(n=>!current||n.entity_id===current.entity_id);
+  if(!notes.length) {
+    panel.append(el("p","Bu kaynakta henüz manuel inceleme notu yok.","muted"));
+    return;
+  }
+  for(const note of notes) {
+    const card=el("div","","review-note");
+    const title=el("strong",note.reviewer_label+" · "+
+      (note.retracted_utc?"GERİ ALINDI":"DOĞRULANMAMIŞ GÖZLEM"));
+    const detail=el("small",note.entity_id+" · "+note.created_utc);
+    const body=el("p",note.note);
+    card.append(title,detail,body);
+    if(!note.retracted_utc) {
+      const undo=el("button","Kaydı geri al","btn minor");
+      undo.type="button";
+      undo.addEventListener("click",()=>retractReview(note.review_id));
+      card.append(undo);
+    }
+    panel.append(card);
+  }
+}
+async function loadReviews() {
+  const projectId=state.projectId,runId=state.runId;
+  const obj=await api("/api/projects/"+projectId+"/runs/"+runId+"/reviews");
+  if(projectId!==state.projectId||runId!==state.runId) return;
+  state.reviews=obj.notes;
+  showReviews();
+}
+async function saveReview() {
+  const source=state.selectedSource;
+  if(!source||!state.projectId||!state.runId) return notice("Önce kaynak çizgi seçin.",true);
+  const reviewer=$("reviewer-input").value.trim(), note=$("review-note").value.trim();
+  if(!reviewer||!note) return notice("İncelemeci etiketi ve inceleme notu zorunludur.",true);
+  $("save-review-note").disabled=true;
+  try {
+    await api("/api/projects/"+state.projectId+"/runs/"+state.runId+"/reviews",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        source_sha256:source.source_sha256,
+        entity_id:source.entity_id,frame_id:source.frame_id,
+        reviewer_label:reviewer,note
+      })
+    });
+    $("review-note").value="";
+    await loadReviews();
+    notice("Kaynaklı manuel gözlem kaydedildi; hukukî/teknik onay değildir.");
+  } catch(e) {notice(e.message,true);}
+  finally {$("save-review-note").disabled=!state.selectedSource;}
+}
+async function retractReview(reviewId) {
+  try {
+    await api("/api/projects/"+state.projectId+"/runs/"+state.runId+"/reviews/"+reviewId,
+              {method:"DELETE"});
+    await loadReviews();
+    notice("İnceleme notu geri alındı; kayıt denetim izi için saklanıyor.");
+  } catch(e) {notice(e.message,true);}
 }
 
 async function upload() {
@@ -292,6 +360,7 @@ async function start() {
 $("upload-button").addEventListener("click",upload);
 $("refresh-button").addEventListener("click",()=>refresh().catch(e=>notice(e.message,true)));
 $("analyze-button").addEventListener("click",analyze);
+$("save-review-note").addEventListener("click",saveReview);
 $("selected-project").addEventListener("change",e=>chooseProject(e.target.value).catch(x=>notice(x.message,true)));
 $("drawing-file").addEventListener("change",e=>{
   const file=e.target.files?.[0];$("picked-file").textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"Henüz dosya seçilmedi.";
