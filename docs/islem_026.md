@@ -51,3 +51,15 @@ GitHub-hosted Ubuntu/Windows CI'da yerel dosya/manifest iki kez doğrulandı, Py
 - 026 2.5D önizlemesi GPU aygıt testi, gerçek IFC/BIM veri modeli, kat, oda veya resmî yönetmelik uygunluğu iddia etmez.
 - İşlem 027–030 sentetik CI/regresyon sürdürülerek geliştirilebilir, fiziksel kullanıcı kabulü yalnız 031'de. F08–F12 HUKUKI_HOLD ve REGULATORY_LOCKED değişmedi.
 - Bağımlı PR stratejisi: 025 Draft PR #2'yi main'e doğrudan taşımadan 026 dalı onun üzerine kuruldu; 026 PR ayrı Draft ve hedef 025 branch. Kod veya build entegrasyonu doğrulanmadan main merge/ürün yayımlama yok.
+
+
+## 4. Son PR-head CI kanıtı — 2026-10-16
+
+Yeni İşlem 026 bağımlı Draft [PR #4](https://github.com/seydivakkas/MimarLLM_v2/pull/4), temel: feature/islem-025-source-2d-jobs; PR #2 Draft ve main değişmemiştir.
+
+Kod/karar head commit b12c75b7f8c94d795717fa347294b007d0fc2fdb için:
+- [Core CI #38860877700](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38860877700): SUCCESS. Ubuntu Python 3.11 **374 passed, 1 skipped**, Windows **375 passed**. node --check ve Three ESM local manifest SHA kontrolü başarılı.
+- [Hosted Windows Edge #38860877687](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38860877687): SUCCESS. Windows-hosted Microsoft Edge, gerçek localhost JS/DOM (massing-canvas, massing-build) ve /static/three.module.js SHA256 doğrulandı. Bağımsız fiziksel ekran/GPU/erişilebilirlik testi değildir.
+- Three.js sürüm 0.160.1, 1,272,972 byte ESM kaynak SHA256: 76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495. Yerel preparasyon npm gerektirir; runtime CDNsizdir. Üretim paket asset'i bağımsız gerçek EXE testine dek kabul edilmiş sayılmaz.
+
+**026 mühendislik kararı:** 2.5D salt görsel teknik önizleme adayı = SENTETIK_CI_PASS / HOSTED_EDGE_STATIC_PASS; gerçek WebGL etkileşim/performans ve fiziksel Windows/GPU/A0 kabulü = DEFERRED_TO_031 / HOLD. REGULATORY_LOCKED ve F08–F12 HUKUKI_HOLD değişmedi. PR #4 Draft kalır, 027'ye geçiş için 026 fiziksel testine gerek yok; bir sonraki kod işinden önce docs/islem_027.md ilk kayıt olacaktır.
