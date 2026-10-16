@@ -20,6 +20,8 @@ from mimarllm.core.ir import (
 )
 from mimarllm.core.models import TextCandidate
 from mimarllm.importers.pdf import PdfInputError, RenderedRegion, inspect_pdf, render_region
+from mimarllm.ocr.tiles import TiledOcrRequest, TiledOcrOutput, read_tiled_ocr
+from mimarllm.ocr.layout import LayoutCandidate, detect_layout_candidates
 
 Quad = tuple[tuple[float, float], tuple[float, float],
              tuple[float, float], tuple[float, float]]
@@ -41,6 +43,8 @@ class PdfIrResult(BaseModel):
     drawing: DrawingIR
     text_candidates: list[TextCandidate] = Field(default_factory=list)
     issues: list[PdfIrIssue] = Field(default_factory=list)
+    tiled_ocr_results: list[TiledOcrOutput] = Field(default_factory=list)
+    layout_candidates: list[LayoutCandidate] = Field(default_factory=list)
 
 
 def _bbox_quad(box: tuple[float, float, float, float]) -> Quad:
@@ -111,6 +115,7 @@ def parse_pdf_ir(
     path: str | Path, *,
     ocr_regions: Mapping[int, Sequence[tuple[float, float, float, float]]] | None = None,
     ocr_engine: OcrReader | None = None,
+    tiled_ocr: Sequence[TiledOcrRequest] = (),
     dpi: int = 144,
     max_pages: int = 50,
     max_elements_per_page: int = 100_000,
@@ -129,12 +134,21 @@ def parse_pdf_ir(
                        max_elements_per_page=max_elements_per_page)
     source_path = Path(path).resolve(strict=True)
     wanted = ocr_regions or {}
+    tiled_requests = tuple(TiledOcrRequest.model_validate(t.model_dump()) for t in tiled_ocr)
+    if len(tiled_requests) > 8 or len({
+        (t.page_index, t.roi_points) for t in tiled_requests
+    }) != len(tiled_requests):
+        raise PdfInputError("Tiled OCR request count/duplicate safety budget exceeded")
+    if any(t.page_index >= base.page_count for t in tiled_requests):
+        raise PdfInputError("Tiled OCR selection references an unavailable page")
+    if sum(t.max_tiles for t in tiled_requests) > 256:
+        raise PdfInputError("Tiled OCR combined tile budget exceeded")
     if any((not isinstance(index, int) or index < 0 or index >= base.page_count)
            for index in wanted):
         raise PdfInputError("OCR regions reference an unavailable page")
     if sum(len(v) for v in wanted.values()) > max_ocr_regions:
         raise PdfInputError("OCR region budget exceeded")
-    if wanted and ocr_engine is None:
+    if (wanted or tiled_requests) and ocr_engine is None:
         from mimarllm.ocr.rapid_engine import OcrUnavailable
         raise OcrUnavailable("OCR ROIs require an explicitly installed local CPU OCR reader")
     if max_curve_points < 4:
@@ -257,6 +271,40 @@ def parse_pdf_ir(
                                        closed=True),
                      EvidenceOrigin.OCR_CANDIDATE, "PDF_OCR_TEXT_QUAD")
 
+    # Tiled OCR retains the *original* source page quad. OCR does not become
+    # a native wall, scale, room or verified legal/architectural symbol.
+    for request_index, tile_request in enumerate(tiled_requests):
+        assert ocr_engine is not None
+        batch = read_tiled_ocr(source_path, tile_request, ocr_engine)
+        if batch.document_sha256 != base.document_sha256:
+            raise PdfInputError("Tiled OCR source SHA differs from native PDF")
+        result.tiled_ocr_results.append(batch)
+        page_idx = tile_request.page_index
+        for token_index, candidate in enumerate(batch.candidates):
+            # Ensure globally unique IDs even if the same page is explicitly
+            # selected for different ROIs.
+            unique = candidate.model_copy(update={
+                "candidate_id":f"p{page_idx}-tiled{request_index}-t{token_index}"
+            })
+            result.text_candidates.append(unique)
+            quad = tuple(tuple(pt) for pt in unique.polygon)
+            emit(page_idx, f"ocr:tiled{request_index}:token{token_index}",
+                 quad, GeometryPrimitive(kind=PrimitiveKind.POLYGON,
+                                         points=quad, closed=True),
+                 EvidenceOrigin.OCR_CANDIDATE, "PDF_OCR_TEXT_QUAD")
+        if batch.removed_duplicate_count:
+            result.issues.append(PdfIrIssue(
+                code="TILED_OCR_OVERLAP_DEDUP_REVIEW_REQUIRED",
+                page_index=page_idx,
+                detail=f"{batch.removed_duplicate_count} duplicate overlap candidates hidden",
+            ))
+    # Layout locations are only candidate zones. A lower-right text cluster
+    # cannot certify actual title-block fields or drawing metadata.
+    for page in base.pages:
+        result.layout_candidates.extend(detect_layout_candidates(
+            base.document_sha256, page.page_index, page.width_pt, page.height_pt,
+            [t for t in result.text_candidates if t.page_index == page.page_index],
+        ))
     if _sha256(source_path) != base.document_sha256:
         raise PdfInputError("PDF source changed during integration")
     result.drawing = DrawingIR.model_validate(result.drawing.model_dump())
