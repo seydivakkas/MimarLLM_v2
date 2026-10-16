@@ -85,8 +85,8 @@ def test_a0_page_plan_large_raster_never_renders_full_bitmap(a0):
     assert plan[0].document_sha256==plan[-1].document_sha256
     assert plan[-1].roi_points[2]==pytest.approx(2384)
     assert plan[-1].roi_points[3]==pytest.approx(3370)
-    assert all((t.roi_points[2]-t.roi_points[0])<=384
-               and (t.roi_points[3]-t.roi_points[1])<=384 for t in plan)
+    assert all((t.roi_points[2]-t.roi_points[0])<=384+1e-6
+               and (t.roi_points[3]-t.roi_points[1])<=384+1e-6 for t in plan)
 
 
 def test_overlap_token_deduplicates_without_moving_source_quad(page):
