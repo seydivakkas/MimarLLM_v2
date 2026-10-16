@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:""};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -74,6 +74,7 @@ async function loadProject() {
     $("count-findings").textContent="—"; $("run-state").textContent="İlk analizi başlatın";
     clear($("finding-list"));clear($("report-files"));clear($("stage-list"));
     renderDrawing({native_lines:[],manifest:{}});
+    updateMassingSources({native_lines:[],source_sha256:""});
     state.reviews=[];showReviews();
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
@@ -113,6 +114,7 @@ async function loadRun(id) {
     ));
   }
   renderDrawing(data);
+  updateMassingSources(data);
   const findings=$("finding-list");clear(findings);
   findings.append(el("h3","Bulgular / değerlendirme adayları"));
   if(!data.findings.length) findings.append(el("p","Henüz bulgu yok; kaynak geometrisi HTML raporunda incelenebilir.","muted"));
@@ -380,6 +382,98 @@ async function undoDxfEdit() {
   }catch(e){notice(e.message,true);await loadDxfEditStatus();}
 }
 
+
+let activeMassingModule=null;
+function clearMassing() {
+  activeMassingModule?.clearMassing();
+  const scene=$("massing-canvas");clear(scene);
+  scene.append(el("p","Henüz 2.5D senaryosu yok. Kaynak çizime veya analize dokunulmadı.","muted"));
+  $("massing-evidence").textContent="Orijinal CAD/DrawingIR/rapor değişmedi.";
+}
+function updateMassingSources(data) {
+  clearMassing();
+  const frame=$("massing-frame"),list=$("massing-source-list");
+  clear(frame);clear(list);
+  const sources=Array.isArray(data.native_lines)?data.native_lines.filter(s=>
+    s.origin==="CAD_NATIVE"&&s.frame_id==="cad:Model"&&
+    s.cad_handle&&s.entity_id==="Model|"+s.cad_handle+"|LINE"):[];
+  state.massingSources=sources;
+  state.massingSha=data.source_sha256||"";
+  frame.add(new Option(sources.length?"cad:Model — yalnız native LINE":"Uygun kaynak sınır bulunamadı",
+                       sources.length?"cad:Model":""));
+  $("massing-build").disabled=!sources.length;
+  $("massing-status").textContent=sources.length ?
+    "Yalnız seçili direkt LINE elemanları ve doğrulanmış kalibrasyonla önizleme üretilir.":
+    "Önce yerel DXF analizi ve native sınır çizgileri gerekli.";
+  if(!sources.length){
+    list.append(el("p","Bu analizde kaynaklı doğrudan Model LINE bulunamadı.","muted"));return;
+  }
+  for(const src of sources) {
+    const label=el("label"),box=el("input");
+    box.type="checkbox";box.value=src.entity_id;box.className="massing-source-check";
+    label.append(box,el("span",(src.layer||"Katmansız")+" · handle "+src.cad_handle+
+       " · "+src.entity_id));
+    list.append(label);
+  }
+}
+async function buildMassing() {
+  if(!state.projectId||!state.runId||!state.massingSha){
+    return notice("Önce bir DXF analizini seçin.",true);
+  }
+  const checked=[...document.querySelectorAll(".massing-source-check:checked")].map(x=>x.value);
+  if(checked.length<3||checked.length>64)return notice("3–64 adet tam kapalı sınır çizgisi seçilmelidir.",true);
+  const raw=$("massing-height").value.trim().replace(",",".");
+  if(!raw)return notice("Pozitif metre cinsinden kullanıcı yüksekliği beyan edin.",true);
+  const height=Number(raw),reviewer=$("massing-reviewer").value.trim();
+  if(!Number.isFinite(height)||height<=0||height>150||!reviewer){
+    return notice("0–150 m aralığında yükseklik ve incelemeci etiketi gereklidir.",true);
+  }
+  const pid=state.projectId,rid=state.runId;
+  $("massing-build").disabled=true;
+  clearMassing();
+  $("massing-status").textContent="Kapalı sınır, kaynak SHA ve fiziksel kalibrasyon doğrulanıyor…";
+  try{
+    const result=await api("/api/projects/"+pid+"/runs/"+rid+"/massing25d",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        source_sha256:state.massingSha,frame_id:"cad:Model",
+        source_entity_ids:checked,declared_height_m:height,reviewer_label:reviewer,
+      }),
+    });
+    if(pid!==state.projectId||rid!==state.runId)return;
+    // Local import: THREE module and all subimports must be provided by onedir/static.
+    const visualizer=await import("/static/scene25d.js");
+    if(pid!==state.projectId||rid!==state.runId)return;
+    activeMassingModule=visualizer;
+    visualizer.showMassing($("massing-canvas"),result,provenance=>{
+      $("massing-evidence").textContent=[
+        "2.5D önizleme kaynağı:",provenance.source_sha256,
+        "Frame: "+provenance.frame_id,
+        "Face: "+provenance.face_id,
+        "Orijinal CAD çizgileri: "+provenance.entity_ids.join(", "),
+        "Statü: UNVERIFIED_MASSING_SCENARIO · Hukukî HOLD",
+      ].join("\n");
+    });
+    $("massing-evidence").textContent=[
+      "SHA256: "+result.source_sha256,
+      "Frame / face: "+result.frame_id+" / "+result.face_id,
+      "CAD handle'lar: "+result.source_cad_handles.join(", "),
+      "Ölçek kanıtı: "+result.calibration_evidence_ids.join(", "),
+      "Beyan yüksekliği: "+result.declared_height_m+" m (gerçek bina değeri değil)",
+      "Kütle taban alanı matematiksel senaryo: "+result.footprint_area_m2+" m²",
+      "Durum: "+result.status+" · "+result.legal_gate,
+    ].join("\n");
+    $("massing-status").textContent=
+      "Kaynak bağlantılı 2.5D önizleme hazır; gerçek bina veya ruhsat onayı değildir.";
+  }catch(e){
+    clearMassing();
+    $("massing-status").textContent="Önizleme üretilemedi: "+e.message;
+    notice(e.message,true);
+  }finally{
+    $("massing-build").disabled=!state.massingSources.length;
+  }
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -460,6 +554,8 @@ $("analyze-button").addEventListener("click",analyze);
 $("save-review-note").addEventListener("click",saveReview);
 $("edit-run").addEventListener("click",commitDxfEdit);
 $("edit-undo").addEventListener("click",undoDxfEdit);
+$("massing-build").addEventListener("click",buildMassing);
+$("massing-clear").addEventListener("click",clearMassing);
 $("selected-project").addEventListener("change",e=>chooseProject(e.target.value).catch(x=>notice(x.message,true)));
 $("drawing-file").addEventListener("change",e=>{
   const file=e.target.files?.[0];$("picked-file").textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"Henüz dosya seçilmedi.";
