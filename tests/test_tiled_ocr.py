@@ -43,11 +43,12 @@ def a0(tmp_path):
 
 
 def request(**kwargs):
-    return TiledOcrRequest(
+    data=dict(
         page_index=0,roi_points=(0,0,800,800),
         tile_width_pt=450,tile_height_pt=450,overlap_pt=100,
-        **kwargs,
     )
+    data.update(kwargs)
+    return TiledOcrRequest(**data)
 
 
 class OverlapReader:
@@ -230,7 +231,7 @@ def test_nondefault_cropbox_fails_closed(page,tmp_path):
 
 def test_invalid_tile_overlap_and_roi_rejected():
     with pytest.raises(ValidationError,match="half"):
-        request(overlap_pt=250)
+        request(tile_width_pt=320,overlap_pt=170)
     with pytest.raises(ValidationError):
         TiledOcrRequest(page_index=0,roi_points=(40,40,20,90))
 
