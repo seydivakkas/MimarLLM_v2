@@ -43,3 +43,24 @@ F31 bounded queue + SSE/polling, 55 modülün bağımsız gerçek özelliklerini
 - **İlk commit:** Bu belge (ilk GitHub yazımı).
 - **Sonraki işler:** gerçek kod dosyaları, testler, dokümantasyon ve CI sonuçları commit bazında yazılacak.
 - **Şimdiki statü:** IN_PROGRESS; doğrulanmamış başarı iddiası yok.
+
+## 7. Ara teslim — 2026-10-16 / kaynak kod ve sentetik CI
+
+**İşlem 025 henüz kapanmadı.** Aşağıdaki kapsam mevcut dalda aday olarak kodlandı ve ana dala birleştirilmedi.
+
+| Paket | Kod dosyaları | Sonuç |
+| --- | --- | --- |
+| Kanonik müfredat | `src/mimarllm/curriculum/{__init__,registry}.py` | 55 benzersiz MOD hedefi, 18/31/45/55 kümülatif katalog; `CATALOG_ONLY`, `grading_enabled=false` |
+| API | `src/mimarllm/app/server.py` | `GET /api/curriculum/grades/{grade}`, yalnız 1–4; normal localhost Host/Origin/CSRF güvenlik katmanı korunur |
+| Stüdyo UI | `app/static/{index.html,dashboard.css,dashboard.js}` | Kaynak HTML'den 3 sütun, dört sınıf, rapor ve hukukî kanıt sekmeleri, puansız 8 boyut çerçevesi; CDN/3D/jüri yok |
+| Test | `tests/test_curriculum.py`, `.github/workflows/core-contracts.yml` | Linux/Windows'da mevcut tüm sentetik testlere eklendi |
+| Teknik sözleşme | `docs/specs/studio-curriculum-v0.1.md` | Müfredat niyeti, ürün modu ve mevzuat kilidi ayrımı |
+
+**Gerçek CI:** [GitHub Actions 38859351540](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38859351540), kaynak commit `055c9e1582adcbc61904ab0fa110803f7884d237`:
+- Ubuntu Python 3.11: **371 passed, 1 skipped, 1 warning**, 0 failed.
+- Windows GitHub-hosted Python 3.11: **372 passed, 1 warning**, 0 failed.
+- 1 uyarı upstream Starlette/FastAPI testclient; gerçek kullanıcı Windows/Edge 2B arayüz kabulü değildir.
+
+**Bilinçli olarak henüz yapılmayanlar:** gerçek queued job/SSE/polling, iptal/yeniden çalıştırma, iş geçmişi ve katman bazlı edit overlay; 55 kayıt için gerçek ayrı kurallar; resmî yasal kanıt/Delphi not/jüri; gerçek Windows ve büyük çizim kabulü. F31 tamamlandı veya İşlem 025 kapandı demek **yasak**.
+
+**Önceki PR:** [Demo aktarımı PR #1](https://github.com/seydivakkas/MimarLLM_v2/pull/1) ayrı Draft idi; bu işte uygun arayüz öğeleri güncel `main` üzerinden yeniden alındı. Bu dalın [Draft PR #3](https://github.com/seydivakkas/MimarLLM_v2/pull/3) henüz birleştirilmedi.
