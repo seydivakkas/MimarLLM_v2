@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from math import ceil, isfinite
 from pathlib import Path
+from typing import Literal
 import unicodedata
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -57,13 +58,17 @@ class TiledOcrOutput(BaseModel):
     candidates: tuple[TextCandidate, ...]
     candidate_tile_ids: tuple[str, ...]
     removed_duplicate_count: int = Field(ge=0)
-    approval_status: str = "REVIEW_REQUIRED"
+    approval_status: Literal["REVIEW_REQUIRED"] = "REVIEW_REQUIRED"
 
     @model_validator(mode="after")
     def check(self):
         if len(self.candidates) != len(self.candidate_tile_ids):
             raise ValueError("Each tiled OCR candidate must have an original tile")
         ids = {tile.tile_id for tile in self.tiles}
+        if (len(ids) != len(self.tiles) or
+            any(t.document_sha256 != self.document_sha256
+                or t.page_index != self.page_index for t in self.tiles)):
+            raise ValueError("Tiled OCR source SHA/page identity mismatch")
         if any(tid not in ids for tid in self.candidate_tile_ids):
             raise ValueError("OCR tile reference not in source page plan")
         if any(c.page_index != self.page_index or not c.review_required
