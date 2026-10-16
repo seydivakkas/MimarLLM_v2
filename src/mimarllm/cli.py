@@ -57,7 +57,7 @@ def _write_pipeline(
         raise CliError("Output already exists; no existing report will be overwritten")
 
     ocr_reader = None
-    if config.ocr_regions:
+    if config.ocr_regions or config.tiled_ocr:
         from mimarllm.ocr.rapid_engine import RapidCpuOcr, OcrUnavailable
         try:
             ocr_reader = RapidCpuOcr()
