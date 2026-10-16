@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from enum import Enum
 from math import isfinite
+from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from mimarllm.core.models import TextCandidate
@@ -21,8 +22,10 @@ class LayoutCandidate(BaseModel):
     zone: LayoutZone
     polygon: tuple[tuple[float,float],tuple[float,float],tuple[float,float],tuple[float,float]]
     text_candidate_ids: tuple[str,...] = Field(min_length=1)
-    approval_status: str = "REVIEW_REQUIRED"
-    source_semantics: str = "POSITION_ONLY_NO_TITLE_BLOCK_CERTIFICATION"
+    approval_status: Literal["REVIEW_REQUIRED"] = "REVIEW_REQUIRED"
+    source_semantics: Literal["POSITION_ONLY_NO_TITLE_BLOCK_CERTIFICATION"] = (
+        "POSITION_ONLY_NO_TITLE_BLOCK_CERTIFICATION"
+    )
 
     @model_validator(mode="after")
     def valid_polygon(self):
