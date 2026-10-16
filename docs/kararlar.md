@@ -434,3 +434,20 @@ Bkz. docs/islem_026.md ve docs/specs/massing25d-v0.1.md. İşlem 026 PR #4, İş
 | K-230 | İşlem 028 rubrik puanı model metninden değil sürümlü deterministik kural ve uzman ölçütüyle hesaplanır; VLM yalnız açık denetim adayı sağlar | SONRAKİ İŞLEM SINIRI |
 
 Bağımlılık: Draft PR #2 (025) → Draft PR #4 (026) → Draft PR #5 (027). `main` dalında değişiklik yok, üretim sürümü veya resmî hukukî PASS yok. [İşlem 027](islem_027.md) ve [VLM kaynak sözleşmesi](specs/local-vlm-027-v0.1.md).
+
+
+## İşlem 028 — 8 eksenli sınıf-duyarlı rubrik kararları (2026-10-17)
+
+| Karar | Bağlayıcı mühendislik kuralı | Durum |
+| --- | --- | --- |
+| K-231 | Sekiz tanımlı pedagojik eksen; `028.0.1` pilot rubrik, kodda sabit profil/ağırlık. Okulun resmî rubriği olduğu iddia edilmez | MÜHENDİSLİK_ADAYI |
+| K-232 | 1/2/3/4. sınıfta aktif kriter sayısı 6/10/14/16. 1. sınıfta strüktür/çevre ileri hedefleri `NOT_APPLICABLE_BY_LEVEL`; sıfır not/yanlış FAIL değil | SENTETİK TEST |
+| K-233 | AI/VLM `human_level` veya rubrik ağırlığı veremez. Sayısal taslak yalnız kodun `Decimal` ve `ROUND_HALF_UP` hesaplamasıyla, insanın açık değerlendirme öz-beyanı ile üretilir | KODLANDI |
+| K-234 | Her kriter için aynı projeye/run'a bağlı native DXF/PDF entity kaynak SHA/frame/kind ve insan yorumu gerekir; uygunsuz veya sahte kaynakta `409`, eksik şemada `422` | KODLANDI |
+| K-235 | Tek bir etkin kriter bile değerlendirilmemişse `NOT_SCORED` ve genel puan `null`. Aktif eksenler yeniden normalize edilir; üst sınıf boyutları yanlış puan düşürmez | KODLANDI |
+| K-236 | Tamamı girilse bile `LOCAL_DRAFT_ONLY` + `official_grade=false`, çünkü `reviewer_label` öğretim üyesinin imzalı kimlik doğrulaması değildir ve ağırlıklar resmî onaylı değildir | KABUL SINIRI |
+| K-237 | DrawingIR, gerçek DXF/PDF, pipeline raporu, RuleEngine, hukukî veri ve VLM çıktısı rubrik API tarafından değiştirilemez; rubrik sonucu ephemeral JSON | KODLANDI |
+| K-238 | Gerçek öğretim üyesi/öğrenci onamı, kurumsal ölçüt onayı, uzmanlar arası güvenirlik/kappa ve fiziksel Windows/Edge saha kabulü yalnız İşlem 031'de | SON KABUL HOLD |
+| K-239 | 029 çok kişilik jüri simülasyonu model/persona çıktıları bağımsız insan eğitmen oyu sayılmaz; önce 028'in kural/kaynak sınırı korunmalıdır | İLERİYE DÖNÜK |
+
+Bağımlı Draft zinciri **PR #2 → PR #4 → PR #5 → PR #6**. `main` ve üretim sürümü değişmedi. [İşlem 028](islem_028.md) / [rubrik teknik sözleşmesi](specs/pedagogical-rubric-028-v0.1.md).

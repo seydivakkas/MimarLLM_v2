@@ -152,3 +152,12 @@ Three.js 0.160.1 ESM yerel olarak SHA/MIT manifestiyle hazırlanır (scripts/bui
 - RAM/VRAM ön denetimi sistem boş RAM ve tek NVIDIA nvidia-smi verisinden sınır/bütçe kararı verir; izinli CPU fallback veya açık red. 8 GiB VRAM için başarı/performans garantisi veya gerçek GGUF inference kabulü yok.
 - Modelin JSON sonucu Pydantic `extra=forbid` ile yalnız `kind`, `commentary`, izin verilen `entity_ids`; koordinat/alan/kural skoru/mevzuat PASS veya DrawingIR değişikliği kesinlikle kabul edilmez. Model seçimi tarayıcıdan dosya yolu olarak verilemez; operatörün güvenilir yerel `vlm-runtime.json` profilidir.
 - Gerçek Windows GPU/VRAM/Edge kalite, model/template/MMProj uyumu, mimarî uzman değerlendirimi ve `onedir` kullanıcı kabulü İşlem 031'de HOLD. İşlem 028 rubrik skorunun kaynağı model olmayacak; deterministik rubrik kodu kullanılır. `main` ve üretim sürümü değişmedi.
+
+
+## İşlem 028 — Sekiz eksenli pedagojik stüdyo rubriği (sentetik kod adayı)
+
+- [İşlem kaydı](docs/islem_028.md), [teknik sözleşme](docs/specs/pedagogical-rubric-028-v0.1.md), [Draft PR #6](https://github.com/seydivakkas/MimarLLM_v2/pull/6).
+- 8 tasarım ekseni için sürümlü pilot rubrik, 1–4. sınıflarda 6/10/14/16 geçerli kriter. 1. sınıfta ileri mimari strüktür/çevre yükümlülükleri otomatik negatif puan vermez.
+- Yalnız native DrawingIR kaynak SHA/frame/entity bağlantılı ve **insanın açıkça girip beyan ettiği 0–4** düzeylerinden `Decimal` ile yerel taslak değerlendirme hesaplanır. Eksik aktif kriter → `NOT_SCORED` ve `null` total. Tam girdi olsa bile sonuç `LOCAL_DRAFT_ONLY`, `official_grade=false`; eğitmen kimliği, gerçek pedagojik yeterlilik ve üniversite rubriği onaylanmış değildir.
+- `GET /api/rubric/profile/{academic_year}`, `POST /api/projects/{id}/runs/{id}/rubric/evaluate`, yerel sınıf/kanıt/not UI, Windows ve Ubuntu sentetik regresyon. LLM/VLM otomatik not üretemez; CAD, analiz, mevzuat ve raporları değiştirmez.
+- Fiziksel Windows/Edge, gerçek öğrenci projeleri, kurumsal rubrik ve uzman güvenirliği `islem_031` kapsamında HOLD; `main` ve üretim paketi değiştirilmedi. Sonraki geliştirme `islem_029` pedagojik jüri simülasyonudur.

@@ -27,7 +27,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_025` | Dashboard 2B kaynak çizgisi, bounded işler, dar DXF Model LINE revizyon/undo | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS / DRAFT PR #2 | fiziksel Edge, gerçek CAD/PDF ve offline exe yalnız son İşlem 031 kabulünde; 026'yı bloklamaz |
 | `islem_026` | Kaynak bağlı 2.5D prizma ve çevrimdışı Three.js | MÜHENDİSLİK KOD ADAYI / SENTETİK_CI_PASS, 025 bağımlı dal | Yalnız doğrudan CAD Model LINE + bağımsız CONFIRMED ölçek + kullanıcı beyanı yüksekliği; fiziksel UAT 031 |
 | `islem_027` | Opt-in yerel GGUF/MMProj, RAM/VRAM preflight, kaynaklı structured VLM yorumu | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS, 026 bağımlı Draft PR #5 | gerçek GGUF/model uyumu, Windows/8GB GPU/VRAM, inference kalitesi ve offline EXE son 031 kabulünde |
-| `islem_028` | Sekiz boyutlu rubrik ontolojisi/weight/supervisor, score-in-code | PLAN, 017/027 bağımsız GPU modu | uzman onaylı kriter yoksa otomatik gerçek not yok |
+| `islem_028` | Sekiz eksen, 1–4. sınıfa göre kriter maskeleme, kanıtlı insan girişli Decimal taslak skor | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS, 027 bağımlı Draft PR #6 | Resmî rubrik, imzalı eğitmen yetkisi ve gerçek öğrenci projesi doğrulanmadı; yalnız LOCAL_DRAFT_ONLY, fiziksel/pedagojik kabul 031 |
 | `islem_029` | Sıralı pedagojik jüri/persona/ton (isteğe bağlı) | PLAN, 027/028 | çok metinsel persona = bağımsız uzman oyu değildir |
 | `islem_030` | Öğrenci analitiği, trend, izinli geçmiş ve radar rapor (isteğe bağlı) | PLAN, 028/029 | onam, küçük örneklem belirsizliği, kimlik/gizlilik |
 | `islem_031` | Son fiziksel Windows/Edge/onedir, gerçek CAD/PDF/A0, bağımsız benchmark, GPU, kullanıcı/uzman ve 2209-A kabulü | SON KABUL / HOLD, 026–030'dan sonra | 021–030'un tüm ertelenmiş fiziksel ve gerçek veri testleri burada toplanır; ölçülmeyen kappa/Recall/FPS/süre vaadi yok |
@@ -213,3 +213,13 @@ F28/F04 **KISMI**; sentetik fake CPU reader testleri gerçek OCR modeli doğrulu
 - Bir sonraki geliştirme, VLM sözlü iddialarından bağımsız **İşlem 028 — rubrik ontolojisi/puanlama kodu**. F08–F12 `HUKUKI_HOLD` sabit.
 
 [İşlem 027](islem_027.md) · [VLM 027 sözleşmesi](specs/local-vlm-027-v0.1.md).
+
+## 9. İşlem 028 — Kademeli stüdyo rubriği ve deterministik pilot puan (2026-10-17)
+
+**Kod dalı:** `feature/islem-028-pedagogical-rubric`, önceki 027 aday dalı üzerine; [Draft PR #6](https://github.com/seydivakkas/MimarLLM_v2/pull/6). İlk commit `docs/islem_028.md` ve kullanıcı isteği doğrultusunda fiziksel kabulü 031'de tutar.
+
+Sekiz eksen (bağlam, konsept, işlev, mekân, strüktür, iklim, temsil, süreç) **pilot ve kurumca henüz onaylanmamış** 100 ağırlık toplamlı kataloğa bağlıdır. 1–4. sınıflarda sırasıyla 6/10/14/16 aktif kriter vardır. Üst sınıf meslekî veya yönetmelik şartları 1. sınıfın basit projesine otomatik yansıtılmaz. Kaynağı belirsiz çizim, ekstra AI notu veya onaysız insan değerlendirmesinde puan çıkmaz. İnsan tarafından açık beyanlı 0–4 kriter incelemesi ve native DrawingIR SHA/frame/ID eşleşmesi **tamamlanırsa** dahi sonuç yalnız `LOCAL_DRAFT_ONLY` olur; resmi öğretim notu değil.
+
+`src/mimarllm/pedagogy/rubric.py`, `scoring.py`, `tests/test_rubric_028.py`, yerel API ve 8 eksenli UI eklendi. [İşlem 028 kaydı](islem_028.md) ve [rubrik teknik sözleşmesi](specs/pedagogical-rubric-028-v0.1.md) kapsamı sınırlar. [İlk uçtan uca CI kanıtı #38983549274](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38983549274): Windows 389 PASS, Ubuntu 388 PASS /1 SKIP.
+
+Son fiziksel Windows/Edge, gerçek çizim/öğrenci örnekleri, resmî ağırlık/kriter öğretim üyesi kurul onayı, uzmanlar arası kappa ve gerçek rapor/EXE kabulü **031/HOLD**. Sıradaki `islem_029`: sıralı pedagojik jüri/persona açıklamaları; bunlar bağımsız uzman görüşü veya resmî not üretmez.

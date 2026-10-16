@@ -74,6 +74,14 @@ def main() -> int:
                 vlm_status=json.load(response)
             if vlm_status.get("configured") is not False or vlm_status.get("legal_gate")!="REGULATORY_LOCKED":
                 raise RuntimeError("VLM fail-closed unavailable-state not visible on fresh localhost")
+            with urlopen(url+"api/rubric/profile/1",timeout=10) as response:
+                year1=json.load(response)
+            with urlopen(url+"api/rubric/profile/4",timeout=10) as response:
+                year4=json.load(response)
+            if (year1.get("official_grade") is not False or
+                    len(year1.get("axes",[]))!=8 or len(year1.get("criteria",[]))!=6 or
+                    len(year4.get("criteria",[]))!=16):
+                raise RuntimeError("Rubric year gating or official-grade lock failed in Edge smoke")
             base=[str(edge),"--headless=new","--disable-gpu","--no-first-run",
                   "--disable-background-networking","--no-default-browser-check",
                   "--user-data-dir="+str(root/"edge-profile"),
@@ -87,6 +95,7 @@ def main() -> int:
               "id=\"edit-run\"","id=\"edit-undo\"",
               "id=\"massing-canvas\"","id=\"massing-build\"",
               "id=\"vlm-opt-in\"","id=\"vlm-infer\"","id=\"vlm-results\"",
+              "id=\"rubric-year\"","id=\"rubric-criteria\"","id=\"rubric-evaluate\"",
               "Henüz yerel çizim eklenmedi",
               "Hukukî doğrulama kilitli",
             ]
@@ -100,6 +109,7 @@ def main() -> int:
                 "loopback_only":True,"required_nodes_verified":required,
                 "local_three_sha_verified":True,
                 "local_026_module_verified":True,
+                "rubric_028_year1_year4_profiles_verified":True,
                 "offline_runtime_network_not_proven":True,
                 "javascript_visible_project_empty_state":True,
                 "legal_gate":"REGULATORY_LOCKED",

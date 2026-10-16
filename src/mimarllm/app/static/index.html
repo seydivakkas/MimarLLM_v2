@@ -208,6 +208,45 @@
       </div>
       <p class="hint">GGUF/MMProj dosya yolları ve SHA'ları yalnız güvenilir yerel yapılandırmada tanımlanır; tarayıcıdan rastgele model yolu kabul edilmez. Fiziksel GPU/VRAM kabulü İşlem 031'dedir.</p>
     </section>
+    <section class="panel rubric-panel" id="rubric-028">
+      <div class="panel-heading">
+        <div><div class="eyebrow">08 / PEDAGOJİK RUBRİK</div>
+          <h2>1.–4. sınıf: Sekiz boyutlu tasarım değerlendirmesi</h2>
+          <p>Sınıf seviyesine göre yalnız geçerli kriterler açılır. Öğretmen girişi gereklidir; yapay zekâ değerlendirme düzeyi veya puan vermez.</p>
+        </div><span class="mini-label">YEREL TASLAK · RESMÎ NOT DEĞİL</span>
+      </div>
+      <div class="legal-note"><strong>Pedagojik / hukukî onay verilmedi</strong>
+        <span>Bu bir pilot kriter kataloğudur, okulun onaylanmış rubriği değildir. Kaynak kimliği, çizimin eğitim başarısını otomatik doğrulamaz. Eksik kriterlerle genel puan hesaplanmaz.</span>
+      </div>
+      <div class="field-grid">
+        <div class="field"><label for="rubric-year">Stüdyo sınıfı</label>
+          <select id="rubric-year">
+            <option value="1">1. sınıf — Proje I</option>
+            <option value="2">2. sınıf — Proje II</option>
+            <option value="3">3. sınıf — Proje III</option>
+            <option value="4">4. sınıf — Proje IV</option>
+          </select></div>
+        <div class="field"><label for="rubric-frame">Kaynak çizim / sayfa</label>
+          <select id="rubric-frame"><option value="">Önce kaynak analizini seçin</option></select></div>
+      </div>
+      <div class="field"><label for="rubric-reviewer">İncelemeci etiketi (güvenilir kimlik doğrulaması değildir)</label>
+        <input id="rubric-reviewer" maxlength="80" autocomplete="off" placeholder="Rubrik değerlendirmesini giren kişi"></div>
+      <label class="rubric-consent"><input id="rubric-human-confirm" type="checkbox">
+        Kaynakları kendim inceledim; seviyeleri bir insan değerlendirmesi olarak ben girdim. Sistem beni resmî eğitmen olarak doğrulamıyor.</label>
+      <p id="rubric-catalog-status" class="hint" role="status" aria-live="polite">Yerel rubrik kataloğu yüklenmedi.</p>
+      <div class="rubric-criteria" id="rubric-criteria">
+        <p class="muted">Bir analiz ve sınıf seviyesi seçin.</p>
+      </div>
+      <div class="report-options">
+        <button id="rubric-evaluate" type="button" class="btn solid" disabled>Kaynaklı yerel taslak değerlendirmeyi hesapla</button>
+        <button id="rubric-clear" type="button" class="btn minor">Girdileri temizle</button>
+      </div>
+      <p id="rubric-status" class="hint" role="status" aria-live="polite">Kaynak ve insan incelemesi olmadan puan çıkmaz.</p>
+      <div id="rubric-outcome" class="rubric-outcome" aria-label="Sekiz boyutlu sınıf rubriği taslak sonucu">
+        <p class="muted">Henüz değerlendirme yapılmadı.</p>
+      </div>
+      <p class="hint">Kaynak DXF/PDF, DrawingIR, analiz manifesti, RuleEngine ve VLM dosyaları değiştirilmez. Kriterler sürümlüdür. Fiziksel pedagojik uzman geçerliliği ve kullanıcı kabulü İşlem 031'dedir.</p>
+    </section>
     <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
     <footer>MimarLLM V2 · Offline-first · Sentetik mühendislik doğrulaması · Gerçek kullanıcı ve hukukî kabul bekliyor</footer>
   </main>
