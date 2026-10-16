@@ -100,7 +100,8 @@ def command(config: LocalVlmConfig, port: int, budget: RuntimeBudget) -> list[st
         str(config.llama_server_path), "--model",str(config.model_path),
         "--mmproj",str(config.mmproj_path), "--host","127.0.0.1",
         "--port",str(port), "--ctx-size",str(config.context_tokens),
-        "--parallel","1", "--n-gpu-layers",str(budget.n_gpu_layers),
+        "--parallel","1", "--alias","mimarllm-local",
+        "--n-gpu-layers",str(budget.n_gpu_layers),
         "--fit","off",
     ]
     if budget.execution_mode=="CPU_FALLBACK":
@@ -124,7 +125,7 @@ def chat_request(png: bytes, request: VlmRequest, config: LocalVlmConfig) -> dic
     image="data:image/png;base64,"+base64.b64encode(png).decode("ascii")
     schema=ModelOnlyPayload.model_json_schema()
     return {
-        "model":"local-verified-gguf",
+        "model":"mimarllm-local",
         "stream":False, "temperature":0, "max_tokens":config.max_new_tokens,
         "response_format":{"type":"json_schema","schema":schema},
         "messages":[
