@@ -226,7 +226,7 @@ class DxfRevisions:
                 raise EditError("Only unique direct modelspace LINE handles allowed")
             entity = entities[0]
             def point(v):
-                if any(not isfinite(float(n)) for n in v[:3]) or abs(float(v[2])) > 1e-7:
+                if any(not isfinite(float(n)) for n in (v[0], v[1], v[2])) or abs(float(v[2])) > 1e-7:
                     raise EditError("Unsupported 3D/elevated CAD line")
                 return float(v[0]), float(v[1])
             old_start, old_end = point(entity.dxf.start), point(entity.dxf.end)
