@@ -355,3 +355,77 @@ def test_2d_ui_source_inspector_offline_and_escaped(cli):
     assert 'eval(' not in js
     assert "https://" not in html
     assert "script-src 'self'" in http.get("/").headers["content-security-policy"]
+
+
+def test_2d_review_note_sidecar_audited_and_original_unchanged(cli,dxf):
+    http,csrf,workspace=cli
+    project=upload(http,csrf,dxf).json()
+    pid=project["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    data=details(http,pid,rid)
+    source=data["native_lines"][0]
+    base=f"/api/projects/{pid}/runs/{rid}"
+    input_file=workspace/"projects"/pid/"input.dxf"
+    drawing_file=workspace/"projects"/pid/"runs"/rid/"drawingir.json"
+    original_drawing=drawing_file.read_bytes()
+    payload={
+      "source_sha256":project["source_sha256"],
+      "entity_id":source["entity_id"],"frame_id":source["frame_id"],
+      "reviewer_label":"Studio reviewer",
+      "note":"Kaynak çizgisi manuel kontrol gerektirir."
+    }
+    add=http.post(base+"/reviews",json=payload,headers={"X-Mimar-CSRF":csrf})
+    assert add.status_code==201,add.text
+    note=add.json()
+    assert note["review_state"]=="UNVERIFIED_OBSERVATION"
+    assert note["retracted_utc"] is None
+    assert len(note["review_id"])==32
+    listed=http.get(base+"/reviews").json()
+    assert listed["source_sha256"]==project["source_sha256"]
+    assert len(listed["notes"])==1
+    assert listed["notes"][0]["entity_id"]==source["entity_id"]
+    assert input_file.read_bytes()==dxf
+    assert drawing_file.read_bytes()==original_drawing
+    assert details(http,pid,rid)["manifest"]["legal_gate"]=="REGULATORY_LOCKED"
+    assert http.get(base+"/files/review-notes.json").status_code==404
+    assert http.delete(base+"/reviews/"+note["review_id"]).status_code==403
+    erased=http.delete(base+"/reviews/"+note["review_id"],
+                       headers={"X-Mimar-CSRF":csrf})
+    assert erased.status_code==200,erased.text
+    assert erased.json()["retracted_utc"] is not None
+    assert http.delete(base+"/reviews/"+note["review_id"],
+                       headers={"X-Mimar-CSRF":csrf}).status_code==409
+    assert len(http.get(base+"/reviews").json()["notes"])==1
+    assert drawing_file.read_bytes()==original_drawing
+    app=create_app(workspace)
+    with TestClient(app,base_url="http://127.0.0.1:8765",
+                    client=("127.0.0.1",12345)) as another_process:
+        retained=another_process.get(base+"/reviews").json()["notes"]
+        assert len(retained)==1 and retained[0]["retracted_utc"]
+
+
+def test_review_source_forgery_budget_and_payload_rejected(cli,dxf):
+    http,csrf,workspace=cli
+    project=upload(http,csrf,dxf).json()
+    pid=project["project_id"]
+    rid=run(http,csrf,pid).json()["run_id"]
+    source=details(http,pid,rid)["native_lines"][0]
+    url=f"/api/projects/{pid}/runs/{rid}/reviews"
+    payload={
+      "source_sha256":project["source_sha256"],
+      "entity_id":source["entity_id"],"frame_id":source["frame_id"],
+      "reviewer_label":"Reviewer","note":"Manuel gözlem."
+    }
+    headers={"X-Mimar-CSRF":csrf}
+    assert http.post(url,json=payload).status_code==403
+    assert http.post(url,content=b"x"*4097,headers=headers).status_code==413
+    assert http.post(url,json={**payload,"source_sha256":"f"*64},
+                     headers=headers).status_code==409
+    assert http.post(url,json={**payload,"entity_id":"fabricated-id"},
+                     headers=headers).status_code==409
+    assert http.post(url,json={**payload,"unexpected":"malicious"},
+                     headers=headers).status_code==422
+    assert http.get(url).json()["notes"]==[]
+    (workspace/"projects"/pid/"input.dxf").write_bytes(dxf+b"\\modified")
+    assert http.post(url,json=payload,headers=headers).status_code==409
+    assert http.get(url).status_code==409
