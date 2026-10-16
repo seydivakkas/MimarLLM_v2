@@ -82,3 +82,9 @@ footer{color:#9ca9b9;font-size:11px;padding:25px 0 12px}
 .source-inspector{border:1px solid #e4eaf2;padding:12px;border-radius:7px;background:#f8fafc;color:#314661;
   white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto;font-size:11px;line-height:1.5}
 #job-status{font-variant-numeric:tabular-nums}
+
+.review-list{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.review-note{padding:12px;border-radius:8px;border:1px solid #dbe5f0;background:white;overflow-wrap:anywhere}
+.review-note strong{font-size:11px;color:#405b75;display:block}
+.review-note small{font-size:10px;color:#8a99aa;display:block;margin-top:5px}
+.review-note p{font-size:12px;color:#475e79;line-height:1.5;white-space:pre-wrap}
