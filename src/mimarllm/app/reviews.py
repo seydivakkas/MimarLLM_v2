@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 import os
+import re
 from pathlib import Path
 from threading import Lock
 from uuid import uuid4
@@ -53,6 +54,16 @@ class ReviewStore:
                 or not isinstance(blob.get("notes"), list)
                 or len(blob["notes"]) > 100):
             raise ReviewError("Review sidecar identity mismatch")
+        for note in blob["notes"]:
+            if (not isinstance(note, dict)
+                    or not re.fullmatch(r"[a-f0-9]{32}", str(note.get("review_id", "")))
+                    or note.get("source_sha256") != source_sha
+                    or note.get("review_state") != "UNVERIFIED_OBSERVATION"
+                    or not isinstance(note.get("note"), str)
+                    or len(note["note"]) > 300
+                    or not isinstance(note.get("entity_id"), str)
+                    or not isinstance(note.get("frame_id"), str)):
+                raise ReviewError("Review note record not trustworthy")
         return blob["notes"]
 
     @staticmethod
