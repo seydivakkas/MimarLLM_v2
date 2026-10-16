@@ -118,3 +118,11 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 - GitHub-hosted [CI 38834544453](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38834544453): Ubuntu 364 PASS/1 SKIP, Windows 365 PASS; gerçek Windows/Edge kullanıcı/performans kabulü ve son PR head CI ayrı. `main` değil, aday `feature/islem-025-source-2d-jobs` dalındadır.
 
 - **Manuel review notu (025 ek aday):** Seçili native LINE/PDF_LINE kaynağına SHA+frame/entity bağlı kullanıcı gözlemi `run/review-notes.json` sidecar'ına yazılır. Kullanıcı notu geri alırsa audit izi korunur. `GET/POST /reviews` ve `DELETE /reviews/{review_id}` yalnız localhost/CSRF kapıları ile; gerçek CAD dosyası, DrawingIR ve analiz raporu değişmez. Bu bir hukukî/teknik uygunluk onayı veya CAD geometrik edit işlemi değildir.
+
+
+### İşlem 025 ek teslim — Kaynak-koruyan DXF revizyonu (henüz Draft)
+
+- Artık \`cad:Model\` direct \`LINE\` uçlarına dayanarak yeni **türetilmiş** DXF \`drawing.dxf\` revizyon dosyası oluşturma, kaynağa ve CAD handle'a bağlı SHA denetimi, indir ve undo vardır. Orijinal input DXF / DrawingIR / analiz raporu üzerinde değişiklik yapılmaz. PDF veya nested block edit yapılmaz.
+- [DXF revizyon sözleşmesi](docs/specs/dxf-revisions-025.md), [gerçek Windows/Edge kabul protokolü](docs/specs/windows-acceptance-025.md), \`scripts/windows/acceptance_025.ps1\`.
+- GitHub-hosted sentetik [CI 38850588365](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38850588365) Windows **370 PASS**, Ubuntu **369 PASS / 1 SKIP**; sentetik 500 çizgili bellek/süre profili yalnız build makinesi içindir.
+- Gerçek cihaz, onedir dağıtım, Edge etkileşim/erişilebilirlik, gerçek CAD/PDF ölçümü ve bağımsız kullanıcı/uzman kabulü yapılmadı. İşlem 025 Draft, \`main\` değil. \`026\` ve üretim bekletilir.
