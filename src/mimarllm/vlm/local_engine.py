@@ -163,12 +163,12 @@ def infer(drawing: DrawingIR, request: VlmRequest, config: LocalVlmConfig,
     # Fixed localhost endpoint with disabled proxies, no arbitrary model URLs.
     base=f"http://127.0.0.1:{port}"
     opener=build_opener(ProxyHandler({}))
-    clean_env=os.environ.copy()
-    for key in list(clean_env):
-        if key.lower().endswith("_proxy") or key.lower() in {
-            "hf_token","huggingface_hub_token", "http_proxy","https_proxy","all_proxy",
-        }:
-            clean_env.pop(key,None)
+    # Minimal inherited environment: never forward API keys, proxies or secrets.
+    allowed={"PATH","SYSTEMROOT","WINDIR","TEMP","TMP","TMPDIR","HOME",
+             "USERPROFILE","LOCALAPPDATA","APPDATA","LD_LIBRARY_PATH",
+             "CUDA_VISIBLE_DEVICES","CUDA_DEVICE_ORDER"}
+    clean_env={key:value for key,value in os.environ.items()
+               if key.upper() in allowed or key=="LD_LIBRARY_PATH"}
     clean_env["HF_HUB_OFFLINE"]="1"
     clean_env["TRANSFORMERS_OFFLINE"]="1"
     startup=subprocess.STARTUPINFO() if os.name=="nt" else None
