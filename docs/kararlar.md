@@ -366,3 +366,21 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 | K-198 | F08–F12, resmî hukukî kaynak/yürürlük ve `RuleEngine.REGULATORY` kilidi değişmez | HUKUKI_HOLD |
 
 [İşlem 023](islem_023.md) · [Karo OCR v0.1](specs/tiled-ocr-v0.1.md).
+
+
+## İşlem 024 — Türkçe mimarlık sorguları ve RAG kaynak-cache kararları (2026-10-16)
+
+| Karar | Sözleşme | Durum |
+| --- | --- | --- |
+| K-199 | Mimari jargon yalnız sürümlü, opt-in arama ipucu; kaynak LegalAST metnini/hükmünü değiştirmez | KODLANDI |
+| K-200 | Özgün BM25 sorgu sonuçları lexical-only durumda genişletilmiş ilişkili terimlerin önünde kalır; dense sorgu özgün cümleyledir | KODLANDI |
+| K-201 | Kullanıcı query/alternatif FTS5 MATCH operatörleri parametre ve token sınırından geçer | KODLANDI |
+| K-202 | SQLite query cache yalnız SHA anahtar ve pasaj ID; PDF metni/görseli veya kullanıcı raw sorgusu cache'e yazılmaz | KODLANDI |
+| K-203 | Document SHA ve regulation filtresi hem özgün hem genişletilmiş aday aramada ayrı SQL koşullarıdır | KODLANDI |
+| K-204 | Re-index transaction ve SQL passage update/insert/delete trigger ile cache invalidation; dış PDF hash her sonuçta yeniden denetlenir | KODLANDI |
+| K-205 | 128 anahtar sınırı, SQLite lokal kalıcılık; genel analitik workspace WAL/retention çok kullanıcılı senaryo değil | KISMI |
+| K-206 | Eşanlamlı mimari kelimeler mevzuatta hukuken eşdeğer hüküm diye sunulamaz, uzman değerlendirmesi gerekir | KESİN |
+| K-207 | Türkçe gerçek embedding model kalite ölçümü, resmî mevzuat sürüm/yürürlük, kullanıcı Windows saha benchmark ve lisanslı sözlük kabulü | HOLD |
+| K-208 | `RuleEngine.REGULATORY` sonuçları INSUFFICIENT_EVIDENCE ve F08–F12 HUKUKI_HOLD | DEĞİŞMEDİ |
+
+[İşlem 024](islem_024.md) · [Türkçe RAG/CACHE v0.1](specs/rag-lexicon-v0.1.md).
