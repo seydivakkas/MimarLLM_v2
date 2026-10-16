@@ -108,6 +108,14 @@
             <svg id="drawing-2d" role="img" aria-label="Kaynak çizgi çizimi" viewBox="0 0 100 70" preserveAspectRatio="xMidYMid meet"></svg>
           </div>
           <pre id="source-inspector" class="source-inspector" aria-live="polite">Henüz kaynak seçilmedi.</pre>
+          <div class="calibrate">
+            <div class="stack-title"><h3>Kaynaklı manuel inceleme notları</h3><span class="mini-label">ONAYSIZ GÖZLEM</span></div>
+            <p class="hint">Önce çizgi seçin. Notlar ayrı bir yerel denetim kaydına yazılır; orijinal CAD/DrawingIR değiştirilmez, hukukî PASS üretilmez.</p>
+            <div class="field"><label for="reviewer-input">İncelemeci etiketi</label><input id="reviewer-input" type="text" maxlength="80" placeholder="Yerel incelemeci" autocomplete="off"></div>
+            <div class="field"><label for="review-note">Kaynağa bağlı gözlem</label><textarea id="review-note" rows="3" maxlength="300" placeholder="Kaynağı incelemek için not..." spellcheck="true"></textarea></div>
+            <button id="save-review-note" type="button" class="btn solid" disabled>Seçili kaynak için not kaydet</button>
+            <div id="review-list" class="review-list"><p class="muted">Henüz inceleme notu yok.</p></div>
+          </div>
           <p class="hint">Çizimler ölçek onayı veya yeni oda/kapı tespiti değildir. Orijinal DXF/PDF, DrawingIR ve rapor değişmez.</p>
         </section>
       </div>
