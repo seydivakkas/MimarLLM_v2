@@ -402,3 +402,18 @@ Kaynak: [İşlem 004](islem_004.md) · [OCR mimari sözleşmesi](ocr-mimari-paft
 **Yeni yürütme sırası:** 025 mühendislik adayını koru → `islem_026` ilk GitHub kaydı → 026–030 özellikleri ve sentetik CI → 031 fiziksel/gerçek veri/kullanıcı/hukukî uzman kabulü → ancak sonrasında dağıtım kararı.
 
 Bkz. [İşlem 025](islem_025.md), [yol haritası](uygulama-yol-haritasi.md) ve [final fiziksel test protokolü](specs/windows-acceptance-025.md).
+
+
+## İşlem 026 — Kanıtlı 2.5D teknik kararları (2026-10-16)
+
+| No | Karar | Durum |
+| --- | --- | --- |
+| K-215 | 2.5D yalnız aynı DXF SHA/frame'e bağlı, özgün direkt CAD Model LINE öğelerinden oluşan tek hatasız kapalı poligon kullanır | SENTETİK KOD |
+| K-216 | Bağımsız CONFIRMED kalibrasyon yoksa metre cinsinden kütle yok; HEADER_UNITS tek başına yeterli değil | FAIL-CLOSED |
+| K-217 | Yükseklik kullanıcı senaryosu; otomatik gerçek bina/kat/alan/hukukî onay iddiası yok | ZORUNLU |
+| K-218 | Farklı frame/PDF, INSERT, delik, snap/onarım, belirsiz topoloji reddedilir | FAIL-CLOSED |
+| K-219 | Three.js 0.160.1 yerel ESM SHA ile doğrulanır ve MIT metni paketlenir; CDN çalışma anında kullanılmaz | KOD ADAYI |
+| K-220 | WebGL yoksa 2B kaynak inceleme korunur; orijinal DrawingIR/DXF/rapor revize edilmez | KOD ADAYI |
+| K-221 | Sentetik Windows/Linux ve hosted Edge ara kontrol; fiziksel Windows/GPU/VRAM/A0/onedir kullanıcı kabulü 031'de | SON KABUL HOLD |
+
+Bkz. docs/islem_026.md ve docs/specs/massing25d-v0.1.md. İşlem 026 PR #4, İşlem 025 PR #2 üzerine bağımlı Draft olarak tutulur. Main ve üretim değişmedi.
