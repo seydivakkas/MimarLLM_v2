@@ -73,6 +73,7 @@ async function loadProject() {
     list.append(el("p","Bu çizimde henüz analiz kaydı yok.","muted"));
     $("count-findings").textContent="—"; $("run-state").textContent="İlk analizi başlatın";
     clear($("finding-list"));clear($("report-files"));clear($("stage-list"));
+    renderDrawing({native_lines:[],manifest:{}});
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
   }
@@ -110,6 +111,7 @@ async function loadRun(id) {
       source.entity_id.slice(0,12)+"…",source.entity_id
     ));
   }
+  renderDrawing(data);
   const findings=$("finding-list");clear(findings);
   findings.append(el("h3","Bulgular / değerlendirme adayları"));
   if(!data.findings.length) findings.append(el("p","Henüz bulgu yok; kaynak geometrisi HTML raporunda incelenebilir.","muted"));
@@ -128,6 +130,91 @@ async function loadRun(id) {
     exports.append(link);
   }
 }
+function renderDrawing(data) {
+  const frame=$("frame-filter"),layer=$("layer-filter"),svg=$("drawing-2d");
+  const summary=$("drawing-summary"),inspector=$("source-inspector");
+  const lines=Array.isArray(data.native_lines)?data.native_lines:[];
+  const frames=[...new Set(lines.map(s=>s.frame_id))].sort();
+  clear(frame);clear(layer);clear(svg);
+  inspector.textContent="Henüz kaynak seçilmedi.";
+  if(!frames.length) {
+    frame.add(new Option("Kaynak çizgi bulunamadı",""));
+    layer.add(new Option("Katman yok",""));
+    summary.textContent="Seçili raporda SVG önizlemeye uygun kaynak-native çizgi bulunamadı.";
+    return;
+  }
+  for(const name of frames) frame.add(new Option(name,name));
+  function draw() {
+    clear(svg);
+    const selected=lines.filter(s=>s.frame_id===frame.value &&
+      (layer.value==="*" || (s.layer||"Katmansız")===layer.value));
+    const good=selected.filter(s=>Array.isArray(s.points) && s.points.length===2 &&
+      s.points.every(p=>Array.isArray(p)&&p.length>=2&&p.slice(0,2).every(Number.isFinite)));
+    if(!good.length) {
+      svg.setAttribute("viewBox","0 0 100 70");
+      summary.textContent="Bu katmanda gösterilebilir çizgi bulunamadı.";
+      return;
+    }
+    const pts=good.flatMap(s=>s.points);
+    const minX=Math.min(...pts.map(p=>p[0])),maxX=Math.max(...pts.map(p=>p[0]));
+    const minY=Math.min(...pts.map(p=>p[1])),maxY=Math.max(...pts.map(p=>p[1]));
+    const width=Math.max(maxX-minX,1),height=Math.max(maxY-minY,1);
+    const pad=Math.max(width,height)*0.04;
+    svg.setAttribute("viewBox",[-pad,-pad,width+2*pad,height+2*pad].join(" "));
+    const ns="http://www.w3.org/2000/svg";
+    for(const source of good) {
+      const flip=source.origin==="CAD_NATIVE";
+      const p1=source.points[0],p2=source.points[1];
+      const drawY=p=>flip?maxY-p[1]:p[1]-minY;
+      const item=document.createElementNS(ns,"line");
+      item.setAttribute("x1",String(p1[0]-minX));
+      item.setAttribute("y1",String(drawY(p1)));
+      item.setAttribute("x2",String(p2[0]-minX));
+      item.setAttribute("y2",String(drawY(p2)));
+      item.setAttribute("class","source-line");
+      item.setAttribute("role","button");
+      item.setAttribute("tabindex","0");
+      item.setAttribute("aria-label","Kaynak çizgi: "+source.entity_id);
+      const title=document.createElementNS(ns,"title");
+      title.textContent=(source.layer||"Katmansız")+" · "+(source.cad_handle||source.entity_id);
+      item.append(title);
+      const focusSource=()=>{
+        for(const old of svg.querySelectorAll(".selected")) old.classList.remove("selected");
+        item.classList.add("selected");
+        inspector.textContent=[
+          "Kaynak SHA256: "+(data.source_sha256||data.manifest?.source_sha256||"BELİRSİZ"),
+          "Frame: "+source.frame_id,
+          "Kaynak türü: "+source.origin,
+          "Katman: "+(source.layer||"Katmansız"),
+          "Entity ID: "+source.entity_id,
+          "CAD handle: "+(source.cad_handle||"—"),
+          "Orijinal noktalar: "+JSON.stringify(source.points),
+          "Durum: İNCELEME ADAYI; CAD/PDF değişmedi."
+        ].join("\n");
+      };
+      item.addEventListener("click",focusSource);
+      item.addEventListener("keydown",e=>{
+        if(e.key==="Enter"||e.key===" "){e.preventDefault();focusSource();}
+      });
+      svg.append(item);
+    }
+    summary.textContent=good.length+" çizgi · "+frame.value+" · "+
+      (layer.value==="*"?"tüm katmanlar":layer.value)+
+      " (önizleme en fazla 400 kaynak çizgiyi kapsar).";
+  }
+  function updateLayers(){
+    clear(layer);
+    layer.add(new Option("Tüm katmanlar","*"));
+    const names=[...new Set(lines.filter(s=>s.frame_id===frame.value)
+      .map(s=>s.layer||"Katmansız"))].sort();
+    for(const name of names) layer.add(new Option(name,name));
+    draw();
+  }
+  frame.onchange=updateLayers;
+  layer.onchange=draw;
+  updateLayers();
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -171,16 +258,27 @@ async function analyze() {
   busy(true);
   notice("Yerel analiz başlatıldı. Lütfen diğer projeyi aynı anda başlatmayın.");
   try {
-    const run=await api("/api/projects/"+state.projectId+"/runs",{
+    const projectId=state.projectId;
+    const queued=await api("/api/projects/"+projectId+"/jobs",{
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({config,formats}),
     });
-    state.runId=run.run_id;
+    let job=queued;
+    for(let attempt=0;attempt<400;attempt++) {
+      $("job-status").textContent="Analiz işi "+job.job_id.slice(0,12)+"… · "+job.state;
+      if(job.state==="COMPLETED"||job.state==="FAILED") break;
+      await new Promise(resolve=>setTimeout(resolve,1500));
+      job=await api("/api/projects/"+projectId+"/jobs/"+queued.job_id);
+    }
+    if(job.state==="FAILED") throw new Error("Yerel analiz tamamlanamadı: "+job.reason_code);
+    if(job.state!=="COMPLETED") throw new Error("İş sürüyor; uygulamayı yenilemeden önce yerel analizi kontrol edin.");
+    state.runId=job.run_id;
     await loadProject();
-    notice(run.completion==="PARTIAL_WITH_ERRORS"?
+    $("job-status").textContent="Analiz "+job.state+" · "+job.completion;
+    notice(job.completion==="PARTIAL_WITH_ERRORS"?
       "Rapor üretildi ancak bazı aşamalar hata verdi. Manifesti inceleyin.":
       "Rapor üretildi. Kaynakları ve inceleme uyarılarını kontrol edin.",
-      run.completion==="PARTIAL_WITH_ERRORS");
+      job.completion==="PARTIAL_WITH_ERRORS");
     $("evidence").scrollIntoView({behavior:"smooth",block:"start"});
   }catch(e){notice(e.message,true);}finally{busy(false);}
 }
