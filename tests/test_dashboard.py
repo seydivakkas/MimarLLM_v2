@@ -426,6 +426,6 @@ def test_review_source_forgery_budget_and_payload_rejected(cli,dxf):
     assert http.post(url,json={**payload,"unexpected":"malicious"},
                      headers=headers).status_code==422
     assert http.get(url).json()["notes"]==[]
-    (workspace/"projects"/pid/"input.dxf").write_bytes(dxf+b"\\modified")
+    (workspace/"projects"/pid/"input.dxf").write_bytes(dxf+b"\\nmodified")
     assert http.post(url,json=payload,headers=headers).status_code==409
     assert http.get(url).status_code==409
