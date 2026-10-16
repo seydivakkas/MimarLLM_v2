@@ -43,6 +43,12 @@ Not: Bu koşu `55499a5c` kaynak/test commit'ine aittir; devamında `pull_request
 
 ## 3. Henüz tamamlanmamış İşlem 025 kabulü
 
-**Durum KISMI / DRAFT PR**: source-native inceleme ve iş sorgusu kullanılabilir kod adayıdır; ancak **kalıcı 2B anotasyon/undo, kaynak kanıtı üzerine kullanıcı düzenleme onay kaydı, analiz aşaması-seviyesi gerçek ilerleme, kalıcı/restart-safe queue, tam bağımsız Edge etkileşim/görsel QA** yoktur. Çizim üzerindeki seçme/katman filtreleri edit değildir. OCR, kalibrasyon, GPU, 2.5D, VLM, jüri ve resmî hukukî uygunluk onayı yanlışlıkla tamamlandı sayılmayacak. İşlem 031 fiziksel kabul ayrı kalır.
+**Durum KISMI / DRAFT PR**: source-native inceleme ve iş sorgusu kullanılabilir kod adayıdır; ancak **kalıcı CAD geometrisi edit/undo, gerçek kimlik doğrulamalı uzman onayı, analiz aşaması-seviyesi gerçek ilerleme, kalıcı/restart-safe queue, tam bağımsız Edge etkileşim/görsel QA** yoktur. Çizim üzerinde seçim/katman filtresi fiziksel edit değildir. Ayrı review-notes.json sidecar'a kaynak bağlı manuel not ekleme ve audit tombstone ile geri alma, gerçek çizimi değiştirmeden kodlandı. OCR, kalibrasyon, GPU, 2.5D, VLM, jüri ve resmî hukukî uygunluk onayı yanlışlıkla tamamlandı sayılmayacak. İşlem 031 fiziksel kabul ayrı kalır.
 
 F08–F12 `HUKUKI_HOLD`, teknik `INSUFFICIENT_EVIDENCE`, orijinal DrawingIR ve kaynak SHA değişmez. PR #1'in stüdyo demosu bu PR'a birleştirilmedi. **İşlem 025 kapatılmadı; yeni işlem 026'ya resmi sıra ile geçilmez.**
+
+## 4. Kaynaklı manuel inceleme sidecar ek geliştirmesi
+
+`src/mimarllm/app/reviews.py`, `app/server.py`, `app/static/` ve `tests/test_dashboard.py`: özgün native entity + frame + PDF/DXF SHA doğrulamalı manuel gözlem, geri alındığında silinmeyen zaman damgalı audit, atomik yerel sidecar, 100 kayıt/120KB, symlink ve istemci JSON sınırları, CSRF ile koruma. Eğitim uzmanı kimliği veya resmî mevzuat PASS üretmez. Bağımsız Edge gerçek kullanıcı tıklama ve büyük pafta kabulü HOLD.
+
+**Bu ek kod için en son GitHub Actions CI sonucu henüz dosyada doğrulanmadığından İşlem 025 kapalı olarak işaretlenmedi.**
