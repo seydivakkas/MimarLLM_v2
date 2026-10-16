@@ -24,13 +24,13 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_022` | Kirli CAD kaynak-koruyan repair-overlay; unit hypothesis; Layer0 heuristik | PLAN, 007–011 | önerilen geometri/orijinal entity ayrılır; SI onayı yok |
 | `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet konum adayları | KISMI / KODLANDI, 009/022 | bounded tile, PDF source quad/dedup, sentetik CI; gerçek OCR/CER/RSS finalde |
 | `islem_024` | Türkçe mimari arama ipuçları + sınırlı SQLite RAG pasaj cache'i | KISMI / mevcut kod, 013–015/019 | Opt-in kurasyonlu FTS arama, SHA izolasyonu; genel workspace/WAL/retention HOLD |
-| `islem_025` | Dashboard 2B kaynak çizgisi / katman filtresi + bounded job queue/polling | KISMI / DRAFT PR #2, 019/024 | source SVG, dar Model LINE DXF revizyon/undo ve job state kod adayları; fiziksel Edge ve tam kabul HOLD |
-| `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | PLAN, 022/025 | organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
+| `islem_025` | Dashboard 2B kaynak çizgisi, bounded işler, dar DXF Model LINE revizyon/undo | MÜHENDİSLİK_ADAYI / SENTETİK_CI_PASS / DRAFT PR #2 | fiziksel Edge, gerçek CAD/PDF ve offline exe yalnız son İşlem 031 kabulünde; 026'yı bloklamaz |
+| `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | SIRADAKİ GELİŞTİRME / PLAN, 022/025 sentetik kod adayı | 025 fiziksel kabulü beklenmez; organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
 | `islem_027` | Yerel GGUF/MMProj VLM, VRAM profiler, structured response/no-overwrite | AR-GE, 023/025 | model Windows/8GB ölçümü, GPU fallback gerçek QA |
 | `islem_028` | Sekiz boyutlu rubrik ontolojisi/weight/supervisor, score-in-code | PLAN, 017/027 bağımsız GPU modu | uzman onaylı kriter yoksa otomatik gerçek not yok |
 | `islem_029` | Sıralı pedagojik jüri/persona/ton (isteğe bağlı) | PLAN, 027/028 | çok metinsel persona = bağımsız uzman oyu değildir |
 | `islem_030` | Öğrenci analitiği, trend, izinli geçmiş ve radar rapor (isteğe bağlı) | PLAN, 028/029 | onam, küçük örneklem belirsizliği, kimlik/gizlilik |
-| `islem_031` | Özellikler bittikten sonra bağımsız benchmark, gerçek Windows/GPU, kullanıcı/uzman ve 2209-A değerlendirme | PLAN, gerekli tüm iş paketleri | kappa/Recall/FPS/süre hedefleri ölçülmedikçe başarım vaadi yok |
+| `islem_031` | Son fiziksel Windows/Edge/onedir, gerçek CAD/PDF/A0, bağımsız benchmark, GPU, kullanıcı/uzman ve 2209-A kabulü | SON KABUL / HOLD, 026–030'dan sonra | 021–030'un tüm ertelenmiş fiziksel ve gerçek veri testleri burada toplanır; ölçülmeyen kappa/Recall/FPS/süre vaadi yok |
 | ayrı hukukî kapı | Gerçek kaynaktan madde/fıkra, değişiklik/yürürlük konsolidasyonu, projeye uygulanabilirlik ve uzman onayı | **F08–F12 HUKUKI_HOLD** | onaysız kural threshold ve "uygunluk sertifikası" yok |
 
 **İşlem 020 sadece plan ve doküman revizyonudur.** Önceki planın `islem_020` Windows paketleme hedefi, kullanıcı tarafından sağlanan yeni kapsam nedeniyle `islem_021`'e; önceki `islem_021` VLM odağı `islem_027`'ye; eski `islem_022` benchmark hedefi son kabul `islem_031`'e taşındı. Bu yer değiştirme **geçmiş işlem dosyası yeniden numaralandırması değildir**.
@@ -191,3 +191,14 @@ F28/F04 **KISMI**; sentetik fake CPU reader testleri gerçek OCR modeli doğrulu
 **İşlem 025 aday güncellemesi (2026-10-16):** 2B salt-okunur çizgi/kaynak odaklama ve tek-worker/sınırlı polling API'si [Draft PR #2](https://github.com/seydivakkas/MimarLLM_v2/pull/2) içinde; [ilk CI 38834544453](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38834544453) Ubuntu 364 PASS/1 SKIP, Windows 365 PASS. İşlem 025 edit/annotasyon kabulü ve gerçek Windows inceleme bitmeden kapanmaz.
 
 **025 kapsam sınırı güncellemesi:** Türetilmiş DXF LINE revizyonu ve byte-koruyan undo kodlandı; özgün input ve DrawingIR değişmez. \`docs/specs/dxf-revisions-025.md\` sınırları dışında tam CAD düzenleme veya 2.5D başlatma yoktur. Windows/Edge fiziksel kabul ve gerçek performans İşlem 025 kapanışına kadar HOLD.
+
+## 6. 2026-10-16 kullanıcı revizyonu — fiziksel kabul yalnız son aşamada
+
+**Önceki 025→026 blokajı kaldırıldı.** Yukarıdaki tarihsel notlarda geçen "025 fiziksel kabulü bitmeden 026 yok" ifadeleri bu yeni kararla ileriye dönük hükümsüzdür. 025 yalnız **sentetik olarak doğrulanan mühendislik adayıdır**; fiziksel ürün kabulü değildir.
+
+1. **025:** Kaynak-koruyan DXF LINE revizyonu/undo, SVG kaynak incelemesi, job polling ve audit notları; mevcut GitHub-hosted Windows/Ubuntu otomasyon kanıtı korunur. PR #2 Draft kaldığı için ürün yayımlanmış sayılmaz.
+2. **026 → 030:** Önce yeni işlem kaydı, sonra özellik kodu ve her aşamada otomatik sentetik CI; başarısız CI, kaynak SHA veya güvenlik kuralı ihlali sonraki aşamaya taşınamaz. Önemli gerçek veri belirsizlikleri `HOLD` olarak izlenir.
+3. **031:** Birleştirilmiş nihai gerçek Windows 10/11/Edge kullanıcı kabulü, offline PyInstaller onedir/CRT/DLL/model asset/NOTICE/SBOM incelemesi, gerçek kirli mimari DXF ve A0/A1 PDF, bağımsız fiziksel ölçüm, gerçek cihaz p50/p95/peak RSS/GPU/VRAM, uzman/öğrenci kabulü. Bu kanıtlar elde edilmeden üretim/dağıtım onayı verilmez.
+4. **Resmî hukukî kapı:** F08–F12 `HUKUKI_HOLD` ve `RuleEngine.REGULATORY=INSUFFICIENT_EVIDENCE` bütün aşamalarda sürer. Teknik sentetik test veya 2.5D görüntü hukukî PASS olamaz.
+
+**Sıradaki kesin mühendislik yazımı:** `docs/islem_026.md`, 026'nın kendi kaynak dosyalarından *önce* ilk GitHub değişikliği olarak açılacak. 026 dalı gerekiyorsa açık 025 aday dalını temel alabilir; 025 PR #2 Draft ve `main` değişmeden kalır.
