@@ -5,6 +5,7 @@ import re
 
 from mimarllm.rag.embeddings import LocalEmbedder, normalize_vectors, require_embedder
 from mimarllm.rag.models import RagHit, RagResponse, SearchMode
+from mimarllm.rag.lexicon import expand_architectural_terms
 from mimarllm.rag.store import LegalRagStore, RagStoreError
 
 
