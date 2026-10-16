@@ -25,6 +25,7 @@ from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.concurrency import run_in_threadpool
 
+from mimarllm.app.jobs import BoundedAnalysisJobs, JobQueueFull
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -377,6 +378,48 @@ def create_app(workspace: str | Path) -> FastAPI:
             shutil.rmtree(target, ignore_errors=True)
             raise
 
+    # A finite, in-process dispatcher: statuses are ephemeral, reports persist
+    # in the existing source-validated run directories.
+    jobs = BoundedAnalysisJobs(_generate_run, running)
+
+    @app.post("/api/projects/{project_id}/jobs", status_code=202)
+    async def queue_analysis(project_id: str, request: Request):
+        project = metadata(project_id)
+        if (project_path(project_id) / project["source_name"]).is_symlink():
+            raise HTTPException(status_code=409, detail="Kaynak sembolik bağlantı olamaz.")
+        declared = request.headers.get("content-length")
+        if declared:
+            try:
+                if int(declared) > 256_000:
+                    raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Bozuk JSON gövde uzunluğu.") from exc
+        chunks = []
+        size = 0
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > 256_000:
+                raise HTTPException(status_code=413, detail="JSON ayarları 256 KB sınırını aştı.")
+            chunks.append(chunk)
+        try:
+            options = RunPayload.checked(b"".join(chunks))
+        except DashboardError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        try:
+            return jobs.submit(project, options)
+        except JobQueueFull as exc:
+            raise HTTPException(status_code=429, detail="Yerel analiz kuyruğu dolu.") from exc
+
+    @app.get("/api/projects/{project_id}/jobs/{job_id}")
+    def job_status(project_id: str, job_id: str):
+        metadata(project_id)
+        if not _ID.fullmatch(job_id):
+            raise HTTPException(status_code=404, detail="Analiz işi bulunamadı.")
+        result = jobs.status(project_id, job_id)
+        if result is None:
+            raise HTTPException(status_code=404, detail="Analiz işi bulunamadı veya oturum yeniden başladı.")
+        return result
+
     @app.get("/api/projects/{project_id}/runs/{run_id}")
     def read_run(project_id: str, run_id: str):
         folder = run_dir(project_id, run_id)
@@ -396,6 +439,7 @@ def create_app(workspace: str | Path) -> FastAPI:
                 candidate_lines.append({
                     "entity_id": entity["entity_id"],
                     "frame_id": entity["frame_id"],
+                    "origin": entity["origin"],
                     "layer": entity.get("layer"),
                     "points": geom["points"],
                     "cad_handle": entity["source"].get("cad_handle"),
@@ -406,6 +450,7 @@ def create_app(workspace: str | Path) -> FastAPI:
         ]
         return {
             "run_id": run_id, "manifest": manifest,
+            "source_sha256": manifest["source_sha256"],
             "findings": report["findings"][:200],
             "frames": report["frames"][:50],
             "sources": report["sources"][:250],
