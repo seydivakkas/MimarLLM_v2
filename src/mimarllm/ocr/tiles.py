@@ -25,7 +25,7 @@ class TiledOcrRequest(BaseModel):
     tile_height_pt: float = Field(default=384, ge=32, le=900, allow_inf_nan=False)
     overlap_pt: float = Field(default=32, ge=0, le=200, allow_inf_nan=False)
     dpi: int = Field(default=144, ge=72, le=240)
-    max_tiles: int = Field(default=64, ge=1, le=256)
+    max_tiles: int = Field(default=128, ge=1, le=256)
     max_pixels_per_tile: int = Field(default=4_000_000, ge=50_000, le=8_000_000)
     max_total_pixels: int = Field(default=60_000_000, ge=50_000, le=120_000_000)
     max_ocr_candidates: int = Field(default=3000, ge=1, le=10_000)
