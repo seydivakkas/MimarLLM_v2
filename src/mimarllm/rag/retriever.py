@@ -101,4 +101,6 @@ def search_legal(
         query=query, mode=mode,
         dense_model_id=model_id, dense_state=dense_state,
         results=tuple(hits),
+        expansion_version=expansion.version if expansion else None,
+        search_hint_terms=expansion.hints if expansion else (),
     )
