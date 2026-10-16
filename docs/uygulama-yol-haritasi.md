@@ -24,7 +24,7 @@ Tek paket: `src/mimarllm`. Tek kullanıcı, offline-first, modüler monolit. CPU
 | `islem_022` | Kirli CAD kaynak-koruyan repair-overlay; unit hypothesis; Layer0 heuristik | PLAN, 007–011 | önerilen geometri/orijinal entity ayrılır; SI onayı yok |
 | `islem_023` | A0/A1 tile/ROI OCR ve belge layout/antet konum adayları | KISMI / KODLANDI, 009/022 | bounded tile, PDF source quad/dedup, sentetik CI; gerçek OCR/CER/RSS finalde |
 | `islem_024` | Türkçe mimari arama ipuçları + sınırlı SQLite RAG pasaj cache'i | KISMI / mevcut kod, 013–015/019 | Opt-in kurasyonlu FTS arama, SHA izolasyonu; genel workspace/WAL/retention HOLD |
-| `islem_025` | Dashboard 2D edit/katman kanıtı, bounded job queue + SSE/polling | PLAN, 019/024 | olaylar kaynak SHA/frame/runcase ile bağlı, localhost-only |
+| `islem_025` | Dashboard 2B kaynak çizgisi / katman filtresi + bounded job queue/polling | KISMI / DRAFT PR #2, 019/024 | source SVG read-only ve job state mevcut; kalıcı 2B edit / gerçek Edge ve tam kabul HOLD |
 | `islem_026` | Kanıtlı 2.5D kütle/Three.js, onaylı height ve source pin | PLAN, 022/025 | organik 3D, gerçek bina, kaçış mesafesi uydurma yok |
 | `islem_027` | Yerel GGUF/MMProj VLM, VRAM profiler, structured response/no-overwrite | AR-GE, 023/025 | model Windows/8GB ölçümü, GPU fallback gerçek QA |
 | `islem_028` | Sekiz boyutlu rubrik ontolojisi/weight/supervisor, score-in-code | PLAN, 017/027 bağımsız GPU modu | uzman onaylı kriter yoksa otomatik gerçek not yok |
@@ -186,3 +186,6 @@ F28/F04 **KISMI**; sentetik fake CPU reader testleri gerçek OCR modeli doğrulu
 `rag/lexicon.py` üzerinden kontrollü tam sözcük mimari terim ipuçları; `retriever.py` opt-in `lexical_expansion` ile özgün FTS5 BM25 önceliği ve ek arama adayları; `rag/store.py` içinde 128 adede kadar yalnız arama passage ID tutan source-filter kimlikli SQLite cache geliştirildi. Re-index aynı transaction içinde ve `passages` SQL trigger'ları ile cache invalidation; yerel PDF hash durumu her sonuçta kontrol edilir. Çoklu belge madde-fıkra ve özgün PDF quad izolasyonu korunur.
 
 **F29 KISMI:** Kurasyonlu aday sözcükler hukukî semantik eşitlik iddiası değildir; gerçek Türkçe relevance/Recall@k/NDGC ve uzman testleri yok. **F30 KISMI:** yalnız yerel lexical query cache, tam workspace geçmişi/WAL/retention yok. F08–F12 HUKUKI_HOLD. Sonraki mühendislik planı mevcut yol haritasındaki `islem_025` kapsamı olacaktır; koddan önce `docs/islem_025.md` ilk GitHub değişikliğiyle açılacak.
+
+
+**İşlem 025 aday güncellemesi (2026-10-16):** 2B salt-okunur çizgi/kaynak odaklama ve tek-worker/sınırlı polling API'si [Draft PR #2](https://github.com/seydivakkas/MimarLLM_v2/pull/2) içinde; [ilk CI 38834544453](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38834544453) Ubuntu 364 PASS/1 SKIP, Windows 365 PASS. İşlem 025 edit/annotasyon kabulü ve gerçek Windows inceleme bitmeden kapanmaz.
