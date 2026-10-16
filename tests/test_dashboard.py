@@ -293,3 +293,65 @@ def test_tampered_project_metadata_cannot_redirect_source_path(cli,dxf):
     assert http.get(f"/api/projects/{pid}").status_code==409
     assert run(http,csrf,pid).status_code==409
     assert not http.get("/api/projects").json()["projects"]
+
+
+def test_async_job_pipeline_preserves_source_and_regulatory_hold(cli,dxf):
+    from time import sleep
+    http,csrf,_=cli
+    pid=upload(http,csrf,dxf).json()["project_id"]
+    source_sha=http.get(f"/api/projects/{pid}").json()["project"]["source_sha256"]
+    resp=http.post(f"/api/projects/{pid}/jobs",
+                   json={"config":{},"formats":["json","html"]},
+                   headers={"X-Mimar-CSRF":csrf})
+    assert resp.status_code==202,resp.text
+    job=resp.json()
+    assert job["project_id"]==pid and job["source_sha256"]==source_sha
+    assert job["state"] in ("QUEUED","RUNNING")
+    for _ in range(200):
+        state=http.get(f"/api/projects/{pid}/jobs/{job['job_id']}")
+        assert state.status_code==200
+        job=state.json()
+        if job["state"] in ("COMPLETED","FAILED"):
+            break
+        sleep(.025)
+    assert job["state"]=="COMPLETED",job
+    assert job["run_id"] and len(job["run_id"])==32
+    result=details(http,pid,job["run_id"])
+    assert result["source_sha256"]==source_sha
+    assert result["manifest"]["legal_gate"]=="REGULATORY_LOCKED"
+    assert result["native_lines"]
+    assert all(item["origin"] in ("CAD_NATIVE","PDF_NATIVE")
+               for item in result["native_lines"])
+    assert all(item["frame_id"] for item in result["native_lines"])
+
+
+def test_async_jobs_obey_csrf_id_body_and_ownership(cli,dxf):
+    http,csrf,_=cli
+    p1=upload(http,csrf,dxf).json()["project_id"]
+    p2=upload(http,csrf,dxf).json()["project_id"]
+    endpoint=f"/api/projects/{p1}/jobs"
+    assert http.post(endpoint,json={"config":{}}).status_code==403
+    assert http.post(endpoint,content=b"x"*256001,
+                     headers={"X-Mimar-CSRF":csrf}).status_code==413
+    assert http.post(endpoint,json={"config":{"remote_api_key":"x"}},
+                     headers={"X-Mimar-CSRF":csrf}).status_code==422
+    job=http.post(endpoint,json={"config":{}},
+                  headers={"X-Mimar-CSRF":csrf}).json()
+    assert http.get(f"/api/projects/{p2}/jobs/{job['job_id']}").status_code==404
+    assert http.get(f"/api/projects/{p1}/jobs/not-valid").status_code==404
+
+
+def test_2d_ui_source_inspector_offline_and_escaped(cli):
+    http,_,_=cli
+    html=http.get("/").text
+    js=http.get("/static/dashboard.js").text
+    assert 'id="drawing-2d"' in html
+    assert 'id="frame-filter"' in html and 'id="layer-filter"' in html
+    assert 'id="job-status"' in html
+    assert 'renderDrawing(data)' in js
+    assert 'data.source_sha256' in js
+    assert 'document.createElementNS' in js
+    assert 'innerHTML' not in js
+    assert 'eval(' not in js
+    assert "https://" not in html
+    assert "script-src 'self'" in http.get("/").headers["content-security-policy"]
