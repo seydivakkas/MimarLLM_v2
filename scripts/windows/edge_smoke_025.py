@@ -88,7 +88,7 @@ def main() -> int:
                 "physical_windows10_11_edge_uat":"HOLD",
             }
             (artifact/"edge-smoke-025.json").write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding="utf-8")
-            print(json.dumps(report,ensure_ascii=False))
+            print(json.dumps(report,ensure_ascii=True))
             return 0
         finally:
             server.terminate()
