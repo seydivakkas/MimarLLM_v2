@@ -20,3 +20,29 @@
 
 ## Son kapı
 Dalların kod/test değişiklikleri, CI sonuçları, bilinen eksikler ve gerçek PR özeti bu dosyaya işlemin sonunda işlenecektir. Gerçek kanıt olmadan `KAPATILDI` yazılamaz.
+
+## 1. Bu dalda gerçekten uygulanmış kaynak adayı
+
+- `src/mimarllm/app/jobs.py`: tek yerel worker + en fazla 4 inflight + 64 geçici iş kaydı, kilit paylaşımı, hata metinlerini saklama.
+- `src/mimarllm/app/server.py`: 202 `POST .../jobs`, projeye bağlı `GET .../jobs/{job_id}`, geriye uyumlu eşzamanlı `POST .../runs`; native line `origin` ve SHA.
+- `src/mimarllm/app/static/{index.html,dashboard.js,dashboard.css}`: kaynaklı salt-okunur SVG, frame/layer filtresi, kaynak-native noktalar, SHA ve CAD handle; durum polling, yüzde uydurmadan.
+- `tests/test_dashboard_jobs.py` ve `tests/test_dashboard.py`: job kapasitesi ve proje izolasyonu, boşta kuyruğun tamamlanması, hata redaksiyonu, E2E DXF/manifest/legal gate, CSRF, oversized body, static UI.
+- `.github/workflows/core-contracts.yml`: test matrisi ve `node --check` iki OS; PR event tetikleyicisi.
+- `docs/specs/dashboard-2d-jobs-v0.1.md`: gerçek kapsam ve güvenlik sınırları.
+
+## 2. İlk sentetik CI kanıtı
+
+Commit `55499a5c87028181f5b5ad4ab13a445f877d70dc` için GitHub Actions [38834544453](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38834544453) **conclusion=success**:
+- Ubuntu Python 3.11: **364 PASS, 1 SKIP**, 1 warning (7,98 saniye).
+- Windows-hosted Python 3.11: **365 PASS**, 1 warning (14,71 saniye).
+- Job loglarında iki ortamın `node --check` komutu da başarılı.
+- Atlanan test önceki Windows'a özgü paket manifest testidir; yeni 025 testi değildir.
+- CI `python -m pip` bağımlılık çözümleyici uyarısı ve upstream Starlette warning içerir; sonuçlara açıkça HOLD/KISMI ayrımı uygulanır.
+
+Not: Bu koşu `55499a5c` kaynak/test commit'ine aittir; devamında `pull_request` workflow olayı eklendi. **Son PR head CI** ayrıca doğrulanmadan bu değişikliklerin tümü kesin kapalı sayılmayacak.
+
+## 3. Henüz tamamlanmamış İşlem 025 kabulü
+
+**Durum KISMI / DRAFT PR**: source-native inceleme ve iş sorgusu kullanılabilir kod adayıdır; ancak **kalıcı 2B anotasyon/undo, kaynak kanıtı üzerine kullanıcı düzenleme onay kaydı, analiz aşaması-seviyesi gerçek ilerleme, kalıcı/restart-safe queue, tam bağımsız Edge etkileşim/görsel QA** yoktur. Çizim üzerindeki seçme/katman filtreleri edit değildir. OCR, kalibrasyon, GPU, 2.5D, VLM, jüri ve resmî hukukî uygunluk onayı yanlışlıkla tamamlandı sayılmayacak. İşlem 031 fiziksel kabul ayrı kalır.
+
+F08–F12 `HUKUKI_HOLD`, teknik `INSUFFICIENT_EVIDENCE`, orijinal DrawingIR ve kaynak SHA değişmez. PR #1'in stüdyo demosu bu PR'a birleştirilmedi. **İşlem 025 kapatılmadı; yeni işlem 026'ya resmi sıra ile geçilmez.**
