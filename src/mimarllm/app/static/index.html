@@ -168,6 +168,46 @@
         </section>
       </div>
     </div>
+    <section class="panel vlm-panel" id="vlm-lab">
+      <div class="panel-heading">
+        <div><div class="eyebrow">07 / YEREL MODEL İNCELEMESİ</div>
+          <h2>GGUF / MMProj — kaynaklı yorum adayları</h2>
+          <p>Yalnız yerel llama.cpp. Bu panel teknik alan/uygunluk, gerçek duvar veya oda doğrulaması üretmez.</p>
+        </div>
+        <span class="mini-label">MODEL ÇIKTISI ONAYSIZ</span>
+      </div>
+      <div class="legal-note">
+        <strong>Deterministik sonuçlar korunur</strong>
+        <span>Yapay zekâ yalnız seçilmiş orijinal çizgi kimliklerine dair inceleme önerisi yapabilir. CAD, DrawingIR, analitik rapor ve yönetmelik sonuçlarını değiştiremez.</span>
+      </div>
+      <p id="vlm-config-status" class="hint" role="status" aria-live="polite">Yerel model durumu kontrol edilmedi.</p>
+      <div class="field"><label for="vlm-opt-in">
+        <input id="vlm-opt-in" type="checkbox"> Kaynak çizimi yalnız bu bilgisayarda çalışan VLM'ye göndermeyi açıkça onaylıyorum.
+      </label></div>
+      <p class="hint">Bu sürüm orijinal görüntü yerine seçilen native LINE'lardan 512×512 kaynaklı bir PNG önizlemesi üretir. Modelin görsel yorumu kanıt değil, adaydır.</p>
+      <div class="field">
+        <label for="vlm-source-frame">Kaynak çizim / sayfa</label>
+        <select id="vlm-source-frame"><option value="">Önce bir analiz seçin</option></select>
+      </div>
+      <div class="massing-source-list" id="vlm-line-select" aria-label="Yapay zekâ için seçilecek kaynak çizgileri">
+        <p class="muted">Kaynak seçili değil.</p>
+      </div>
+      <div class="field-grid">
+        <div class="field"><label for="vlm-reviewer">İncelemeci etiketi</label>
+          <input id="vlm-reviewer" maxlength="80" type="text" autocomplete="off" placeholder="Yerel incelemeci"></div>
+        <div class="field"><label for="vlm-question">Soru (en fazla 320 karakter)</label>
+          <input id="vlm-question" maxlength="320" type="text" placeholder="Bu çizgi grubu hangi belirsizlikleri taşıyor?"></div>
+      </div>
+      <div class="report-options">
+        <button id="vlm-infer" type="button" class="btn solid" disabled>Yalnız yerel modelle yorum adayı oluştur</button>
+        <button id="vlm-clear" type="button" class="btn minor">Adayları temizle</button>
+      </div>
+      <p id="vlm-status" role="status" aria-live="polite" class="hint">Bir kaynak çizimi seçin; yerel model hazır değilse analiz çalışmaya devam eder.</p>
+      <div id="vlm-results" class="review-list" aria-label="Onaysız VLM gözlem önerileri">
+        <p class="muted">Henüz yapay zekâ yorum adayı oluşturulmadı.</p>
+      </div>
+      <p class="hint">GGUF/MMProj dosya yolları ve SHA'ları yalnız güvenilir yerel yapılandırmada tanımlanır; tarayıcıdan rastgele model yolu kabul edilmez. Fiziksel GPU/VRAM kabulü İşlem 031'dedir.</p>
+    </section>
     <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
     <footer>MimarLLM V2 · Offline-first · Sentetik mühendislik doğrulaması · Gerçek kullanıcı ve hukukî kabul bekliyor</footer>
   </main>
