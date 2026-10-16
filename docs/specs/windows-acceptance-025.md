@@ -1,6 +1,6 @@
 # İşlem 025 — Fiziksel Windows/Edge ve performans kabul protokolü
 
-**Durum:** AÇIK / kullanıcı cihazında yürütülmedi. Bu protokol bir PASS beyanı değildir.
+**Durum:** DEFERRED_TO_031 / HOLD — fiziksel kullanıcı cihazında yürütülmedi. Bu protokol, son İşlem 031 kabul paketi için saklanır ve PASS beyanı değildir.
 **Test kapsamı:** MimarLLM V2 \`feature/islem-025-source-2d-jobs\` Draft PR, Python 3.11, tek kullanıcı localhost, Windows 10/11, Microsoft Edge.
 
 ## A. Ön hazırlık ve yeniden üretim
@@ -40,3 +40,9 @@
 | Hukukî yürürlük / uzman alan-geometri uygunluk | Bağımsız hukukî ve mimarî kayıt | HUKUKI_HOLD |
 
 **Kapanış kuralı:** Gerçek testçi imzaları, sürüm/OS/cihaz ve ölçüm kanıtları tamamlanmadan \`docs/islem_025.md\` \`KAPATILDI\` olmaz, PR #2 merge edilmez, \`islem_026\` geliştirmesi başlatılmaz.
+
+## E. Takvim kararı ve 031'e devredilen kanıtlar (2026-10-16)
+
+Kullanıcı, fiziksel kabul ile gerçek saha ve cihaz testlerinin **özellik geliştirmeleri bittikten sonra** yapılmasına karar verdi. Yukarıdaki eski kapanış kuralında yer alan `026 başlamaz` koşulu artık **yürürlükte değildir**. Sentetik Linux/Windows CI, güvenlik/regresyon testleri ve kaynak SHA doğrulaması her geliştirme aşamasında devam eder. Gerçek Windows kullanıcı oturumu, ölçümlü A0/CAD örnekleri, üretim offline `onedir` kurulum, performans/GPU/RSS ve bağımsız teknik-hukukî uzman değerlendirmesi **yalnız `islem_031` nihai kabul kapısında** istenir.
+
+Bu dokümanın içeriği ve fiziksel kabul kontrol kutuları 031'e kadar açık kalır. Hiçbir otomatik sentetik PASS, fiziksel kurulumu veya müşteriye üretim teslimini onaylamaz.
