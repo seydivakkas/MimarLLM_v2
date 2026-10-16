@@ -1,0 +1,35 @@
+name: Windows Edge localhost smoke (025; hosted only)
+
+on:
+  pull_request:
+    paths:
+      - "src/mimarllm/app/**"
+      - "scripts/windows/edge_smoke_025.py"
+      - ".github/workflows/windows-edge-025.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  edge-hosted:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install existing dashboard test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -e . --no-deps
+          python -m pip install --disable-pip-version-check "pydantic>=2,<3" "pdfplumber>=0.11,<0.13" "pypdfium2>=4,<6" "reportlab>=4,<5" "ezdxf>=1.4,<2" "shapely>=2.0,<3" "networkx>=3.2,<4" "fastapi>=0.115,<1" "uvicorn>=0.30,<1" "httpx>=0.27,<1"
+      - name: Verify Edge installed binary, actual localhost server and JS DOM
+        run: python scripts/windows/edge_smoke_025.py
+      - name: Attach hosted Edge evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-edge-hosted-025
+          path: artifacts/edge-smoke-025.json
+          if-no-files-found: warn
