@@ -126,3 +126,10 @@ Tarayıcı dashboard adresi: `http://127.0.0.1:8765`. HTML/JSON/Markdown/PDF ve 
 - [DXF revizyon sözleşmesi](docs/specs/dxf-revisions-025.md), [gerçek Windows/Edge kabul protokolü](docs/specs/windows-acceptance-025.md), \`scripts/windows/acceptance_025.ps1\`.
 - GitHub-hosted sentetik [CI 38850588365](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38850588365) Windows **370 PASS**, Ubuntu **369 PASS / 1 SKIP**; sentetik 500 çizgili bellek/süre profili yalnız build makinesi içindir.
 - Gerçek cihaz, onedir dağıtım, Edge etkileşim/erişilebilirlik, gerçek CAD/PDF ölçümü ve bağımsız kullanıcı/uzman kabulü yapılmadı. İşlem 025 Draft, \`main\` değil. \`026\` ve üretim bekletilir.
+
+
+## 2026-10-16 — Geliştirme ve nihai fiziksel kabulün ayrılması
+
+Kullanıcı kararıyla **İşlem 025'in fiziksel Windows/Edge, gerçek çizim, performans ve offline exe testleri son İşlem 031'e ertelendi.** 025'in 2B/LINE revizyon-kaynaklı not/job uygulaması mevcut sentetik Linux/Windows CI ve GitHub-hosted Edge smoke açısından mühendislik adayıdır; hedef cihazda gerçek kullanıcı tarafından kabul edilmiş ürün değildir.
+
+**Sıra:** 025 mühendislik kod adayı → 026 kaynaklı 2.5D → 027 yerel VLM → 028 rubrik → 029 jüri → 030 öğrenci analitiği → 031 tüm gerçek cihaz/saha, bağımsız performans/hukukî uzman kabulü. Her ara aşamada sentetik regresyon ve güvenlik testleri devam eder. Gerçek kabul ertelenmesi üretim dağıtımına izin vermez. Mevcut Draft PR #2, ana dalın üretim kodu sayılmaz. Ayrıntılar [güncel yol haritasında](docs/uygulama-yol-haritasi.md) ve [karar defterinde](docs/kararlar.md).
