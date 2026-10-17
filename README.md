@@ -170,3 +170,14 @@ Three.js 0.160.1 ESM yerel olarak SHA/MIT manifestiyle hazırlanır (scripts/bui
 Rubrik 028'in sınıf, kaynak kimliği ve insan değerlendirmesi şeması korunur. Tek deterministik motor sırayla dört değerlendirme *bakış açısı* oluşturur: bağlam/kavram, işlev/mekân, yapım/iklim, temsil/süreç. 1. sınıfta uygulanmayan perspektif kapsam dışı; eksik insan incelemesi `REVIEW_REQUIRED`. Gerçek mimari başarı/duvar/ruhsat ve AI oy/uzman görüşü üretilmez; puan veya resmî geçme/kalma yoktur.
 
 Yerel `/api/projects/{id}/runs/{id}/jury/critique` yalnız kaynak SHA/frame, DrawingIR native entity ve `human_review_attested=true` ile transient JSON + güvenli Markdown sunar. Kullanıcı arayüzü 4 turu sırayla açar, çizgi kaynak ID'ye döner, Markdown'ı yalnız kullanıcı etkileşimiyle indirir; orijinal rapor/CAD/PDF/VLM dosyalarına yazmaz. Gerçek eğitmen/öğrenci pedagojik kabulü, fiziksel Windows/Edge/EXE ve model geçerliliği `031/HOLD`; sonraki geliştirme `030` izinli öğrenci analitiği.
+
+
+## İşlem 030 — Yalnız rızalı yerel rubrik geçmişi / radar analitiği (Draft)
+
+[İşlem 030](docs/islem_030.md) · [Analitik ve gizlilik şartnamesi](docs/specs/private-analytics-030-v0.1.md).
+
+Öğrenci açık izin vermeden MimarLLM V2 analitik veritabanı oluşturmaz. Tamamen yerel `private-analytics-030.sqlite3` dosyası ancak `/api/analytics/history/create` `consent:true` ile oluşur; öğrenci her rubrik kaydına ayrıca izin verir. 30/90/180 gün saklama (süre dolunca **sonraki erişimde** temizleme), silme ve tüm analitik izni iptal etme mevcuttur. 128-bit gizli token'ın sadece SHA256 özeti DB'de saklanır; token tarayıcının kalıcı depolamasına yazılmaz, kişi adı/öğrenci numarası/çizim/yorum kopyalanmaz. Proje/run kimlikleri yerelde bağlanabilir kalır, disk şifresi yoktur; fiziksel OS ACL, yedek ve gerçek öğrencinin rıza geçerliliği 031'de doğrulanacaktır.
+
+Sekiz tasarım ekseninin kaynağı 028'in yalnız insan öz-beyanlı deterministik pilot rubriği. Farklı sınıf veya eksik insan incelemesi = `NOT_COMPARABLE`, hiçbir resmi skor/delta/ilerleme sonucu yok. Aynı sınıf/versiyonda tam kriterler arasında fark hesaplanabilir; radar SVG yerel, 1. sınıf gibi eksik eksenlerde `N/A` ve **kapalı radar çokgeni oluşturulmaz**. Bu farkın gerçek öğrenci öğrenme gelişimi veya bir öğretim yönteminin etkisi olduğunu iddia etmeyiz.
+
+Sonrası: İşlem 031, gerçek Windows 10/11 Edge ve offline .exe, kirli CAD/A0, GPU/MMProj, hukukî F08–F12, kurumsal rubrik/gerçek öğrenci onamı ve uzman bağımsız kabul kapıları. Başarısız/eksik kapıda üretim ve resmî akademik notlandırma yoktur.
