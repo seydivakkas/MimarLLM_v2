@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false,rubricLines:[],rubricSha:"",rubricCatalog:null,rubricRunning:false,juryReport:null,juryShown:0,juryRunning:false};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false,rubricLines:[],rubricSha:"",rubricCatalog:null,rubricRunning:false,juryReport:null,juryShown:0,juryRunning:false,analyticsLoaded:false,analyticsSnapshots:[],analyticsBusy:false};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -78,6 +78,7 @@ async function loadProject() {
     updateVlmSources({native_lines:[],source_sha256:""});
     updateRubricSources({native_lines:[],source_sha256:""});
     clearJury();
+    $("analytics-save-consent").checked=false;analyticsReady();
     state.reviews=[];showReviews();
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
@@ -121,6 +122,7 @@ async function loadRun(id) {
   updateVlmSources(data);
   updateRubricSources(data);
   clearJury();
+  $("analytics-save-consent").checked=false;analyticsReady();
   const findings=$("finding-list");clear(findings);
   findings.append(el("h3","Bulgular / değerlendirme adayları"));
   if(!data.findings.length) findings.append(el("p","Henüz bulgu yok; kaynak geometrisi HTML raporunda incelenebilir.","muted"));
@@ -606,10 +608,12 @@ function updateRubricSources(data) {
   if(!frameIds.length)frame.add(new Option("Önce kaynaklı analiz seçin",""));
   else for(const id of frameIds)frame.add(new Option(id,id));
   $("rubric-human-confirm").checked=false;
+  $("analytics-save-consent").checked=false;
   clearRubricOutput();
   renderRubricCatalog();
   rubricAvailability();
   clearJury();
+  analyticsReady();
 }
 async function loadRubricProfile() {
   const year=Number($("rubric-year").value);
@@ -905,6 +909,284 @@ function downloadJury() {
   setTimeout(()=>URL.revokeObjectURL(url),0);
 }
 
+
+const AXIS30 = [
+  ["CONTEXT","Bağlam"],["CONCEPT","Kavram"],["FUNCTION","İşlev"],
+  ["SPATIAL","Mekân"],["STRUCTURE","Yapım"],["ENVIRONMENT","İklim"],
+  ["REPRESENTATION","Temsil"],["PROCESS","Süreç"],
+];
+const SVG_NS = "http://www.w3.org/2000/svg";
+function svg30(tag,attrs={},label="") {
+  const node=document.createElementNS(SVG_NS,tag);
+  for(const [key,value] of Object.entries(attrs)) node.setAttribute(key,String(value));
+  if(label)node.textContent=label;
+  return node;
+}
+function analyticsToken(){
+  return $("analytics-collection-token").value.trim();
+}
+function analyticsReady(){
+  const ready=state.analyticsLoaded&&!state.analyticsBusy;
+  $("analytics-save").disabled=!ready||!state.projectId||!state.runId||
+    !state.rubricCatalog||!state.rubricSha||
+    !$("analytics-save-consent").checked||!$("rubric-human-confirm").checked;
+  $("analytics-revoke").disabled=!ready;
+  $("analytics-delete").disabled=!ready||!$("analytics-after").value;
+  $("analytics-compare").disabled=!ready||!$("analytics-before").value||
+    !$("analytics-after").value||
+    $("analytics-before").value===$("analytics-after").value;
+}
+function resetAnalyticsRadar(message="İki aynı seviyeli tam taslak seçilmedi.") {
+  const svg=$("analytics-radar"), table=$("analytics-axis-table");
+  clear(svg);clear(table);
+  svg.setAttribute("aria-label",message);
+  $("analytics-compare-status").textContent=message;
+}
+function renderAnalyticsRadar(comparison){
+  const canvas=$("analytics-radar"),table=$("analytics-axis-table");
+  clear(canvas);clear(table);
+  const good=comparison.status==="COMPARABLE_DRAFT_ONLY" &&
+    comparison.reason==="SAME_LEVEL_AND_RUBRIC";
+  if(!good){
+    canvas.setAttribute("aria-label","Karşılaştırma yapılamıyor; eksik ya da farklı sınıf/rubrik. Sıfır veri uydurulmadı.");
+    table.append(el("p","Karşılaştırma geçerli değil: "+comparison.reason+
+      ". Genel/eksen puanı veya gelişim sonucu üretilmedi.","hint"));
+    $("analytics-compare-status").textContent="NOT_COMPARABLE — "+
+      comparison.reason+". Eksik veri 0 kabul edilmez.";
+    return;
+  }
+  const rows=comparison.axes;
+  if(!Array.isArray(rows)||rows.length!==8||
+     rows.some((r,i)=>r.axis!==AXIS30[i][0])){
+    resetAnalyticsRadar("Sekiz eksenin veri sırası doğrulanamadı.");
+    return;
+  }
+  const cx=320,cy=245,radius=153;
+  const angles=Array.from({length:8},(_,i)=>-Math.PI/2+2*Math.PI*i/8);
+  const pos=(i,pct)=>{
+    const t=angles[i],scale=radius*(pct/100);
+    return [cx+Math.cos(t)*scale,cy+Math.sin(t)*scale];
+  };
+  const pointAttr=(pts)=>pts.map(p=>p.join(",")).join(" ");
+  for(const level of [25,50,75,100]){
+    const pts=angles.map((_,i)=>pos(i,level));
+    canvas.append(svg30("polygon",{
+      points:pointAttr(pts),fill:"none",stroke:"#dde5ef","stroke-width":1,
+    }));
+    canvas.append(svg30("text",{x:cx+6,y:cy-radius*level/100-4,
+      fill:"#77879c","font-size":10},String(level)));
+  }
+  for(let i=0;i<8;i++){
+    const end=pos(i,100),far=pos(i,124);
+    canvas.append(svg30("line",{
+      x1:cx,y1:cy,x2:end[0],y2:end[1],stroke:"#c6d2de","stroke-width":1,
+    }));
+    const axis=rows[i];
+    const label=AXIS30[i][1]+(axis.comparable?"":" (N/A)");
+    canvas.append(svg30("text",{
+      x:far[0],y:far[1]+3,fill:"#3f5872",
+      "font-size":12,"font-weight":"600","text-anchor":"middle",
+    },label));
+  }
+  const before=rows.map(x=>x.before_percent);
+  const after=rows.map(x=>x.after_percent);
+  const allPresent=rows.every(x=>x.comparable &&
+      Number.isFinite(x.before_percent)&&Number.isFinite(x.after_percent));
+  const series=[
+    {values:before,stroke:"#346c8f",label:comparison.before_period,
+      dash:"5 4"},
+    {values:after,stroke:"#b46d43",label:comparison.after_period,
+      dash:""},
+  ];
+  for(const ser of series){
+    // A closed radar polygon would fabricate zero/shape for NA axes.
+    if(allPresent){
+      canvas.append(svg30("polygon",{
+        points:pointAttr(ser.values.map((v,i)=>pos(i,v))),
+        fill:ser.stroke,"fill-opacity":"0.11",
+        stroke:ser.stroke,"stroke-width":2,
+        "stroke-dasharray":ser.dash,
+      }));
+    }
+    for(let i=0;i<8;i++){
+      const value=ser.values[i];
+      if(!rows[i].comparable||!Number.isFinite(value))continue;
+      const [x,y]=pos(i,value);
+      const marker=svg30("circle",{
+        cx:x,cy:y,r:4,fill:ser.stroke,stroke:"#fff","stroke-width":1,
+      });
+      marker.append(svg30("title",{},AXIS30[i][1]+
+        " · "+ser.label+" · "+value+" / 100 (insan taslağı)"));
+      canvas.append(marker);
+    }
+  }
+  canvas.setAttribute("aria-label",
+    "Sekiz eksenli radar. "+comparison.before_period+" ve "+comparison.after_period+
+    " aynı yıl/sürüm taslakları. N/A eksenler çizilmedi. Öğrenme ilerlemesi doğrulanmadı.");
+  const legend=el("p","Mavi: "+comparison.before_period+
+    " · Turuncu: "+comparison.after_period+
+    (allPresent?" · 8 eksen":" · Eksik/kapsam dışı eksenler sıfır değil N/A"),
+    "hint");
+  table.append(legend);
+  for(let i=0;i<8;i++){
+    const item=rows[i],line=el("div","","rubric-axis-result");
+    const fmt=(v)=>v===null?"N/A":String(v)+"/100";
+    line.append(el("strong",item.label_tr),
+      el("span",fmt(item.before_percent)+" → "+fmt(item.after_percent)+
+        (item.delta_points===null?"":(" · Fark: "+item.delta_points+" puan")));
+    table.append(line);
+  }
+  $("analytics-compare-status").textContent=
+    "Yalnız aynı sınıf ve rubrikteki insan öz-beyanlı TASLAK puan farkı: "+
+    comparison.total_draft_delta+" puan. Akademik ilerleme veya nedensel etki kanıtı değildir.";
+}
+function renderAnalyticsHistory(result) {
+  if(!result||result.status!=="LOCAL_PRIVATE_HISTORY"||!Array.isArray(result.snapshots)){
+    throw new Error("Yerel geçmiş kanıt sözleşmesi geçersiz.");
+  }
+  state.analyticsSnapshots=result.snapshots;
+  state.analyticsLoaded=true;
+  const container=$("analytics-history-list");clear(container);
+  const before=$("analytics-before"),after=$("analytics-after");
+  clear(before);clear(after);
+  before.add(new Option("Önceki kayıt seçin",""));
+  after.add(new Option("Sonraki kayıt seçin",""));
+  for(const item of result.snapshots){
+    const heading=item.period_label+" · "+item.academic_year+
+      ". sınıf · "+item.rubric_status;
+    const line=el("div","","analytics-record");
+    line.append(el("strong",heading),
+      el("small","Kayıt "+item.snapshot_id.slice(0,12)+
+         " · "+item.reviewed_criterion_count+"/"+item.active_criterion_count+
+         " kriter · Resmî not yok"));
+    container.append(line);
+    before.add(new Option(heading+" · "+item.snapshot_id.slice(0,6),item.snapshot_id));
+    after.add(new Option(heading+" · "+item.snapshot_id.slice(0,6),item.snapshot_id));
+  }
+  if(!result.snapshots.length)
+    container.append(el("p","Bu özel geçmiş boş; hiçbir taslak kayıt bulunmuyor.","muted"));
+  $("analytics-status").textContent="Yalnız yerel ve izinli geçmiş: "+result.count+
+    " kayıt. Son kullanım/izin süresi: "+result.expires_utc+
+    ". Anahtar kaybolursa geçmişe erişim yok.";
+  resetAnalyticsRadar();analyticsReady();
+}
+async function refreshAnalyticsHistory() {
+  const token=analyticsToken();
+  if(!/^[a-f0-9]{32}$/.test(token))
+    throw new Error("32 karakterli yerel erişim anahtarı gerekli.");
+  const response=await api("/api/analytics/history/list",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({collection_token:token}),
+  });
+  renderAnalyticsHistory(response);
+}
+async function createAnalyticsHistory(){
+  if(!$("analytics-consent-create").checked)
+    return notice("Süreli özel geçmişi oluşturmak için açık rıza verin.",true);
+  state.analyticsBusy=true;analyticsReady();
+  try{
+    const result=await api("/api/analytics/history/create",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({consent:true,
+        retention_days:Number($("analytics-retention").value)}),
+    });
+    $("analytics-collection-token").value=result.collection_token;
+    $("analytics-consent-create").checked=false;
+    await refreshAnalyticsHistory();
+    $("analytics-status").textContent=
+      "Özel geçmiş oluşturuldu. Erişim anahtarını bir kez güvenle kopyalayın; "+
+      "uygulama tarayıcı depolamasında saklamaz. Geçerlilik: "+result.expires_utc;
+  }catch(e){notice("Özel geçmiş oluşturulamadı: "+e.message,true);}
+  finally{state.analyticsBusy=false;analyticsReady();}
+}
+async function loadAnalyticsHistory(){
+  state.analyticsBusy=true;analyticsReady();
+  try{await refreshAnalyticsHistory();}
+  catch(e){
+    state.analyticsLoaded=false;state.analyticsSnapshots=[];
+    $("analytics-status").textContent="Geçmiş açılamadı: "+e.message;
+    notice("Yerel anahtar geçersiz ya da süresi dolmuş.",true);
+  }finally{state.analyticsBusy=false;analyticsReady();}
+}
+async function saveAnalyticsHistory(){
+  if(!state.analyticsLoaded||!$("analytics-save-consent").checked)
+    return notice("Bu rubrik kaydına ayrıca açık izin verin.",true);
+  let assessment;
+  try{assessment=juryInputSnapshot();}
+  catch(e){return notice(e.message,true);}
+  const period=$("analytics-period").value.trim();
+  if(!/^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$/.test(period))
+    return notice("Dönemi kısa, kimlik içermeyen bir etiketle belirtin.",true);
+  state.analyticsBusy=true;analyticsReady();
+  try{
+    await api("/api/analytics/history/add",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        collection_token:analyticsToken(),consent:true,
+        project_id:state.projectId,run_id:state.runId,
+        period_label:period,assessment,
+      }),
+    });
+    $("analytics-save-consent").checked=false;
+    await refreshAnalyticsHistory();
+  }catch(e){notice("Rubrik geçmişe eklenemedi: "+e.message,true);}
+  finally{state.analyticsBusy=false;analyticsReady();}
+}
+async function compareAnalyticsHistory(){
+  const first=$("analytics-before").value,second=$("analytics-after").value;
+  if(!first||!second||first===second)return;
+  state.analyticsBusy=true;analyticsReady();
+  try{
+    const res=await api("/api/analytics/history/compare",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        collection_token:analyticsToken(),before_id:first,after_id:second,
+      }),
+    });
+    renderAnalyticsRadar(res);
+  }catch(e){resetAnalyticsRadar("Karşılaştırma reddedildi: "+e.message);}
+  finally{state.analyticsBusy=false;analyticsReady();}
+}
+async function removeAnalyticsRecord(){
+  const id=$("analytics-after").value;
+  if(!state.analyticsLoaded||!id||!window.confirm(
+    "Bu tek özel analitik kaydını kalıcı olarak silmek istiyor musunuz? Kaynak projeler silinmez."))return;
+  state.analyticsBusy=true;analyticsReady();
+  try{
+    await api("/api/analytics/history/delete",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        collection_token:analyticsToken(),snapshot_id:id,confirm_delete:true,
+      }),
+    });
+    await refreshAnalyticsHistory();
+  }catch(e){notice("Kayıt silinemedi: "+e.message,true);}
+  finally{state.analyticsBusy=false;analyticsReady();}
+}
+async function revokeAnalyticsHistory(){
+  if(!state.analyticsLoaded||!window.confirm(
+    "Bu özel analitik geçmişin tüm kayıtlarını ve erişim iznini geri dönülmez biçimde kaldırmak istiyor musunuz? Kaynak dosyalar ve sistem yedekleri silinmez."))return;
+  state.analyticsBusy=true;analyticsReady();
+  try{
+    await api("/api/analytics/history/revoke",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        collection_token:analyticsToken(),confirm_delete:true,
+      }),
+    });
+    state.analyticsLoaded=false;state.analyticsSnapshots=[];
+    $("analytics-collection-token").value="";
+    $("analytics-history-list").replaceChildren(
+      el("p","Yerel analitik izni geri çekildi; bu koleksiyon artık erişilemez.","muted"));
+    $("analytics-before").replaceChildren(new Option("Kayıt yok",""));
+    $("analytics-after").replaceChildren(new Option("Kayıt yok",""));
+    resetAnalyticsRadar("Özel analitik geçmişi artık mevcut değil.");
+    $("analytics-status").textContent=
+      "İzin ve özel analitik koleksiyon silindi. Kaynak CAD/PDF ve OS yedekleri değişmedi.";
+  }catch(e){notice("Rıza iptal edilemedi: "+e.message,true);}
+  finally{state.analyticsBusy=false;analyticsReady();}
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -980,6 +1262,8 @@ async function start() {
     await loadVlmAvailability();
     await loadRubricProfile();
     clearJury();
+    resetAnalyticsRadar();
+    analyticsReady();
   }catch(e){notice("Yerel uygulama başlatılamadı: "+e.message,true);}
 }
 $("upload-button").addEventListener("click",upload);
@@ -996,12 +1280,29 @@ $("vlm-infer").addEventListener("click",inferVlm);
 $("vlm-clear").addEventListener("click",clearVlm);
 $("rubric-year").addEventListener("change",()=>loadRubricProfile().catch(e=>notice(e.message,true)));
 $("rubric-frame").addEventListener("change",()=>{renderRubricCatalog();clearRubricOutput();rubricAvailability();clearJury();});
-$("rubric-human-confirm").addEventListener("change",rubricAvailability);
+$("rubric-human-confirm").addEventListener("change",()=>{rubricAvailability();analyticsReady();});
 $("rubric-evaluate").addEventListener("click",evaluateRubric);
 $("jury-generate").addEventListener("click",generateJury);
 $("jury-next").addEventListener("click",nextJuryTurn);
 $("jury-download").addEventListener("click",downloadJury);
 $("jury-clear").addEventListener("click",clearJury);
+$("analytics-create").addEventListener("click",createAnalyticsHistory);
+$("analytics-load").addEventListener("click",loadAnalyticsHistory);
+$("analytics-save").addEventListener("click",saveAnalyticsHistory);
+$("analytics-compare").addEventListener("click",compareAnalyticsHistory);
+$("analytics-delete").addEventListener("click",removeAnalyticsRecord);
+$("analytics-revoke").addEventListener("click",revokeAnalyticsHistory);
+$("analytics-save-consent").addEventListener("change",analyticsReady);
+$("analytics-before").addEventListener("change",analyticsReady);
+$("analytics-after").addEventListener("change",analyticsReady);
+$("analytics-collection-token").addEventListener("input",()=>{
+  state.analyticsLoaded=false;state.analyticsSnapshots=[];analyticsReady();
+  resetAnalyticsRadar("Yeni bir anahtar girildi; geçmişi tekrar açın.");
+});
+$("analytics-show-token").addEventListener("click",()=>{
+  $("analytics-collection-token").type=
+    $("analytics-collection-token").type==="password"?"text":"password";
+});
 $("rubric-criteria").addEventListener("input",clearJury);
 $("rubric-criteria").addEventListener("change",clearJury);
 $("rubric-reviewer").addEventListener("input",clearJury);
