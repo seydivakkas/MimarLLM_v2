@@ -108,9 +108,9 @@ def test_minimal_local_database_token_hashed_and_no_raw_notes(drawing,tmp_path):
 def test_same_level_draft_delta_eight_axis_and_no_progress_verdict(drawing,tmp_path):
     _,ir,entity=drawing
     hist,token=make_history(tmp_path)
-    a=hist.add(token,"D1","a"*32,"b"*32,
+    a=hist.add(token,"2026-GUZ","a"*32,"b"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=2,level=2)))
-    b=hist.add(token,"D2","a"*32,"c"*32,
+    b=hist.add(token,"2026-BAHAR","a"*32,"c"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=2,level=3)))
     out=compare_drafts(*hist.pair(token,a["snapshot_id"],b["snapshot_id"]))
     assert out.status=="COMPARABLE_DRAFT_ONLY"
@@ -126,9 +126,9 @@ def test_same_level_draft_delta_eight_axis_and_no_progress_verdict(drawing,tmp_p
 def test_first_year_missing_axes_are_null_not_zero(drawing,tmp_path):
     _,ir,entity=drawing
     hist,token=make_history(tmp_path)
-    a=hist.add(token,"S1","a"*32,"b"*32,
+    a=hist.add(token,"2027-GUZ","a"*32,"b"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=1,level=3)))
-    b=hist.add(token,"S2","a"*32,"c"*32,
+    b=hist.add(token,"2027-BAHAR","a"*32,"c"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=1,level=4)))
     cmp=compare_drafts(*hist.pair(token,a["snapshot_id"],b["snapshot_id"]))
     assert cmp.status=="COMPARABLE_DRAFT_ONLY"
@@ -145,11 +145,11 @@ def test_first_year_missing_axes_are_null_not_zero(drawing,tmp_path):
 def test_cross_year_and_partial_data_refuse_delta(drawing,tmp_path):
     _,ir,entity=drawing
     hist,token=make_history(tmp_path)
-    a=hist.add(token,"Y1","a"*32,"b"*32,
+    a=hist.add(token,"2028-GUZ","a"*32,"b"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=1)))
-    b=hist.add(token,"Y2","a"*32,"c"*32,
+    b=hist.add(token,"2028-BAHAR","a"*32,"c"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=2)))
-    c=hist.add(token,"S1","a"*32,"d"*32,
+    c=hist.add(token,"2027-GUZ","a"*32,"d"*32,
                evaluate_rubric(ir,assessment(ir,entity,year=1,complete=False)))
     diff=compare_drafts(*hist.pair(token,a["snapshot_id"],b["snapshot_id"]))
     assert diff.status=="NOT_COMPARABLE" and diff.reason=="LEVEL_OR_RUBRIC_DIFFER"
@@ -167,8 +167,8 @@ def test_expiration_delete_record_revocation_minimized_storage(drawing,tmp_path)
     start=datetime(2030,1,1,tzinfo=timezone.utc)
     hist,token=make_history(tmp_path,now=start)
     source=evaluate_rubric(ir,assessment(ir,entity))
-    first=hist.add(token,"D1","a"*32,"b"*32,source,now=start)
-    second=hist.add(token,"D2","a"*32,"c"*32,source,now=start)
+    first=hist.add(token,"2026-GUZ","a"*32,"b"*32,source,now=start)
+    second=hist.add(token,"2026-BAHAR","a"*32,"c"*32,source,now=start)
     assert hist.list(token,now=start)["count"]==2
     hist.remove(token,first["snapshot_id"],now=start)
     assert hist.list(token,now=start)["count"]==1
