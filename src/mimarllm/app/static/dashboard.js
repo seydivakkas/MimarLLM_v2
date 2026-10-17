@@ -1033,7 +1033,7 @@ function renderAnalyticsRadar(comparison){
     const fmt=(v)=>v===null?"N/A":String(v)+"/100";
     line.append(el("strong",item.label_tr),
       el("span",fmt(item.before_percent)+" → "+fmt(item.after_percent)+
-        (item.delta_points===null?"":(" · Fark: "+item.delta_points+" puan")));
+        (item.delta_points===null?"":(" · Fark: "+item.delta_points+" puan"))));
     table.append(line);
   }
   $("analytics-compare-status").textContent=
