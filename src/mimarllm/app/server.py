@@ -35,6 +35,9 @@ from mimarllm.vlm.models import VlmRequest, VlmFailure
 from mimarllm.pedagogy.rubric import profile as rubric_profile
 from mimarllm.pedagogy.scoring import RubricSubmission, RubricError, evaluate_rubric
 from mimarllm.pedagogy.jury import JuryError, build_jury_report
+from mimarllm.analytics.models import (CreateCollection, TokenRequest, AddSnapshot, DeleteSnapshot, RevokeCollection, CompareSnapshots, HistoryError)
+from mimarllm.analytics.store import PrivateHistory
+from mimarllm.analytics.trends import compare_drafts
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -118,6 +121,7 @@ def create_app(workspace: str | Path) -> FastAPI:
         docs_url=None, redoc_url=None, openapi_url=None,
     )
     app.state.workspace = root
+    private_history = PrivateHistory(root)  # constructor must NOT create a history database
     app.state.local_csrf = csrf
 
     @app.middleware("http")
@@ -660,6 +664,85 @@ def create_app(workspace: str | Path) -> FastAPI:
                 detail="Jüri kaynak / rubrik kanıtı doğrulanamadı. Resmî görüş üretilmedi.",
             ) from exc
         return report.model_dump(mode="json")
+
+    async def _analytics_payload(request: Request, schema, max_bytes: int=32768):
+        # All analytics actions are explicit POST; no implicit default history.
+        raw=bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw)>max_bytes:
+                raise HTTPException(status_code=413,detail="Yerel analitik veri sınırı aşıldı.")
+        try:
+            return schema.model_validate_json(bytes(raw))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422,detail="Yerel analitik isteği veya açık rıza geçersiz.") from exc
+
+    @app.post("/api/analytics/history/create", status_code=201)
+    async def create_private_history(request: Request):
+        payload=await _analytics_payload(request,CreateCollection,max_bytes=1024)
+        try:
+            return private_history.create(payload.retention_days)
+        except HistoryError as exc:
+            raise HTTPException(status_code=409,detail="Yerel geçmiş başlatılamadı.") from exc
+
+    @app.post("/api/analytics/history/list")
+    async def private_history_list(request: Request):
+        payload=await _analytics_payload(request,TokenRequest,max_bytes=1024)
+        try:
+            return private_history.list(payload.collection_token)
+        except HistoryError as exc:
+            raise HTTPException(status_code=404,detail="Geçmiş anahtarı bulunamadı veya süresi doldu.") from exc
+
+    @app.post("/api/analytics/history/add",status_code=201)
+    async def private_history_add(request: Request):
+        payload=await _analytics_payload(request,AddSnapshot,max_bytes=32768)
+        try:
+            # Authorization before looking up project/run identifiers.
+            private_history.list(payload.collection_token)
+        except HistoryError as exc:
+            raise HTTPException(status_code=404,detail="Geçmiş anahtarı bulunamadı.") from exc
+        _folder,source_sha,raw_drawing=review_context(
+            payload.project_id,payload.run_id,include_drawing=True)
+        if payload.assessment.source_sha256!=source_sha:
+            raise HTTPException(status_code=409,detail="Geçmiş kayıt kaynak SHA uyuşmuyor.")
+        try:
+            drawing=DrawingIR.model_validate(raw_drawing)
+            draft=evaluate_rubric(drawing,payload.assessment)
+            return private_history.add(
+                payload.collection_token,payload.period_label,
+                payload.project_id,payload.run_id,draft)
+        except (RubricError,ValidationError,ValueError,HistoryError) as exc:
+            raise HTTPException(status_code=409,detail="Geçmiş kaydı için kanıt veya özel saklama şartları yetersiz.") from exc
+
+    @app.post("/api/analytics/history/compare")
+    async def private_history_compare(request: Request):
+        payload=await _analytics_payload(request,CompareSnapshots,max_bytes=1024)
+        try:
+            before,after=private_history.pair(
+                payload.collection_token,payload.before_id,payload.after_id)
+            result=compare_drafts(before,after)
+            return result.model_dump(mode="json")
+        except (HistoryError,ValueError,KeyError,TypeError) as exc:
+            raise HTTPException(status_code=404,detail="Seçilen geçmiş kayıtları karşılaştırılamadı.") from exc
+
+    @app.post("/api/analytics/history/delete")
+    async def private_history_delete(request: Request):
+        payload=await _analytics_payload(request,DeleteSnapshot,max_bytes=1024)
+        try:
+            private_history.remove(payload.collection_token,payload.snapshot_id)
+        except HistoryError as exc:
+            raise HTTPException(status_code=404,detail="Silinecek yerel geçmiş kaydı bulunamadı.") from exc
+        return {"status":"SNAPSHOT_DELETED","note":"Only analytics record; original DXF/PDF and backups untouched."}
+
+    @app.post("/api/analytics/history/revoke")
+    async def private_history_revoke(request: Request):
+        payload=await _analytics_payload(request,RevokeCollection,max_bytes=1024)
+        try:
+            private_history.revoke(payload.collection_token)
+        except HistoryError as exc:
+            raise HTTPException(status_code=404,detail="Analitik geçmiş bulunamadı.") from exc
+        return {"status":"LOCAL_ANALYTICS_CONSENT_REVOKED",
+                "note":"SQLite collection deleted; operating system backups and original project files untouched."}
 
     def dxf_edit_context(project_id: str):
         project = metadata(project_id)

@@ -467,3 +467,21 @@ Bağımlı Draft zinciri **PR #2 → PR #4 → PR #5 → PR #6**. `main` ve üre
 | K-247 | Uzmanlar arası güvenirlik, gerçek jüri/öğrenci görüşleri, offline EXE, fiziksel Windows/Edge ve gerçek mimari proje kabulleri İşlem 031'de | SON KABUL HOLD |
 
 `docs/islem_029.md`, `docs/specs/sequential-jury-029-v0.1.md`. Bağımlı Draft PR zinciri 025 #2 → 026 #4 → 027 #5 → 028 #6 → 029 (yeni Draft). `main` değişmedi.
+
+
+## İşlem 030 — Yerel taslak geçmişinde veri koruma kararları (2026-10-17)
+
+| Karar | Bağlayıcı mühendislik sözleşmesi | Durum |
+| --- | --- | --- |
+| K-248 | History DB varsayılan yok; hem koleksiyon hem tekil kayıt için açık `consent=true` gerekir | KODLANDI |
+| K-249 | 128-bit token'ın yalnız SHA256 özeti sunucuda tutulur, genel koleksiyon listeleme ve GET token URL yok, browser persistent storage yok | KODLANDI |
+| K-250 | SQLite sadece yerel run/opaque project IDs, yapılandırılmış yıl-dönem, 8 nullable rubrik yüzdesi/metadata saklar; öğrenci adı/e-posta/not/çizim/AI metni depolanmaz | KODLANDI / KİŞİSEL VERİ TEHDİDİ 031 |
+| K-251 | `028` kaynak SHA/frame/native entity ve insan öz-beyan rubriği tekrar kontrol edilmeden taslak snapshot kaydı yok | FAIL-CLOSED |
+| K-252 | Farklı sınıf/sürüm ve eksik insan incelemesinde `NOT_COMPARABLE`, hiçbir delta yok. N/A radar ekseni 0 sayılmaz, eksik veride kapalı radar poligonu yok | KODLANDI |
+| K-253 | Aynı sınıf/sürümde tam veri için yalnız taslak puan farkı; resmî not, akademik ilerleme veya nedensel gelişim sonucu değil | ZORUNLU |
+| K-254 | 30/90/180 gün, en çok 20 koleksiyon/24 snapshot; TTL silme erişim-temelli; kullanıcı tek kayıt veya rızayı geri çekerek tüm koleksiyonu silebilir | KODLANDI |
+| K-255 | SQLite `secure_delete=ON` + `VACUUM` ve ilk yaratımda 0600; şifreli-at-rest/OS ACL/backups/adli silme garantisi yok | 031 GÜVENLİK KABULÜ |
+| K-256 | Kaynak DXF/PDF, DrawingIR, RuleEngine, analiz raporları, VLM ve 029 jüri dosyaları tarihçeden ayrı ve değişmez | KODLANDI |
+| K-257 | Geçerli öğrenci onamı, küçük örneklem yanlılığı, uzman pedagojik geçerlilik, fiziksel Win10/11/Edge/onedir ve üretim kabulü son `islem_031` | SON FİZİKSEL KABUL HOLD |
+
+Bağımlı Draft PR zinciri #2 → #4 → #5 → #6 → #7 → 030. `main` ve üretim değişmedi. [İşlem 030](islem_030.md), [gizlilik şartnamesi](specs/private-analytics-030-v0.1.md).
