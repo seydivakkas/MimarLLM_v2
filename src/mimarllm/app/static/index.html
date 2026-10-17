@@ -270,6 +270,79 @@
       </div>
       <p class="hint">Kaynağa dön bağlantıları yalnız kaynak çizgiyi işaretler; geometrinin başarısını kanıtlamaz. Gerçek öğretim üyesi ve öğrenci kabulü, bağımsız uzman güvenirliği ve fiziksel Windows/Edge testleri İşlem 031'de.</p>
     </section>
+    <section class="panel analytics-panel" id="analytics-030">
+      <div class="panel-heading">
+        <div><div class="eyebrow">10 / İZİNLİ YEREL ANALİTİK</div>
+          <h2>Proje geçmişi ve sekiz eksenli taslak gelişim karşılaştırması</h2>
+          <p>Öğrencinin açık izni olmadan geçmiş verisi oluşturulmaz. Bulut, otomatik profil veya resmî notlandırma yoktur.</p>
+        </div><span class="mini-label">İZİNLE AÇILIR · OFFLINE</span>
+      </div>
+      <div class="legal-note">
+        <strong>Mahremiyet ve veri saklama sınırları</strong>
+        <span>Yalnız anonim erişim belirteci, dönem etiketi, yerel proje/run kimliği ve sekiz taslak eksen skoru saklanır. İsim, e-posta, öğrenci numarası, çizim içeriği ve insan yorum metinleri analitik veri tabanına alınmaz. SQLite dosyası diskte şifreli değildir; işletim sistemi yedekleri silme kapsamı dışındadır.</span>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label for="analytics-retention">Geçmişi en fazla saklama süresi</label>
+          <select id="analytics-retention">
+            <option value="30">30 gün</option>
+            <option value="90" selected>90 gün</option>
+            <option value="180">180 gün</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="analytics-collection-token">Yerel özel geçmiş erişim anahtarı</label>
+          <input id="analytics-collection-token" type="password" autocomplete="off" spellcheck="false"
+                 maxlength="32" placeholder="Geçmişinizi yüklemek için 32 karakterli anahtar">
+          <p class="hint">Anahtarı güvenli bir yerde saklayın. Sunucu yalnız SHA-256 özetini saklar; unutulursa otomatik kurtarma yoktur.</p>
+        </div>
+      </div>
+      <label class="rubric-consent"><input type="checkbox" id="analytics-consent-create">
+        Yerel ve süreli proje geçmişi oluşturulmasına açıkça izin veriyorum. Bu bir resmî not belgesi değildir.</label>
+      <div class="report-options">
+        <button type="button" id="analytics-create" class="btn solid">İzinle yeni özel geçmiş oluştur</button>
+        <button type="button" id="analytics-load" class="btn minor">Anahtarla geçmişi aç</button>
+        <button type="button" id="analytics-show-token" class="btn minor">Anahtarı göster/gizle</button>
+      </div>
+      <p id="analytics-status" class="hint" role="status" aria-live="polite">Henüz analitik geçmişi oluşturulmadı.</p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="analytics-period">Dönem etiketi (kimlik bilgisi yazmayın)</label>
+          <input id="analytics-period" type="text" maxlength="32" spellcheck="false"
+                 placeholder="Orn. 2026-GUZ">
+        </div>
+        <div class="field">
+          <label for="analytics-save-consent">
+            <input type="checkbox" id="analytics-save-consent">
+            Seçtiğim kaynağın insan rubrik taslağını bu dönem için yerel geçmişe kaydetmeyi onaylıyorum.
+          </label>
+        </div>
+      </div>
+      <div class="report-options">
+        <button type="button" id="analytics-save" class="btn solid" disabled>Seçili rubrik taslağını geçmişe ekle</button>
+        <button type="button" id="analytics-delete" class="btn minor" disabled>Seçili geçmiş kaydını sil</button>
+        <button type="button" id="analytics-revoke" class="btn minor" disabled>İzni geri çek ve tüm geçmişi sil</button>
+      </div>
+      <div id="analytics-history-list" class="analytics-history-list" aria-label="Özel yerel taslak kayıtları">
+        <p class="muted">Yalnız anahtarla açılan kayıtlar burada görünür.</p>
+      </div>
+      <div class="field-grid">
+        <div class="field"><label for="analytics-before">Önceki taslak dönem</label>
+          <select id="analytics-before"><option value="">Kayıt seçin</option></select></div>
+        <div class="field"><label for="analytics-after">Sonraki taslak dönem</label>
+          <select id="analytics-after"><option value="">Kayıt seçin</option></select></div>
+      </div>
+      <button type="button" id="analytics-compare" class="btn solid" disabled>İki taslağı karşılaştır</button>
+      <p id="analytics-compare-status" class="hint" role="status" aria-live="polite">
+        Aynı sınıf ve sürümde, eksiksiz insan değerlendirmesi olan iki taslak karşılaştırılabilir; sonuç akademik ilerleme kanıtı değildir.
+      </p>
+      <div class="analytics-radar-wrap" role="region" aria-label="Sekiz eksenli yerel rubrik karşılaştırma grafiği">
+        <svg id="analytics-radar" viewBox="0 0 640 510" role="img"
+             aria-label="Henüz veri yok; eksik eksenler sıfır değil, kapsam dışı gösterilir"></svg>
+        <div id="analytics-axis-table" class="analytics-axis-table"></div>
+      </div>
+      <p class="hint">Kayıt silme yalnız özel analitik geçmişi etkiler; özgün öğrenci çizimleri, raporlar ve işletim sistemi yedekleri kendiliğinden silinmez. Kimlik doğrulaması, eğitimsel geçerlilik ve fiziksel Windows kabulü İşlem 031'de.</p>
+    </section>
     <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
     <footer>MimarLLM V2 · Offline-first · Sentetik mühendislik doğrulaması · Gerçek kullanıcı ve hukukî kabul bekliyor</footer>
   </main>
