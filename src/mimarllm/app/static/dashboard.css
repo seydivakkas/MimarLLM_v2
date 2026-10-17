@@ -138,3 +138,18 @@ footer{color:#9ca9b9;font-size:11px;padding:25px 0 12px}
 .rubric-axis-result span{font-size:11px;color:#5d738a;text-align:right}
 @media(max-width:690px){.rubric-criterion{grid-template-columns:minmax(0,1fr)}
   .rubric-axis-heading{flex-direction:column}.rubric-axis-heading small{text-align:left;max-width:100%}}
+
+
+/* 029 source-scoped sequential jury, never a simulated official jury vote */
+.jury-panel{margin-top:22px}
+.jury-turns{display:flex;flex-direction:column;gap:14px;margin:14px 0}
+.jury-turn{border:1px solid #d5e3ef;border-radius:11px;background:#f8fbfe;padding:15px}
+.jury-turn h3{font-size:14px;font-weight:650;color:#243d58;margin:0 0 8px}
+.jury-question{font-size:12px;font-weight:600;color:#3b5874;margin:5px 0}
+.jury-comment{margin:10px 0 0;border:1px solid #e3eaf2;border-radius:8px;background:#fff;padding:11px;overflow-wrap:anywhere}
+.jury-comment strong{font-size:12px;color:#32506d}
+.jury-comment p{font-size:12px;line-height:1.6;color:#435a71;margin:7px 0}
+.jury-human-note{white-space:pre-wrap;border-left:3px solid #a4bed6;padding-left:9px}
+.jury-source-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.jury-source-row button{font-size:11px;overflow-wrap:anywhere;white-space:normal;text-align:left}
+.jury-panel .report-options{flex-wrap:wrap}
