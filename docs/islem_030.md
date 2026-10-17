@@ -19,3 +19,25 @@
 2. `analytics/trends.py` 028 RubricOutcome şemasından fail-closed karşılaştırma.
 3. Salt-okunur kaynaklı run + CSRF ve opt-in API; yerel sekiz eksenli radar arayüzü.
 4. CI, testler, sürümlü sözleşme, kararlara işleme ve bağımlı Draft PR.
+
+
+## Gerçekleştirilen kod ve sentetik CI kanıtı
+
+- `analytics/models.py`: zorunlu `consent:true` CREATE ve ADD; 30/90/180 günlük saklama, 128-bit özel erişim token'ı, `YYYY-GUZ/BAHAR/YAZ` kimliksiz dönem etiketleri, `CompareSnapshots` ve sekiz eksenli `TrendComparison`. Resmî akademik not ve doğrulanmış pedagojik gelişim: **false**.
+- `analytics/store.py`: hiçbir analitik history çağrısı gelmeden DB yaratılmaz. Yalnız SHA256-token digest, yerel proje/run UUID, dönem ve sekiz nullable 028 rubrik insan-taslak puanı saklanır; insan notu, isim, e-posta, öğrenci numarası, kaynak çizim/rapor veya VLM/Jury metni saklanmaz. SQLite `secure_delete=ON`, `VACUUM` silme, ilk dosya izni `0600`. Yetki/capability token kaybolunca server üzerinden listelenip kurtarılamaz. SQLite **disk şifrelemesi değildir** ve OS yedekleri temizlenmez.
+- `analytics/trends.py`: aynı sınıf/rubrik sürümü + her iki tam değerlendirmede `COMPARABLE_DRAFT_ONLY`; aksi `NOT_COMPARABLE`, farklar/null. Sekiz eksen, 1. sınıfta strüktür/iklim N/A. Taslak puan farkı gerçek pedagojik ilerlemenin kanıtı değildir.
+- `app/server.py`: `POST /api/analytics/history/{create,list,add,compare,delete,revoke}` tamamı mevcut loopback CSRF/Origin/Host politikasıyla. ADD önce gerçek run'ın özgün DrawingIR SHA/frame/native entity ve 028 insan rubrik incelemesini doğrular. Silme, revocation ve süre aşımı erişim-temellidir; hiçbir varsayılan background silme hizmeti yok.
+- `app/static/index.html`, `dashboard.js`, `dashboard.css`: izinle açılan tarihçe, gizli token (browser kalıcı depolaması yok), yeni dönem kaydetme (her seferinde açık onay), kayıt silme/izni geri çekme, yerel SVG sekiz eksenli radar ve ayrıntılı erişilebilir değer tablosu. Tam sekiz eksen yoksa kapalı grafik çizilmez, N/A=0 uydurulmaz. Rıza iptali orijinal CAD/PDF/raporları silmez.
+- `tests/test_analytics_030.py`: rıza yokken veritabanı yaratmama, SHA ile anahtar kimliği, kişisel not/kimlik yazılmaması, same-scope/different-year/partial sınırlamaları, JSON schema source/AI sahteciliği, CSRF/413/422, saklama süresi ve revocation, immutable DrawingIR/analiz, HTML ve SVG.
+- `scripts/windows/edge_smoke_025.py`: 030 HTML kontrolleri, geçmiş oluşturma izni ve radar panelinin varlığı, varsayılan DB yokluğu.
+- `docs/specs/private-analytics-030-v0.1.md`: kabul ve gerçek mahremiyet kısıtları.
+
+### Gerçek CI durumu
+
+Önceki `6bb73e33`/ara UI commit'leri **JavaScript `SyntaxError: missing )`** nedeniyle Core CI başarısızdı; hata `67d0c853` commit'iyle düzeltilip gerçek GitHub-hosted Windows/Ubuntu tekrar koşuldu. [Core CI #38989925319](https://github.com/seydivakkas/MimarLLM_v2/actions/runs/38989925319) **SUCCESS**: Windows **404 passed**, Ubuntu **403 passed, 1 skipped** ve `node --check dashboard.js` PASS. Dolayısıyla sentetik sözleşme kabulü bu **düzeltilmiş commit** ve sonraki HEAD doğrulamasına dayanır; erken kırmızı sonuçlar saklanıp doğru biçimde açıklanmıştır.
+
+[Bağımlı Draft PR #8](https://github.com/seydivakkas/MimarLLM_v2/pull/8): `feature/islem-030-private-analytics` → 029 dalı (PR #7); PR #2/#4/#5/#6/#7 Draft kalır. `main` ve üretim değişmedi.
+
+**Son karar:** `030_MÜHENDİSLİK_KOD_ADAYI / SENTETİK_CI_PASS`; `REAL_STUDENT_CONSENT_HOLD`, `ACADEMIC_FAIRNESS_AND_VALIDITY_HOLD`, `WINDOWS_EDGE_EXE_PHYSICAL_UAT_HOLD`, `LEGAL_F08_F12_HOLD`. Geçerli rızanın gerçekten öğrenciye ait olması, örneklem/adalet, uzmanlar arası kıyas, Windows ACL/backup ve offline paket son İşlem 031'de değerlendirilecek.
+
+**Sıradaki tek geliştirme aşaması:** İşlem 031 — fiziksel Windows 10/11 + gerçek Edge, gerçek mimari DXF/PDF, çevrimdışı .exe, 2.5D GPU/VRAM, MMProj model uygunluğu, uzman pedagojik doğrulama, hukuki kaynak bağlantısı ve kişisel veri koruma nihai kabul kapısı. `docs/islem_031.md` yeni dalın koddan önceki ilk kaydı olacaktır.
