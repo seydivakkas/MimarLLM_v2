@@ -161,3 +161,12 @@ Three.js 0.160.1 ESM yerel olarak SHA/MIT manifestiyle hazırlanır (scripts/bui
 - Yalnız native DrawingIR kaynak SHA/frame/entity bağlantılı ve **insanın açıkça girip beyan ettiği 0–4** düzeylerinden `Decimal` ile yerel taslak değerlendirme hesaplanır. Eksik aktif kriter → `NOT_SCORED` ve `null` total. Tam girdi olsa bile sonuç `LOCAL_DRAFT_ONLY`, `official_grade=false`; eğitmen kimliği, gerçek pedagojik yeterlilik ve üniversite rubriği onaylanmış değildir.
 - `GET /api/rubric/profile/{academic_year}`, `POST /api/projects/{id}/runs/{id}/rubric/evaluate`, yerel sınıf/kanıt/not UI, Windows ve Ubuntu sentetik regresyon. LLM/VLM otomatik not üretemez; CAD, analiz, mevzuat ve raporları değiştirmez.
 - Fiziksel Windows/Edge, gerçek öğrenci projeleri, kurumsal rubrik ve uzman güvenirliği `islem_031` kapsamında HOLD; `main` ve üretim paketi değiştirilmedi. Sonraki geliştirme `islem_029` pedagojik jüri simülasyonudur.
+
+
+## İşlem 029 — Kaynaklı sıralı pedagojik jüri simülasyonu (Draft)
+
+[İşlem 029 kaydı](docs/islem_029.md) · [Kaynaklı jüri raporu teknik sözleşmesi](docs/specs/sequential-jury-029-v0.1.md).
+
+Rubrik 028'in sınıf, kaynak kimliği ve insan değerlendirmesi şeması korunur. Tek deterministik motor sırayla dört değerlendirme *bakış açısı* oluşturur: bağlam/kavram, işlev/mekân, yapım/iklim, temsil/süreç. 1. sınıfta uygulanmayan perspektif kapsam dışı; eksik insan incelemesi `REVIEW_REQUIRED`. Gerçek mimari başarı/duvar/ruhsat ve AI oy/uzman görüşü üretilmez; puan veya resmî geçme/kalma yoktur.
+
+Yerel `/api/projects/{id}/runs/{id}/jury/critique` yalnız kaynak SHA/frame, DrawingIR native entity ve `human_review_attested=true` ile transient JSON + güvenli Markdown sunar. Kullanıcı arayüzü 4 turu sırayla açar, çizgi kaynak ID'ye döner, Markdown'ı yalnız kullanıcı etkileşimiyle indirir; orijinal rapor/CAD/PDF/VLM dosyalarına yazmaz. Gerçek eğitmen/öğrenci pedagojik kabulü, fiziksel Windows/Edge/EXE ve model geçerliliği `031/HOLD`; sonraki geliştirme `030` izinli öğrenci analitiği.

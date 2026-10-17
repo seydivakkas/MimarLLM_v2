@@ -96,6 +96,7 @@ def main() -> int:
               "id=\"massing-canvas\"","id=\"massing-build\"",
               "id=\"vlm-opt-in\"","id=\"vlm-infer\"","id=\"vlm-results\"",
               "id=\"rubric-year\"","id=\"rubric-criteria\"","id=\"rubric-evaluate\"",
+              "id=\"jury-generate\"","id=\"jury-next\"","id=\"jury-download\"","id=\"jury-turns\"",
               "Henüz yerel çizim eklenmedi",
               "Hukukî doğrulama kilitli",
             ]
@@ -110,6 +111,7 @@ def main() -> int:
                 "local_three_sha_verified":True,
                 "local_026_module_verified":True,
                 "rubric_028_year1_year4_profiles_verified":True,
+                "jury_029_panel_verified":True,
                 "offline_runtime_network_not_proven":True,
                 "javascript_visible_project_empty_state":True,
                 "legal_gate":"REGULATORY_LOCKED",
