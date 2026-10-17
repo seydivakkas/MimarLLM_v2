@@ -82,6 +82,10 @@ def main() -> int:
                     len(year1.get("axes",[]))!=8 or len(year1.get("criteria",[]))!=6 or
                     len(year4.get("criteria",[]))!=16):
                 raise RuntimeError("Rubric year gating or official-grade lock failed in Edge smoke")
+            # Visiting a dashboard must NOT create a private analytics database.
+            analytics_db=root/"workspace"/"private-analytics-030.sqlite3"
+            if analytics_db.exists():
+                raise RuntimeError("Opt-in analytics database unexpectedly created")
             base=[str(edge),"--headless=new","--disable-gpu","--no-first-run",
                   "--disable-background-networking","--no-default-browser-check",
                   "--user-data-dir="+str(root/"edge-profile"),
@@ -97,6 +101,11 @@ def main() -> int:
               "id=\"vlm-opt-in\"","id=\"vlm-infer\"","id=\"vlm-results\"",
               "id=\"rubric-year\"","id=\"rubric-criteria\"","id=\"rubric-evaluate\"",
               "id=\"jury-generate\"","id=\"jury-next\"","id=\"jury-download\"","id=\"jury-turns\"",
+              "id=\"analytics-consent-create\"","id=\"analytics-create\"",
+              "id=\"analytics-collection-token\"","id=\"analytics-save-consent\"",
+              "id=\"analytics-save\"","id=\"analytics-revoke\"",
+              "id=\"analytics-before\"","id=\"analytics-after\"",
+              "id=\"analytics-radar\"",
               "Henüz yerel çizim eklenmedi",
               "Hukukî doğrulama kilitli",
             ]
@@ -112,6 +121,7 @@ def main() -> int:
                 "local_026_module_verified":True,
                 "rubric_028_year1_year4_profiles_verified":True,
                 "jury_029_panel_verified":True,
+                "analytics_030_consent_radar_panel_verified":True,
                 "offline_runtime_network_not_proven":True,
                 "javascript_visible_project_empty_state":True,
                 "legal_gate":"REGULATORY_LOCKED",
