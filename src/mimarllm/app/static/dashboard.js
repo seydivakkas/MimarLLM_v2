@@ -1115,7 +1115,7 @@ async function saveAnalyticsHistory(){
   try{assessment=juryInputSnapshot();}
   catch(e){return notice(e.message,true);}
   const period=$("analytics-period").value.trim();
-  if(!/^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$/.test(period))
+  if(!/^20[2-9][0-9]-(GUZ|BAHAR|YAZ)$/.test(period))
     return notice("Dönemi kısa, kimlik içermeyen bir etiketle belirtin.",true);
   state.analyticsBusy=true;analyticsReady();
   try{
