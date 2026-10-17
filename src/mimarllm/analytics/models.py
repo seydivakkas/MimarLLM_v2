@@ -31,7 +31,7 @@ class AddSnapshot(TokenRequest):
     consent: Literal[True]
     project_id: str=Field(pattern=r"^[a-f0-9]{32}$")
     run_id: str=Field(pattern=r"^[a-f0-9]{32}$")
-    period_label: str=Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$")
+    period_label: str=Field(pattern=r"^20[2-9][0-9]-(?:GUZ|BAHAR|YAZ)$")
     assessment: RubricSubmission
 
 
