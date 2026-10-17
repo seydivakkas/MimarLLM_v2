@@ -64,7 +64,7 @@ jobs:
       - name: Verify local Three.js source ESM syntax
         run: node --check src/mimarllm/app/static/scene25d.js
       - name: Validate drawing geometry legal and local hybrid RAG contracts
-        run: python -m pytest -q tests/test_units.py tests/test_drawing_ir.py tests/test_pdf_contract.py tests/test_dxf_parser.py tests/test_pdf_ir.py tests/test_geometry.py tests/test_topology.py tests/test_rules.py tests/test_legal_etl.py tests/test_rag.py tests/test_rag_lexicon.py tests/test_legal_binding.py tests/test_legal_review.py tests/test_reports.py tests/test_pipeline.py tests/test_cli.py tests/test_dashboard.py tests/test_dashboard_jobs.py tests/test_massing25d.py tests/test_vlm_027.py tests/test_rubric_028.py tests/test_windows_packaging.py tests/test_repair.py tests/test_tiled_ocr.py
+        run: python -m pytest -q tests/test_units.py tests/test_drawing_ir.py tests/test_pdf_contract.py tests/test_dxf_parser.py tests/test_pdf_ir.py tests/test_geometry.py tests/test_topology.py tests/test_rules.py tests/test_legal_etl.py tests/test_rag.py tests/test_rag_lexicon.py tests/test_legal_binding.py tests/test_legal_review.py tests/test_reports.py tests/test_pipeline.py tests/test_cli.py tests/test_dashboard.py tests/test_dashboard_jobs.py tests/test_massing25d.py tests/test_vlm_027.py tests/test_rubric_028.py tests/test_jury_029.py tests/test_windows_packaging.py tests/test_repair.py tests/test_tiled_ocr.py
       - name: Check local dashboard JavaScript syntax
         run: node --check src/mimarllm/app/static/dashboard.js
 
