@@ -451,3 +451,19 @@ Bağımlılık: Draft PR #2 (025) → Draft PR #4 (026) → Draft PR #5 (027). `
 | K-239 | 029 çok kişilik jüri simülasyonu model/persona çıktıları bağımsız insan eğitmen oyu sayılmaz; önce 028'in kural/kaynak sınırı korunmalıdır | İLERİYE DÖNÜK |
 
 Bağımlı Draft zinciri **PR #2 → PR #4 → PR #5 → PR #6**. `main` ve üretim sürümü değişmedi. [İşlem 028](islem_028.md) / [rubrik teknik sözleşmesi](specs/pedagogical-rubric-028-v0.1.md).
+
+
+## İşlem 029 — Sıralı jürinin rol ve kaynak sınırı (2026-10-17)
+
+| Karar | Zorunlu sözleşme | Durum |
+| --- | --- | --- |
+| K-240 | Dört sabit sıralı perspektif aynı tek kontrol motorudur; isimleri gerçek jüri üyeleri, bağımsız AI modelleri/oyları veya eğitmen kimlikleri değildir | KODLANDI |
+| K-241 | Yalnız 028'in sınıfa uygun rubrik kriterlerinden source SHA/frame/native entity ile bağı insan tarafından öz-beyan edilmiş inceleme alınabilir. Model yorumları jüri puanı değildir | KODLANDI |
+| K-242 | 1. sınıf yapım/iklim perspektifi `NOT_APPLICABLE_BY_LEVEL`. Eksik değerlendirme `REVIEW_REQUIRED` ve kaynak ID boş; kaynak uydurulmaz | KODLANDI |
+| K-243 | Raporda `official_jury=false`, `independent_ai_votes=false`, `model_inference_used=false`, `real_faculty_approval=false`, `official_grade=false`, `numeric_score=null`, `passed=null` ve `REGULATORY_LOCKED` sabit | FAIL-CLOSED |
+| K-244 | İnsan notu açıkça `doğrulanmamış öz-beyan` olarak tutulur, Markdown/HTML escape edilir; yeni tasarım, ölçü veya geçme sonucu türetilmez | KODLANDI |
+| K-245 | Kontrol edilen kaynak ID SVG üzerinde odaklanabilir, gösterilemiyorsa kullanıcıya açıkça bildirilir. Markdown yalnız kullanıcı etkileşimiyle yerel indirilir | KODLANDI |
+| K-246 | API proje/run/SHA/rubrik/CSRF ve 32 KiB sınırlı, sonucu transient. CAD, DrawingIR, RuleEngine, AI çıktısı ve analiz raporu değişmez | KODLANDI |
+| K-247 | Uzmanlar arası güvenirlik, gerçek jüri/öğrenci görüşleri, offline EXE, fiziksel Windows/Edge ve gerçek mimari proje kabulleri İşlem 031'de | SON KABUL HOLD |
+
+`docs/islem_029.md`, `docs/specs/sequential-jury-029-v0.1.md`. Bağımlı Draft PR zinciri 025 #2 → 026 #4 → 027 #5 → 028 #6 → 029 (yeni Draft). `main` değişmedi.
