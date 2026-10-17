@@ -1,5 +1,5 @@
 "use strict";
-const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false,rubricLines:[],rubricSha:"",rubricCatalog:null,rubricRunning:false};
+const state = {csrf:"",projects:[],projectId:"",runId:"",running:false,selectedSource:null,reviews:[],editStatus:null,massingSources:[],massingSha:"",vlmLines:[],vlmSha:"",vlmConfigured:false,vlmRunning:false,rubricLines:[],rubricSha:"",rubricCatalog:null,rubricRunning:false,juryReport:null,juryShown:0,juryRunning:false};
 const $ = (id) => document.getElementById(id);
 const api = async (path, {method="GET",body=null,headers={}}={}) => {
   const extras = {...headers};
@@ -77,6 +77,7 @@ async function loadProject() {
     updateMassingSources({native_lines:[],source_sha256:""});
     updateVlmSources({native_lines:[],source_sha256:""});
     updateRubricSources({native_lines:[],source_sha256:""});
+    clearJury();
     state.reviews=[];showReviews();
     $("stage-list").append(el("p","Analiz başladıktan sonra aşama sonuçları burada görünecek.","muted"));
     return;
@@ -119,6 +120,7 @@ async function loadRun(id) {
   updateMassingSources(data);
   updateVlmSources(data);
   updateRubricSources(data);
+  clearJury();
   const findings=$("finding-list");clear(findings);
   findings.append(el("h3","Bulgular / değerlendirme adayları"));
   if(!data.findings.length) findings.append(el("p","Henüz bulgu yok; kaynak geometrisi HTML raporunda incelenebilir.","muted"));
@@ -607,6 +609,7 @@ function updateRubricSources(data) {
   clearRubricOutput();
   renderRubricCatalog();
   rubricAvailability();
+  clearJury();
 }
 async function loadRubricProfile() {
   const year=Number($("rubric-year").value);
@@ -614,6 +617,7 @@ async function loadRubricProfile() {
   $("rubric-catalog-status").textContent="Sınıf kriterleri yükleniyor…";
   clearRubricOutput();
   rubricAvailability();
+  clearJury();
   try {
     const catalogue=await api("/api/rubric/profile/"+year);
     if(year!==Number($("rubric-year").value))return;
@@ -740,6 +744,167 @@ async function evaluateRubric() {
   }
 }
 
+
+function juryAvailability() {
+  $("jury-generate").disabled=state.juryRunning ||
+    !state.projectId || !state.runId || !state.rubricSha ||
+    !state.rubricCatalog || !state.rubricLines.length ||
+    !$("rubric-human-confirm").checked;
+  $("jury-next").disabled=!state.juryReport ||
+    state.juryShown>=state.juryReport.sequence.length;
+  $("jury-download").disabled=!state.juryReport;
+}
+function clearJury() {
+  state.juryReport=null;state.juryShown=0;
+  const output=$("jury-turns");clear(output);
+  output.append(el("p","Henüz sıralı pedagojik jüri simülasyonu yok.","muted"));
+  $("jury-status").textContent=
+    "İnsan öz-beyanı ve kaynak doğrulaması olmadan jüri simülasyonu üretilemez.";
+  juryAvailability();
+}
+function sourceFromJury(entityId,frameId) {
+  if(!state.rubricLines.some(x=>x.entity_id===entityId&&x.frame_id===frameId)){
+    return notice("Bu kaynak, seçilen çizim veya sayfaya ait değil.",true);
+  }
+  const frame=$("frame-filter");
+  if([...frame.options].some(o=>o.value===frameId)) {
+    if(frame.value!==frameId){
+      frame.value=frameId;frame.dispatchEvent(new Event("change"));
+    }
+  }
+  const source=[...document.querySelectorAll("#drawing-2d .source-line")].find(
+    node=>node.getAttribute("aria-label")==="Kaynak çizgi: "+entityId);
+  if(!source){
+    return notice("İlgili kaynak şu an 2B SVG önizlemesinde gösterilmiyor; çizim kaynağını inceleyin.",true);
+  }
+  source.dispatchEvent(new MouseEvent("click",{bubbles:true}));
+  $("drawing-2d").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function nextJuryTurn() {
+  if(!state.juryReport ||
+     state.juryShown>=state.juryReport.sequence.length)return;
+  const turn=state.juryReport.sequence[state.juryShown];
+  if(turn.order!==state.juryShown+1 ||
+     turn.perspective_kind!=="SINGLE_ENGINE_SEQUENTIAL_VIEWPOINT"){
+    clearJury();return notice("Jüri sırası geçersiz; rapor güvenli biçimde kapatıldı.",true);
+  }
+  const container=$("jury-turns");
+  if(state.juryShown===0)clear(container);
+  const section=el("section","","jury-turn");
+  const head=el("h3",turn.order+". perspektif — "+turn.title_tr);
+  section.append(head,
+    el("p",turn.opening_question_tr,"jury-question"),
+    el("p",turn.status+" · "+turn.reviewed_criterion_count+
+      "/"+turn.applicable_criterion_count+" insan incelemesi","hint"));
+  if(!turn.comments.length){
+    section.append(el("p","Bu sınıf düzeyinde uygulanabilir ölçüt bulunmuyor.","muted"));
+  }
+  for(const comment of turn.comments){
+    const card=el("article","","jury-comment");
+    card.append(el("strong",comment.criterion_title_tr+" · "+comment.status),
+      el("p",comment.guiding_question_tr),
+      el("p",comment.method_notice_tr,"hint"));
+    if(comment.human_note_unverified!==null)
+      card.append(el("p","İnsanın doğrulanmamış kendi notu: "+
+        comment.human_note_unverified,"jury-human-note"));
+    if(comment.source_entity_ids.length) {
+      const row=el("div","","jury-source-row");
+      for(const sid of comment.source_entity_ids){
+        const button=el("button","Kaynağa dön · "+sid,"btn minor");
+        button.type="button";
+        button.addEventListener("click",()=>sourceFromJury(sid,state.juryReport.frame_id));
+        row.append(button);
+      }
+      card.append(row);
+    }else{
+      card.append(el("p","Kaynaklı insan notu yok — yorum kanıtı eksik.","muted"));
+    }
+    section.append(card);
+  }
+  container.append(section);
+  state.juryShown++;
+  $("jury-status").textContent="Sıralı eğitim perspektifi: "+state.juryShown+
+    " / "+state.juryReport.sequence.length+" · AI oyu veya resmî değerlendirme yok.";
+  juryAvailability();
+}
+function juryInputSnapshot() {
+  if(!state.rubricCatalog || !state.projectId || !state.runId ||
+      !state.rubricSha || !$("rubric-human-confirm").checked){
+    throw new Error("Rubrik kaynakları ve açık insan inceleme öz-beyanı gerekli.");
+  }
+  const label=$("rubric-reviewer").value.trim();
+  if(label.length<2 || label.length>80)throw new Error("İncelemeci etiketi girin.");
+  const reviews=[];
+  for(const card of document.querySelectorAll(".rubric-criterion")){
+    const level=card.querySelector(".rubric-criterion-level").value;
+    if(level==="")continue;
+    const source=card.querySelector(".rubric-criterion-source").value;
+    const note=card.querySelector(".rubric-criterion-note").value.trim();
+    if(!source || note.length<15 || note.length>500)
+      throw new Error("Her insan düzeyi için orijinal çizgi ve 15–500 karakter açıklama gerekli.");
+    reviews.push({
+      criterion_id:card.dataset.criterionId,human_level:Number(level),
+      source_entity_ids:[source],reviewer_note:note,human_review_attested:true,
+    });
+  }
+  return {
+    source_sha256:state.rubricSha,frame_id:$("rubric-frame").value,
+    rubric_version:state.rubricCatalog.rubric_version,
+    academic_year:Number($("rubric-year").value),reviewer_label:label,
+    human_review_attested:true,reviews,
+  };
+}
+async function generateJury() {
+  let payload;
+  try{payload=juryInputSnapshot();}
+  catch(e){notice(e.message,true);return;}
+  const pid=state.projectId,rid=state.runId;
+  state.juryRunning=true;clearJury();
+  $("jury-status").textContent="Kaynaklı, tek motorlu sıralı jüri soruları hesaplanıyor…";
+  try{
+    const report=await api("/api/projects/"+pid+"/runs/"+rid+"/jury/critique",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+    });
+    if(pid!==state.projectId || rid!==state.runId)return;
+    const order=["CONTEXT_AND_CONCEPT","PROGRAM_AND_SPACE",
+      "STRUCTURE_AND_CLIMATE","REPRESENTATION_AND_PROCESS"];
+    if(report.schema_version!=="029.0.1" ||
+       report.status!=="SOURCE_BOUND_JURY_SIMULATION" ||
+       report.source_sha256!==payload.source_sha256 ||
+       report.frame_id!==payload.frame_id ||
+       report.official_jury!==false || report.official_grade!==false ||
+       report.model_inference_used!==false || report.independent_ai_votes!==false ||
+       report.legal_gate!=="REGULATORY_LOCKED" ||
+       !Array.isArray(report.sequence) || report.sequence.length!==4 ||
+       report.sequence.some((turn,i)=>turn.order!==i+1||turn.perspective_id!==order[i]) ||
+       typeof report.report_markdown!=="string") {
+      throw new Error("Eğitim jürisi kaynak/sıra/güvenlik sözleşmesine uymuyor.");
+    }
+    state.juryReport=report;state.juryShown=0;
+    nextJuryTurn();
+  }catch(e){
+    clearJury();$("jury-status").textContent="Jüri simülasyonu oluşturulamadı.";
+    notice("Kaynaklı jüri raporu reddedildi: "+e.message,true);
+  }finally{
+    state.juryRunning=false;
+    juryAvailability();
+  }
+}
+function downloadJury() {
+  if(!state.juryReport)return;
+  const data=state.juryReport.report_markdown;
+  if(typeof data!=="string"||data.length>26000)return;
+  const blob=new Blob([data],{type:"text/markdown;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const anchor=el("a");
+  anchor.href=url;
+  anchor.download="MimarLLM-029-kaynakli-juri-taslagi.md";
+  document.body.append(anchor);
+  anchor.click();anchor.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),0);
+}
+
 async function upload() {
   const file=$("drawing-file").files?.[0];
   if(!file) return notice("Önce yerel DXF veya PDF dosyası seçin.",true);
@@ -814,6 +979,7 @@ async function start() {
     await refresh();
     await loadVlmAvailability();
     await loadRubricProfile();
+    clearJury();
   }catch(e){notice("Yerel uygulama başlatılamadı: "+e.message,true);}
 }
 $("upload-button").addEventListener("click",upload);
@@ -829,12 +995,20 @@ $("vlm-opt-in").addEventListener("change",vlmReady);
 $("vlm-infer").addEventListener("click",inferVlm);
 $("vlm-clear").addEventListener("click",clearVlm);
 $("rubric-year").addEventListener("change",()=>loadRubricProfile().catch(e=>notice(e.message,true)));
-$("rubric-frame").addEventListener("change",()=>{renderRubricCatalog();clearRubricOutput();rubricAvailability();});
+$("rubric-frame").addEventListener("change",()=>{renderRubricCatalog();clearRubricOutput();rubricAvailability();clearJury();});
 $("rubric-human-confirm").addEventListener("change",rubricAvailability);
 $("rubric-evaluate").addEventListener("click",evaluateRubric);
+$("jury-generate").addEventListener("click",generateJury);
+$("jury-next").addEventListener("click",nextJuryTurn);
+$("jury-download").addEventListener("click",downloadJury);
+$("jury-clear").addEventListener("click",clearJury);
+$("rubric-criteria").addEventListener("input",clearJury);
+$("rubric-criteria").addEventListener("change",clearJury);
+$("rubric-reviewer").addEventListener("input",clearJury);
+$("rubric-human-confirm").addEventListener("change",()=>{clearJury();juryAvailability();});
 $("rubric-clear").addEventListener("click",()=>{
   renderRubricCatalog();$("rubric-human-confirm").checked=false;
-  clearRubricOutput();rubricAvailability();
+  clearRubricOutput();rubricAvailability();clearJury();
 });
 $("selected-project").addEventListener("change",e=>chooseProject(e.target.value).catch(x=>notice(x.message,true)));
 $("drawing-file").addEventListener("change",e=>{
