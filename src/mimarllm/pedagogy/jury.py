@@ -61,7 +61,7 @@ class JuryTurn(BaseModel):
     comments: tuple[JuryComment, ...]
     applicable_criterion_count: int
     reviewed_criterion_count: int
-    status: Literal["REVIEW_REQUIRED", "SOURCE_BOUND_REVIEW_PROMPTS"]
+    status: Literal["NOT_APPLICABLE_BY_LEVEL", "REVIEW_REQUIRED", "SOURCE_BOUND_REVIEW_PROMPTS"]
 
 
 class JuryReport(BaseModel):
@@ -207,8 +207,9 @@ def build_jury_report(drawing: DrawingIR, submitted: RubricSubmission) -> JuryRe
             opening_question_tr=opening, comments=tuple(comments),
             applicable_criterion_count=len(comments),
             reviewed_criterion_count=reviewed_count,
-            status="SOURCE_BOUND_REVIEW_PROMPTS"
-            if reviewed_count == len(comments) else "REVIEW_REQUIRED",
+            status=("NOT_APPLICABLE_BY_LEVEL" if not comments else
+                    "SOURCE_BOUND_REVIEW_PROMPTS" if reviewed_count == len(comments)
+                    else "REVIEW_REQUIRED"),
         ))
     if seen != set(applicable):
         raise JuryError("JURY_CATALOG_AXES_INCOMPLETE")
