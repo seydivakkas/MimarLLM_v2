@@ -259,3 +259,43 @@ def test_analytics_rest_consent_token_source_scope_csrf_and_no_writes(drawing,tm
         assert (root/"projects"/pid/"runs"/rid/"drawingir.json").read_bytes()==before
         assert (root/"projects"/pid/"runs"/rid/"analysis.json").read_bytes()==manifest_before
         assert not (root/"projects"/pid/"runs"/rid/"student-grade.json").exists()
+
+
+def test_period_does_not_accept_free_text_personal_identifiers():
+    with pytest.raises(ValidationError):
+        AddSnapshot.model_validate({
+            "collection_token":"a"*32,"consent":True,
+            "project_id":"b"*32,"run_id":"c"*32,
+            "period_label":"Student Full Name",
+            "assessment":{},
+        })
+    # Under-specified and named fields cannot become an analytics record.
+    with pytest.raises(ValidationError):
+        CreateCollection.model_validate({"consent":True,"retention_days":999})
+
+
+def test_private_radar_ui_is_offline_svg_with_empty_default(tmp_path):
+    root=tmp_path/"browser"
+    with TestClient(create_app(root),base_url="http://127.0.0.1:8765",
+                    client=("127.0.0.1",12345)) as http:
+        page=http.get("/").text
+        js=http.get("/static/dashboard.js").text
+        for element in (
+            "analytics-030","analytics-retention","analytics-consent-create",
+            "analytics-collection-token","analytics-create","analytics-load",
+            "analytics-period","analytics-save-consent","analytics-save",
+            "analytics-before","analytics-after","analytics-compare",
+            "analytics-delete","analytics-revoke","analytics-radar",
+            "analytics-axis-table",
+        ):
+            assert f'id="{element}"' in page
+        assert "window.confirm" in js
+        assert '"/api/analytics/history/create"' in js
+        assert '"/api/analytics/history/revoke"' in js
+        assert "NOT_COMPARABLE" in js
+        assert "allPresent" in js
+        assert 'if(allPresent)' in js
+        assert "innerHTML" not in js
+        assert "eval(" not in js
+        assert "https://" not in page
+        assert not (root/"private-analytics-030.sqlite3").exists()
