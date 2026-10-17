@@ -34,6 +34,7 @@ from mimarllm.vlm import local_engine
 from mimarllm.vlm.models import VlmRequest, VlmFailure
 from mimarllm.pedagogy.rubric import profile as rubric_profile
 from mimarllm.pedagogy.scoring import RubricSubmission, RubricError, evaluate_rubric
+from mimarllm.pedagogy.jury import JuryError, build_jury_report
 from mimarllm.pipeline import PipelineConfig, run_local_pipeline
 from mimarllm.reports.exporter import export_report
 
@@ -632,6 +633,33 @@ def create_app(workspace: str | Path) -> FastAPI:
                 detail="Rubrik incelemesi doğrulanamadı: kriter, sınıf veya çizim kanıtı belirsiz.",
             ) from exc
         return evaluation.model_dump(mode="json")
+
+    @app.post("/api/projects/{project_id}/runs/{run_id}/jury/critique")
+    async def local_jury_critique(project_id: str, run_id: str, request: Request):
+        # Ephemeral only; source identity and human review fields are validated
+        # by the SAME deterministic 028 rubric gate. VLM isn't called here.
+        _folder, source_sha, raw_drawing = review_context(
+            project_id, run_id, include_drawing=True)
+        raw = bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw) > 32768:
+                raise HTTPException(status_code=413, detail="Jüri inceleme isteği çok büyük.")
+        try:
+            submitted = RubricSubmission.model_validate_json(bytes(raw))
+        except (ValidationError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail="Jüri rubriği veya insan onayı geçersiz.") from exc
+        if submitted.source_sha256 != source_sha:
+            raise HTTPException(status_code=409, detail="Jüri kaynak SHA eşleşmedi.")
+        try:
+            drawing = DrawingIR.model_validate(raw_drawing)
+            report = build_jury_report(drawing, submitted)
+        except (JuryError, ValidationError, ValueError) as exc:
+            raise HTTPException(
+                status_code=409,
+                detail="Jüri kaynak / rubrik kanıtı doğrulanamadı. Resmî görüş üretilmedi.",
+            ) from exc
+        return report.model_dump(mode="json")
 
     def dxf_edit_context(project_id: str):
         project = metadata(project_id)
